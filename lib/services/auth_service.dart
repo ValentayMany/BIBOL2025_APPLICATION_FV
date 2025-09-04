@@ -1,13 +1,24 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  static const String baseUrl = "http://localhost:8000/api/auth";
-  // static const String baseUrl = "http://10.193.21.85:8000/api/auth";
+  // ✅ สำหรับ Chrome/PC ผ่าน ngrok
+  static const String _localHost =
+      "https://632b91295535.ngrok-free.app/api/auth";
 
-  //static const String baseUrl = "http://192.168.4.4:8000/api/auth";
-  // หรือถ้าใช้ Wi-Fi ก็
-  // static const String baseUrl = "http://10.193.21.85:8000/api/auth";
+  // ✅ สำหรับมือถือ Android ผ่าน USB + adb reverse
+  static const String _mobileHost =
+      "http://localhost:8000/api/auth"; // <-- เปลี่ยนตรงนี้
+
+  // ✅ เลือก host ตาม platform
+  static String get baseUrl {
+    if (Platform.isAndroid || Platform.isIOS) {
+      return _mobileHost;
+    } else {
+      return _localHost;
+    }
+  }
 
   // ✅ Register
   static Future<Map<String, dynamic>> register(
@@ -38,11 +49,13 @@ class AuthService {
     return jsonDecode(response.body);
   }
 
+  // ✅ Logout
   static Future<Map<String, dynamic>> logout() async {
     final response = await http.post(
       Uri.parse("$baseUrl/logout"),
       headers: {"Content-Type": "application/json"},
     );
+
     return jsonDecode(response.body);
   }
 }

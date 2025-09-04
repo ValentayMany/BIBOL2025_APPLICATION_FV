@@ -1,4 +1,3 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 class CustomBottomNav extends StatelessWidget {
@@ -13,20 +12,35 @@ class CustomBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CurvedNavigationBar(
-      backgroundColor: Colors.transparent,
-      color: Color(0xFF07325D),
-      buttonBackgroundColor: Color(0xFF07325D),
-      height: 60,
-      items: <Widget>[
-        Icon(Icons.home, size: 30, color: Colors.white),
-        Icon(Icons.bookmark_border, size: 30, color: Colors.white),
-        Icon(Icons.photo_library, size: 30, color: Colors.white),
-        Icon(Icons.favorite_border, size: 30, color: Colors.white),
-        Icon(Icons.person_outline, size: 30, color: Colors.white),
-      ],
+    return BottomNavigationBar(
+      currentIndex: currentIndex,
       onTap: onTap,
-      index: currentIndex,
+      backgroundColor: Color(0xFF07325D),
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.white.withOpacity(0.6),
+      type: BottomNavigationBarType.fixed, // Ensures all labels are visible
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.bookmark_border),
+          label: 'Bookmarks',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.photo_library),
+          label: 'Gallery',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.favorite_border),
+          label: 'Favorites',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          label: 'Profile',
+        ),
+      ],
     );
   }
 }

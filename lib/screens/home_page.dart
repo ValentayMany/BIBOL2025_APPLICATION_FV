@@ -1,4 +1,4 @@
-import 'package:auth_flutter_api/services/infor_service.dart';
+import 'package:auth_flutter_api/services/basic_infor.dart';
 import 'package:auth_flutter_api/widgets/custom_bottom_nav.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
