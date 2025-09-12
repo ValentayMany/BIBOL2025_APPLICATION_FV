@@ -39,12 +39,7 @@ class _NewsPageState extends State<NewsPage> {
       appBar: AppBar(
         backgroundColor: Color(0xFF07325D),
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.white, size: 28),
-          onPressed: () {
-            // Handle menu button press
-          },
-        ),
+
         centerTitle: true,
         title: Image.asset(
           'assets/images/LOGO.png',
@@ -52,21 +47,56 @@ class _NewsPageState extends State<NewsPage> {
           height: 50,
           fit: BoxFit.contain,
         ),
-        actions: [
-          Container(
-            margin: EdgeInsets.all(8),
-            child: IconButton(
-              icon: Icon(
-                Icons.power_settings_new,
-                color: Colors.white,
-                size: 28,
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+      drawer: Drawer(
+        backgroundColor: Colors.white,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF07325D)),
+
+              child: Text(
+                'ເມນູ',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
               ),
-              onPressed: () {
-                //
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('ໜ້າຫຼັກ'),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/home');
               },
             ),
-          ),
-        ],
+            ListTile(
+              leading: Icon(Icons.article),
+              title: Text('ຂ່າວສານ'),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/news');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.photo),
+              title: Text('ຄັງຮູບ'),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/gallery');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text('ໂປຣໄຟລ'),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/profile');
+              },
+            ),
+          ],
+        ),
       ),
       backgroundColor: Colors.white,
       body: SafeArea(

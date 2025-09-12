@@ -1,3 +1,4 @@
+import 'package:auth_flutter_api/services/basic_infor.dart';
 import 'package:flutter/material.dart';
 import '../widgets/custom_bottom_nav.dart';
 
@@ -6,8 +7,30 @@ class AboutPage extends StatefulWidget {
   State<AboutPage> createState() => _AboutPageState();
 }
 
-class _AboutPageState extends State<AboutPage> {
+class _AboutPageState extends State<AboutPage>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 3;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   void _onNavTap(int index) {
     if (_currentIndex == index) return;
@@ -25,7 +48,7 @@ class _AboutPageState extends State<AboutPage> {
         Navigator.pushReplacementNamed(context, '/gallery');
         break;
       case 3:
-        // stay
+        // stay on current page
         break;
       case 4:
         Navigator.pushReplacementNamed(context, '/profile');
@@ -36,152 +59,23 @@ class _AboutPageState extends State<AboutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Color(0xFF07325D),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.white, size: 28),
-          onPressed: () {
-            // Handle menu button press
-          },
-        ),
-        centerTitle: true,
-        title: Text(
-          'ກ່ຽວກັບສະຖາບັນການທະນາຄານ',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+      backgroundColor: Colors.grey[50],
+      appBar: _buildAppBar(),
+      drawer: _buildDrawer(),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(),
+              _buildMainImage(),
+              SizedBox(height: 8),
+              _buildContentSections(),
+              SizedBox(height: 20),
+            ],
           ),
-        ),
-        actions: [Container(margin: EdgeInsets.all(8))],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header with logo and title
-            Container(
-              width: double.infinity,
-              color: Color(0xFF07325D),
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                children: [
-                  // Logo
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.yellow, width: 2),
-                    ),
-                    child: Center(
-                      child: Image.asset(
-                        'assets/images/LOGO.png',
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  // Title
-                  Text(
-                    'ປະຫວັດຄວາມເປັນມາຂອງ\nສະຖາບັນການທະນາຄານ',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Main content
-            Container(
-              color: Colors.white,
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.grey[200],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        'assets/images/image52.png', // You'll need to add this image
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.account_balance,
-                                    size: 60,
-                                    color: Colors.grey[600],
-                                  ),
-                                  SizedBox(height: 8),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  // Section I - Background
-                  _buildSection(
-                    'I. ຄວາມເປັນມາ',
-                    'ສະຖາບັນການທະນາຄານ ໄດ້ຮັບການ​ສ້າງ​ຕັ້ງຂຶ້ນ​ໃນ​ວັນ​ທີ 05 ມັງ​ກອນ ປີ1979, ເຊິ່ງຕັ້ງ​ຢູ່ບ້ານ​ຕານ​ມີ​ໄຊ, ເມືອງ​ໄຊ​ທາ​ນີ, ​ນະ​ຄອນຫລວງ​ວຽງ​ຈັນ, ຕັ້ງ​ຢູ່​ຫ່າງ​ໄກ​ຈາກ​ທະ​ນາ​ຄານ​ແຫ່ງ ສ​ປ​ປ ລາວ ປະ​ມານ 10 ກິ​ໂລ​ແມັດ, ນໍາ​ໃຊ້​ເປັນ​ສະ​ຖານ​ທີ່​​ກໍ່​ສ້າງວິ​ຊາ​ການ​ທະ​ນາ​ຄານ, ບຳ​ລຸງ​ຍົກ​ລະ​ດັບ​ວິ​ຊາ​ສະ​ເພາະໃຫ້ພະ​ນັກ​ງານ​ທະ​ນາ​ຄານ ແລະ ບໍລິການ ເປີດກວ້າງແກ່ສັງຄົມ ເຊິ່ງມີການຂະຫຍາຍຕົວຢ່າງຕໍ່ເນື່ອງດັ່ງລາຍລະອຽດ ຕໍ່ໄປນີ້:',
-                  ),
-                  SizedBox(height: 20),
-                  // Section II - Functions and Roles
-                  _buildSection(
-                    'II. ຄະນະຮັບຜິດຊອບ ສທຄ ແຕ່ລະໄລຍະ',
-                    'ຄະນະຮັບຜິດຊອບຂອງສະຖາບັນການທະນາຄານໄດ້ມີການ ປັບບຸງ, ຊັບຊ້ອນ, ປ່ຽນແທນ ໃຫ້ແທດເໝາະກັບສະພາບຄວາມເປັນຈິງໃນແຕ່ລະໄລຍະ, ເຊີ່ງເຫັນໄດ້ວ່ານັບຕັ້ງແຕ່ມື້ສ້າງ ຕັ້ງມາຮອດປະຈຸບັນໄດ້ມີການຊັບປ່ຽນຄະນະຮັບຜິດຊອບຂອງໂຮງຮຽນມີທັງໝົດ 12 ຄັ້ງ ລາຍລະດຽດແຕ່ລະໄລຍະມີດັ່ງລຸ່ມນີ້:',
-                  ),
-                  SizedBox(height: 20),
-                  // Historical periodsເ
-                  _buildHistoricalPeriod('ໄລ​ຍະ​ປີ 1979 –​ 1980', [
-                    'ທ່ານ​ ມະ​ຫາ​ປານ​ ເຄນ​ສະ​ບັບ  ຜູ້ອຳ​ນວຍ​ການ​ໂຮງ​ຮຽນ',
-                    'ທ່ານ ໄຟ​ດາ ໄພ​ເພັງ​ຢົວ         ​ຮອງ​ອຳ​ນວຍ​ການໂຮງ​ຮຽນ',
-                    'ທ່ານ ບຸນ​ທີ ວິ​ມຸງ​ຄຸນ           ​ຄະ​ນະ​ອໍານວຍ​ການ',
-                  ]),
-                  _buildHistoricalPeriod('ໄລຍະປີ 1981 - 1985', [
-                    'ທ່ານ ໄລຍາ ໂພທະລາວົງ, ປີ້ອງລະບວນການຂອງຄະຣຸ',
-                    'ທ່ານ ບູນທີ ວັງປາ, ຮອງບໍລິການກວດການຂອງຄະຣຸ',
-                    'ທ່ານຍິງ ລາວິໄລ ເປັນຍິງບໍລິການກວດການຂອງຄະຣຸ ( ຊື່ແລກຈາກ ສພ ແລວ​ວົງ​ແຮມ )',
-                    'ທ່ານ ວັງແສງ',
-                    'ທ່ານ ບາງ ສິນໄຊ',
-                  ]),
-                  _buildHistoricalPeriod(
-                    'ໄລຍະປີ 1986 - 1987 ປີ້ອງຄານຄອນນຳວັດການບຳນາດຄະນະ(ປີ້ອງລະບວງ)',
-                    ['ທ່ານ ບູນທີ ວັງປາ ເປັນຍິງບໍລິການກວດການຂອງຄະຣຸ'],
-                  ),
-                  _buildHistoricalPeriod('ໄລຍະປີ 1987 - 1988', [
-                    'ທ່ານ ວິລໄລ ແກ້ວບົວສີ, ປີ້ອງລະບວນການຂອງຄະຣຸ',
-                    'ທ່ານ ບູນທີ ວັງປາ, ຮອງບໍລິການກວດການຂອງຄະຣຸ',
-                  ]),
-                  _buildHistoricalPeriod('ໄລຍະປີ 1987 - 1988', [
-                    'ທ່ານ ວິລໄລ ແກ້ວບົວສີ, ປີ້ອງລະບວນການຂອງຄະຣຸ',
-                    'ທ່ານ ບູນທີ ວັງປາ, ຮອງບໍລິການກວດການຂອງຄະຣຸ',
-                  ]),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
       bottomNavigationBar: CustomBottomNav(
@@ -191,78 +85,507 @@ class _AboutPageState extends State<AboutPage> {
     );
   }
 
-  Widget _buildSection(String title, String content) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF07325D),
-          ),
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Color(0xFF07325D),
+      elevation: 4,
+      shadowColor: Colors.black.withOpacity(0.3),
+      centerTitle: true,
+      title: Text(
+        'ກ່ຽວກັບສະຖາບັນການທະນາຄານ',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
         ),
-        SizedBox(height: 8),
-        Text(
-          content,
-          style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
-        ),
-      ],
+      ),
+      iconTheme: IconThemeData(color: Colors.white),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.only()),
     );
   }
 
-  Widget _buildHistoricalPeriod(String period, List<String> leaders) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
+  Widget _buildDrawer() {
+    return Drawer(
+      backgroundColor: Colors.white,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Color(0xFF07325D),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              period,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+          _buildDrawerHeader(),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              children: [
+                _buildDrawerItem(Icons.home, 'ໜ້າຫຼັກ', '/home'),
+                _buildDrawerItem(Icons.article_outlined, 'ຂ່າວສານ', '/news'),
+                _buildDrawerItem(
+                  Icons.photo_library_outlined,
+                  'ຄັງຮູບ',
+                  '/gallery',
+                ),
+                _buildDrawerItem(Icons.person_outline, 'ໂປຣໄຟລ', '/profile'),
+              ],
             ),
           ),
-          SizedBox(height: 8),
-          ...leaders
-              .map(
-                (leader) => Padding(
-                  padding: EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerHeader() {
+    return Container(
+      height: 180,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF07325D), Color(0xFF0A4B7A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.account_balance, size: 40, color: Colors.white),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'ເມນູ',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, String route) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Color(0xFF07325D).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: Color(0xFF07325D), size: 20),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        onTap: () {
+          Navigator.pushReplacementNamed(context, route);
+        },
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF07325D), Color(0xFF0A4B7A)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            spreadRadius: 2,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+      child: Column(
+        children: [_buildLogo(), SizedBox(height: 20), _buildTitle()],
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.yellow[700]!, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+        color: Colors.white.withOpacity(0.1),
+      ),
+      child: Center(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(50),
+          child: Image.asset(
+            'assets/images/LOGO.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(
+                Icons.account_balance,
+                size: 50,
+                color: Colors.yellow[700],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTitle() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+      ),
+      child: Text(
+        'ປະຫວັດຄວາມເປັນມາຂອງ\nສະຖາບັນການທະນາຄານ',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          height: 1.4,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainImage() {
+    return Padding(
+      padding: EdgeInsets.all(20),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              spreadRadius: 2,
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Image.asset(
+            'assets/images/image52.png',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        '• ',
-                        style: TextStyle(
-                          color: Color(0xFF07325D),
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Icon(
+                        Icons.broken_image_outlined,
+                        size: 48,
+                        color: Colors.grey[400],
                       ),
-                      Expanded(
-                        child: Text(
-                          leader,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.black87,
-                            height: 1.3,
-                          ),
-                        ),
+                      SizedBox(height: 8),
+                      Text(
+                        'ບໍ່ສາມາດໂຫຼດຮູບໄດ້',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 14),
                       ),
                     ],
                   ),
                 ),
-              )
-              .toList(),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContentSections() {
+    return Column(
+      children: [
+        _buildNewsSection(7),
+        _buildNewsSection(8),
+        _buildNewsSection(9),
+      ],
+    );
+  }
+
+  Widget _buildNewsSection(int id) {
+    return FutureBuilder<Map<String, dynamic>>(
+      future: InforService.getNewsById(id),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildLoadingWidget();
+        } else if (snapshot.hasError) {
+          return _buildErrorWidget(snapshot.error.toString());
+        } else if (!snapshot.hasData) {
+          return _buildNoDataWidget();
+        }
+
+        final news = snapshot.data!;
+        final rawContent = news["content"];
+        final content =
+            rawContent is String ? rawContent : rawContent.toString();
+
+        List<String> people = [];
+        bool hasPeople = content.contains("ທ່ານ");
+
+        if (hasPeople) {
+          people =
+              content
+                  .split("ທ່ານ")
+                  .map((p) => p.trim())
+                  .where((p) => p.isNotEmpty)
+                  .toList();
+        }
+
+        return _buildContentCard(news, content, people, hasPeople);
+      },
+    );
+  }
+
+  Widget _buildLoadingWidget() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 6,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07325D)),
+              strokeWidth: 2,
+            ),
+            SizedBox(height: 12),
+            Text(
+              'ກໍາລັງໂຫຼດ...',
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget(String error) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.red[50],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: Colors.red[400], size: 24),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'ເກີດຂໍ້ຜິດພາດ: $error',
+              style: TextStyle(color: Colors.red[700], fontSize: 14),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoDataWidget() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.amber[50],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amber[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.amber[700], size: 24),
+          SizedBox(width: 12),
+          Text(
+            'ບໍ່ມີຂໍ້ມູນ',
+            style: TextStyle(color: Colors.amber[800], fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContentCard(
+    Map<String, dynamic> news,
+    String content,
+    List<String> people,
+    bool hasPeople,
+  ) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle(news["title"] ?? ""),
+            SizedBox(height: 16),
+            _buildSectionContent(content, people, hasPeople),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF07325D), Color(0xFF0A4B7A)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.article_outlined, color: Colors.white, size: 20),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionContent(
+    String content,
+    List<String> people,
+    bool hasPeople,
+  ) {
+    if (hasPeople) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: people.map((p) => _buildListItem("ທ່ານ$p")).toList(),
+      );
+    } else {
+      return Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Text(
+          content,
+          style: TextStyle(
+            fontSize: 15,
+            color: Colors.black87,
+            height: 1.6,
+            letterSpacing: 0.2,
+          ),
+          textAlign: TextAlign.justify,
+        ),
+      );
+    }
+  }
+
+  Widget _buildListItem(String text) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.blue[100]!),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            margin: EdgeInsets.only(top: 4),
+            decoration: BoxDecoration(
+              color: Color(0xFF07325D),
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.black87,
+                height: 1.5,
+              ),
+            ),
+          ),
         ],
       ),
     );

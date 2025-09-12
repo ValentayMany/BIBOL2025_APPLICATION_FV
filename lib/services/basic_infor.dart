@@ -1,26 +1,30 @@
 import 'dart:convert';
-import 'dart:io';
+import 'package:flutter/foundation.dart'; // ✅ เพิ่มมา
 import 'package:http/http.dart' as http;
 
 class InforService {
-  // สำหรับ Chrome / Desktop ผ่าน ngrok
-  static const String _localHost =
-      "https://632b91295535.ngrok-free.app/api/information/news";
+  // ✅ สำหรับ Chrome / Desktop
+  static const String _localHost = "http://localhost:8000/api/information/news";
 
-  // สำหรับมือถือจริง (ผ่าน USB + adb reverse)
+  // ✅ สำหรับมือถือจริง (ผ่าน USB + adb reverse)
   static const String _mobileHost =
-      "http://localhost:8000/api/information/news"; // <-- เปลี่ยนตรงนี้
+      "http://localhost:8000/api/information/news";
 
-  // เลือก host ตาม platform
+  // ✅ เลือก host ตาม platform
   static String get baseUrl {
-    if (Platform.isAndroid || Platform.isIOS) {
-      return _mobileHost;
-    } else {
+    if (kIsWeb) {
+      // ถ้าเป็น Flutter Web → ใช้ localhost ของเครื่อง PC
       return _localHost;
+    } else {
+      // ถ้าเป็น Android/iOS → ใช้ผ่าน adb reverse
+      return _mobileHost;
     }
   }
+  //every time you want to run in your mobile phone, you must run these commands in terminal:
+  //adb devices
+  //adb reverse tcp:8000 tcp:8000
 
-  // Fetch news by ID
+  // ✅ Fetch news by ID
   static Future<Map<String, dynamic>> getNewsById(int id) async {
     final url = Uri.parse("$baseUrl/$id");
     final response = await http.get(url);
@@ -32,7 +36,7 @@ class InforService {
     }
   }
 
-  // Fetch all news
+  // ✅ Fetch all news
   static Future<List<Map<String, dynamic>>> getAllNews() async {
     final url = Uri.parse(baseUrl);
     final response = await http.get(url);

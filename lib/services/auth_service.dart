@@ -1,61 +1,102 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 
 class AuthService {
-  // ✅ สำหรับ Chrome/PC ผ่าน ngrok
-  static const String _localHost =
-      "https://632b91295535.ngrok-free.app/api/auth";
+  // ✅ Register Student
+  static Future<Map<String, dynamic>> registerStudent({
+    required String studentId,
+    required String firstName,
+    required String lastName,
+    required String phone,
+    required String password,
+    required String confirmPassword,
+  }) async {
+    try {
+      final url = "${ApiConfig.baseUrl}/register";
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              "student_id": studentId,
+              "first_name": firstName,
+              "last_name": lastName,
+              "phone": phone,
+              "password": password,
+              "confirm_password": confirmPassword,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
 
-  // ✅ สำหรับมือถือ Android ผ่าน USB + adb reverse
-  static const String _mobileHost =
-      "http://localhost:8000/api/auth"; // <-- เปลี่ยนตรงนี้
-
-  // ✅ เลือก host ตาม platform
-  static String get baseUrl {
-    if (Platform.isAndroid || Platform.isIOS) {
-      return _mobileHost;
-    } else {
-      return _localHost;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'success': false,
+          'message': 'Server error: ${response.statusCode}',
+          'data': response.body,
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error: $e'};
     }
   }
 
-  // ✅ Register
-  static Future<Map<String, dynamic>> register(
-    String name,
-    String email,
-    String password,
-  ) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/register"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"name": name, "email": email, "password": password}),
-    );
+  // ✅ Login Student
+  static Future<Map<String, dynamic>> loginStudent({
+    required String studentId,
+    required String password,
+  }) async {
+    try {
+      final url = "${ApiConfig.baseUrl}/login";
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({"student_id": studentId, "password": password}),
+          )
+          .timeout(const Duration(seconds: 10));
 
-    return jsonDecode(response.body);
-  }
-
-  // ✅ Login
-  static Future<Map<String, dynamic>> login(
-    String email,
-    String password,
-  ) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/login"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"email": email, "password": password}),
-    );
-
-    return jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'success': false,
+          'message': 'Login failed: ${response.statusCode}',
+          'data': response.body,
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error: $e'};
+    }
   }
 
   // ✅ Logout
-  static Future<Map<String, dynamic>> logout() async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/logout"),
-      headers: {"Content-Type": "application/json"},
-    );
+  static Future<Map<String, dynamic>> logout(String token) async {
+    try {
+      final url = "${ApiConfig.baseUrl}/logout";
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+            body: jsonEncode({"token": token}),
+          )
+          .timeout(const Duration(seconds: 10));
 
-    return jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'success': false,
+          'message': 'Logout failed: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error: $e'};
+    }
   }
 }
