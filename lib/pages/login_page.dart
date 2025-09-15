@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../services/auth_service.dart';
-import '../services/token_service.dart'; // 🔹 เพิ่ม import
+import '../services/token_service.dart';
 import 'dart:ui';
 
 class LoginPage extends StatefulWidget {
@@ -40,8 +40,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
       final success = res["success"] == true;
       final token = res["data"]?["token"];
-      final user =
-          res["data"]?["student"]; // ถ้า API ส่ง user info ใน key "student"
+      final user = res["data"]?["student"];
 
       setState(() {
         _isLoading = false;
@@ -52,7 +51,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         print("✅ Login Success: $token");
         print("👤 User Data: $user");
 
-        // 👉 เก็บ token + user ลง SharedPreferences
         await TokenService.saveToken(token);
         if (user != null) {
           await TokenService.saveUserInfo(user);
@@ -60,10 +58,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
         _showSuccessSnackBar();
 
-        // ดีเลย์เล็กน้อยเพื่อให้ snackbar โชว์
         await Future.delayed(const Duration(milliseconds: 500));
 
-        // ✅ ไปหน้า Home หรือ Profile ตามที่ต้องการ
         if (context.mounted) {
           Navigator.pushReplacementNamed(context, '/home');
         }
@@ -82,7 +78,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     }
   }
 
-  // ฟังก์ชันล็อกเอาต์
   void _handleLogout() {
     showDialog(
       context: context,
@@ -103,18 +98,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  Navigator.pop(context); // ปิด dialog
-
-                  // 🔹 ลบข้อมูลการล็อกอินออกจาก SharedPreferences
+                  Navigator.pop(context);
                   await TokenService.clearToken();
                   await TokenService.clearUserInfo();
-
                   Navigator.pushNamedAndRemoveUntil(
                     context,
-                    '/login', // 🔹 เปลี่ยนไปหน้าล็อกอินแทนหน้าหลัก
+                    '/login',
                     (route) => false,
                   );
-
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('ອອກຈາກລະບົບສຳເລັດ'),
@@ -249,7 +240,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  // ส่วนของ build method ยังเหมือนเดิม...
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -306,80 +296,107 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               },
             ),
           ),
+          // Main Content - ปรับปรุง layout และ spacing
           SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: FadeTransition(
-                    opacity: _animation,
-                    child: AnimatedBuilder(
-                      animation: _shakeAnimation,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: Offset(
-                            _shakeAnimation.value *
-                                10 *
-                                (1 - _shakeAnimation.value),
-                            0,
-                          ),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // Logo with Hero Animation
-                                Hero(
-                                  tag: 'app_logo',
-                                  child: Image.asset(
-                                    'assets/images/LOGO.png',
-                                    height: 120,
-                                  ),
-                                ),
-                                const SizedBox(height: 40),
-                                Text(
-                                  'ສະຖາບັນການທະນາຄານ',
-                                  style: GoogleFonts.notoSansLao(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'ເຂົ້າສູ່ລະບົບ',
-                                  style: GoogleFonts.notoSansLao(
-                                    fontSize: 16,
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                                const SizedBox(height: 40),
-                                _buildGlassmorphicContainer(
-                                  child: Column(
-                                    children: [
-                                      _buildCodeTF(),
-                                      const SizedBox(height: 20),
-                                      _buildPasswordTF(),
-                                      const SizedBox(height: 10),
-                                      _buildForgotPasswordBtn(),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 30),
-                                _buildLoginBtn(),
-                                const SizedBox(height: 20),
-                                _buildSignupBtn(),
-                                const SizedBox(height: 20),
-                                _buildVersionInfo(),
-                              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal:
+                        constraints.maxWidth > 600
+                            ? (constraints.maxWidth - 600) / 2
+                            : 20.0, // ลดจาก 32 เหลือ 20
+                    vertical: 10.0, // ลดจาก default
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight - 20,
+                      maxWidth: 600,
+                    ),
+                    child: FadeTransition(
+                      opacity: _animation,
+                      child: AnimatedBuilder(
+                        animation: _shakeAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(
+                              _shakeAnimation.value *
+                                  10 *
+                                  (1 - _shakeAnimation.value),
+                              0,
                             ),
-                          ),
-                        );
-                      },
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Logo with Hero Animation - ลดขนาด
+                                  Hero(
+                                    tag: 'app_logo',
+                                    child: Image.asset(
+                                      'assets/images/LOGO.png',
+                                      height: 100, // ลดจาก 120 เหลือ 100
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 30,
+                                  ), // ลดจาก 40 เหลือ 30
+                                  Text(
+                                    'ສະຖາບັນການທະນາຄານ',
+                                    style: GoogleFonts.notoSansLao(
+                                      fontSize: 26, // ลดจาก 28 เหลือ 26
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8), // ลดจาก 10 เหลือ 8
+                                  Text(
+                                    'ເຂົ້າສູ່ລະບົບ',
+                                    style: GoogleFonts.notoSansLao(
+                                      fontSize: 15, // ลดจาก 16 เหลือ 15
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 30,
+                                  ), // ลดจาก 40 เหลือ 30
+                                  _buildGlassmorphicContainer(
+                                    child: Column(
+                                      children: [
+                                        _buildCodeTF(),
+                                        const SizedBox(
+                                          height: 16,
+                                        ), // ลดจาก 20 เหลือ 16
+                                        _buildPasswordTF(),
+                                        const SizedBox(
+                                          height: 8,
+                                        ), // ลดจาก 10 เหลือ 8
+                                        _buildForgotPasswordBtn(),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 24,
+                                  ), // ลดจาก 30 เหลือ 24
+                                  _buildLoginBtn(),
+                                  const SizedBox(
+                                    height: 16,
+                                  ), // ลดจาก 20 เหลือ 16
+                                  _buildSignupBtn(),
+                                  const SizedBox(
+                                    height: 16,
+                                  ), // ลดจาก 20 เหลือ 16
+                                  _buildVersionInfo(),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ),
           // Loading Overlay
@@ -418,7 +435,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(18), // ลดจาก 20 เหลือ 18
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
@@ -443,11 +460,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       },
       decoration: InputDecoration(
         labelText: 'ລະຫັດນັກສຶກສາ',
-        labelStyle: GoogleFonts.notoSansLao(color: Colors.white70),
+        labelStyle: GoogleFonts.notoSansLao(
+          color: Colors.white70,
+          fontSize: 13, // ลดขนาดฟอนต์
+        ),
         prefixIcon: const Icon(
           FontAwesomeIcons.user,
           color: Colors.white70,
-          size: 20,
+          size: 18, // ลดขนาด icon
         ),
         filled: true,
         fillColor: Colors.white.withOpacity(0.2),
@@ -463,7 +483,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           borderSide: const BorderSide(color: Colors.red, width: 2),
           borderRadius: BorderRadius.circular(10),
         ),
-        errorStyle: GoogleFonts.notoSansLao(color: Colors.red[300]),
+        errorStyle: GoogleFonts.notoSansLao(
+          color: Colors.red[300],
+          fontSize: 11, // ลดขนาดฟอนต์ error
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14, // ลดจาก 16
+          vertical: 14,
+        ),
       ),
     );
   }
@@ -486,8 +513,15 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       },
       decoration: InputDecoration(
         labelText: 'ລະຫັດຜ່ານ',
-        labelStyle: GoogleFonts.notoSansLao(color: Colors.white70),
-        prefixIcon: const Icon(Icons.lock, color: Colors.white70, size: 20),
+        labelStyle: GoogleFonts.notoSansLao(
+          color: Colors.white70,
+          fontSize: 13, // ลดขนาดฟอนต์
+        ),
+        prefixIcon: const Icon(
+          Icons.lock,
+          color: Colors.white70,
+          size: 18, // ลดขนาด icon
+        ),
         suffixIcon: IconButton(
           icon: Icon(
             _obscurePassword ? Icons.visibility : Icons.visibility_off,
@@ -513,7 +547,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           borderSide: const BorderSide(color: Colors.red, width: 2),
           borderRadius: BorderRadius.circular(10),
         ),
-        errorStyle: GoogleFonts.notoSansLao(color: Colors.red[300]),
+        errorStyle: GoogleFonts.notoSansLao(
+          color: Colors.red[300],
+          fontSize: 11, // ลดขนาดฟอนต์ error
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14, // ลดจาก 16
+          vertical: 14,
+        ),
       ),
     );
   }
@@ -523,9 +564,15 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       alignment: Alignment.centerRight,
       child: TextButton(
         onPressed: _showForgotPasswordDialog,
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 4), // ลด padding
+        ),
         child: Text(
           'ລືມລະຫັດ?',
-          style: GoogleFonts.notoSansLao(color: Colors.white70, fontSize: 14),
+          style: GoogleFonts.notoSansLao(
+            color: Colors.white70,
+            fontSize: 13, // ลดจาก 14 เหลือ 13
+          ),
         ),
       ),
     );
@@ -534,7 +581,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Widget _buildLoginBtn() {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 48, // ลดจาก 50 เหลือ 48
       child: ElevatedButton(
         onPressed: _isLoading ? null : login,
         style: ElevatedButton.styleFrom(
@@ -560,7 +607,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 : Text(
                   'ເຂົ້າສູ່ລະບົບ',
                   style: GoogleFonts.notoSansLao(
-                    fontSize: 18,
+                    fontSize: 17, // ลดจาก 18 เหลือ 17
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF0D47A1),
                   ),
@@ -572,6 +619,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Widget _buildSignupBtn() {
     return TextButton(
       onPressed: () => Navigator.pushNamed(context, "/register"),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 8), // ลด padding
+      ),
       child: RichText(
         text: TextSpan(
           children: [
@@ -579,14 +629,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               text: 'ບໍ່ມີບັນຊີ? ',
               style: GoogleFonts.notoSansLao(
                 color: Colors.white70,
-                fontSize: 16,
+                fontSize: 15, // ลดจาก 16 เหลือ 15
               ),
             ),
             TextSpan(
               text: 'ລົງທະບຽນ',
               style: GoogleFonts.notoSansLao(
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 15, // ลดจาก 16 เหลือ 15
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -599,7 +649,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Widget _buildVersionInfo() {
     return Text(
       'Version 1.0.0',
-      style: GoogleFonts.notoSansLao(color: Colors.white54, fontSize: 12),
+      style: GoogleFonts.notoSansLao(
+        color: Colors.white54,
+        fontSize: 11, // ลดจาก 12 เหลือ 11
+      ),
     );
   }
 }

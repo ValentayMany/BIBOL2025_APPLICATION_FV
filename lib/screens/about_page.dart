@@ -1,4 +1,4 @@
-import 'package:auth_flutter_api/services/basic_infor.dart';
+import 'package:auth_flutter_api/services/news_service.dart';
 import 'package:flutter/material.dart';
 import '../widgets/custom_bottom_nav.dart';
 
@@ -336,46 +336,46 @@ class _AboutPageState extends State<AboutPage>
   Widget _buildContentSections() {
     return Column(
       children: [
-        _buildNewsSection(7),
-        _buildNewsSection(8),
-        _buildNewsSection(9),
+        // _buildNewsSection(7),
+        // _buildNewsSection(8),
+        // _buildNewsSection(9),
       ],
     );
   }
 
-  Widget _buildNewsSection(int id) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: InforService.getNewsById(id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildLoadingWidget();
-        } else if (snapshot.hasError) {
-          return _buildErrorWidget(snapshot.error.toString());
-        } else if (!snapshot.hasData) {
-          return _buildNoDataWidget();
-        }
+  // Widget _buildNewsSection(int id) {
+  //   return FutureBuilder<Map<String, dynamic>>(
+  //     future: _newsService.getNewsById(id.toString()),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return _buildLoadingWidget();
+  //       } else if (snapshot.hasError) {
+  //         return _buildErrorWidget(snapshot.error.toString());
+  //       } else if (!snapshot.hasData) {
+  //         return _buildNoDataWidget();
+  //       }
 
-        final news = snapshot.data!;
-        final rawContent = news["content"];
-        final content =
-            rawContent is String ? rawContent : rawContent.toString();
+  //       final news = snapshot.data!;
+  //       final rawContent = news["content"];
+  //       final content =
+  //           rawContent is String ? rawContent : rawContent.toString();
 
-        List<String> people = [];
-        bool hasPeople = content.contains("ທ່ານ");
+  //       List<String> people = [];
+  //       bool hasPeople = content.contains("ທ່ານ");
 
-        if (hasPeople) {
-          people =
-              content
-                  .split("ທ່ານ")
-                  .map((p) => p.trim())
-                  .where((p) => p.isNotEmpty)
-                  .toList();
-        }
+  //       if (hasPeople) {
+  //         people =
+  //             content
+  //                 .split("ທ່ານ")
+  //                 .map((p) => p.trim())
+  //                 .where((p) => p.isNotEmpty)
+  //                 .toList();
+  //       }
 
-        return _buildContentCard(news, content, people, hasPeople);
-      },
-    );
-  }
+  //       return _buildContentCard(news, content, people, hasPeople);
+  //     },
+  //   );
+  // }
 
   Widget _buildLoadingWidget() {
     return Container(

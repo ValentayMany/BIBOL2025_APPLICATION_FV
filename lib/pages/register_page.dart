@@ -22,7 +22,6 @@ class _RegisterPageState extends State<RegisterPage>
 
   String message = "";
   bool _isLoading = false;
-  // bool _isLoadingDropdowns = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -39,7 +38,7 @@ class _RegisterPageState extends State<RegisterPage>
 
     if (passwordController.text != confirmPasswordController.text) {
       _shakeController.forward();
-      _showErrorSnackBar("Passwords do not match");
+      _showErrorSnackBar("ລະຫັຜ່ານບໍ່ກົງກັນ");
       return;
     }
 
@@ -81,13 +80,13 @@ class _RegisterPageState extends State<RegisterPage>
       } else {
         _shakeController.forward();
         _showErrorSnackBar(
-          apiMessage.isNotEmpty ? apiMessage : "Register failed",
+          apiMessage.isNotEmpty ? apiMessage : "ລົງທະບຽນບໍ່ສໍາເລັດ",
         );
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
-        message = "Connection error. Please try again.";
+        message = "ການເຊື່ອມຕໍ່ ຜິດພາດ. ກະລຸນາລອງໃຫ່ມ.";
       });
       _shakeController.forward();
       _showErrorSnackBar(message);
@@ -137,7 +136,7 @@ class _RegisterPageState extends State<RegisterPage>
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Registration Successful!',
+                  'ລົງທະບຽນສຳເລັດ!',
                   style: GoogleFonts.montserrat(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -147,7 +146,7 @@ class _RegisterPageState extends State<RegisterPage>
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Your account has been created successfully. You can now sign in with your credentials.',
+                  'ບັນຊີຂອງເຈົ້າລົງທະບຽນສຳເລັດ. ເຈົ້າສາມາດລັອກອິນຕາມຂໍ້ມູນ',
                   style: GoogleFonts.montserrat(
                     fontSize: 14,
                     color: Colors.white.withOpacity(0.9),
@@ -171,7 +170,7 @@ class _RegisterPageState extends State<RegisterPage>
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
-                      'Go to Login',
+                      'ລັອກອີນ',
                       style: GoogleFonts.montserrat(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -200,7 +199,7 @@ class _RegisterPageState extends State<RegisterPage>
                 customMessage ??
                     (message.isNotEmpty
                         ? message
-                        : "Registration failed. Please check your information."),
+                        : "ລົງທະບຽນບໍສຳເລັດ ກະລຸນາກວດສອບຂໍ້ມູນ."),
               ),
             ),
           ],
@@ -231,7 +230,7 @@ class _RegisterPageState extends State<RegisterPage>
             ),
             content: SingleChildScrollView(
               child: Text(
-                'By creating an account, you agree to our Terms of Service and Privacy Policy. Please read them carefully before proceeding with registration.',
+                'ໂດຍການສ້າງບັນຊີ, ທ່ານຕົກລົງເຫັນດີກັບເງື່ອນໄຂການໃຫ້ບໍລິການແລະນະໂຍບາຍຄວາມເປັນສ່ວນຕົວຂອງພວກເຮົາ. ກະລຸນາອ່ານພວກມັນຢ່າງລະອຽດກ່ອນທີ່ຈະດໍາເນີນການລົງທະບຽນ.',
                 style: GoogleFonts.montserrat(color: Colors.white70),
               ),
             ),
@@ -239,7 +238,7 @@ class _RegisterPageState extends State<RegisterPage>
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'Close',
+                  'ປີດ',
                   style: GoogleFonts.montserrat(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -349,7 +348,7 @@ class _RegisterPageState extends State<RegisterPage>
               },
             ),
           ),
-          // Main Content - Fixed layout constraints
+          // Main Content - ปรับปรุง layout และ spacing
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -358,12 +357,13 @@ class _RegisterPageState extends State<RegisterPage>
                     horizontal:
                         constraints.maxWidth > 600
                             ? (constraints.maxWidth - 600) / 2
-                            : 24.0,
-                    vertical: 16.0,
+                            : 20.0,
+                    vertical: 10.0, // ลดจาก 16 เหลือ 10
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight - 32,
+                      minHeight:
+                          constraints.maxHeight - 20, // ลดจาก 32 เหลือ 20
                       maxWidth: 600,
                     ),
                     child: FadeTransition(
@@ -381,46 +381,43 @@ class _RegisterPageState extends State<RegisterPage>
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                // Logo
+                                // Logo - ลดขนาดและ spacing
                                 Hero(
                                   tag: 'app_logo',
                                   child: Container(
                                     constraints: const BoxConstraints(
-                                      maxHeight: 100,
-                                      maxWidth: 100,
+                                      maxHeight: 80, // ลดจาก 100 เหลือ 80
+                                      maxWidth: 80,
                                     ),
                                     child: Image.asset(
                                       'assets/images/LOGO.png',
-                                      height: 100,
+                                      height: 80,
                                       fit: BoxFit.contain,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 30),
-
+                                const SizedBox(height: 20), // ลดจาก 30 เหลือ 20
                                 // Title
                                 Text(
-                                  'Create Account',
+                                  'ສ້າງບັນຊີ',
                                   style: GoogleFonts.montserrat(
-                                    fontSize: 28,
+                                    fontSize: 26, // ลดจาก 28 เหลือ 26
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 10),
-
+                                const SizedBox(height: 8), // ลดจาก 10 เหลือ 8
                                 // Subtitle
                                 Text(
-                                  'Join our banking community',
+                                  'ເຂົ້າຮ່ວມຊຸມຊົນທະນາຄານຂອງພວກເຮົາ.',
                                   style: GoogleFonts.montserrat(
-                                    fontSize: 16,
+                                    fontSize: 15, // ลดจาก 16 เหลือ 15
                                     color: Colors.white70,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 30),
-
+                                const SizedBox(height: 20), // ลดจาก 30 เหลือ 20
                                 // Form Container
                                 _buildGlassmorphicContainer(
                                   child: Form(
@@ -428,8 +425,9 @@ class _RegisterPageState extends State<RegisterPage>
                                     child: Column(
                                       children: [
                                         _buildCodeTF(),
-                                        const SizedBox(height: 16),
-
+                                        const SizedBox(
+                                          height: 12,
+                                        ), // ลดจาก 16 เหลือ 12
                                         // Name Row with flexible layout
                                         LayoutBuilder(
                                           builder: (context, constraints) {
@@ -439,7 +437,9 @@ class _RegisterPageState extends State<RegisterPage>
                                                   Expanded(
                                                     child: _buildNameTF(),
                                                   ),
-                                                  const SizedBox(width: 16),
+                                                  const SizedBox(
+                                                    width: 12,
+                                                  ), // ลดจาก 16 เหลือ 12
                                                   Expanded(
                                                     child: _buildLastnameTF(),
                                                   ),
@@ -449,53 +449,36 @@ class _RegisterPageState extends State<RegisterPage>
                                               return Column(
                                                 children: [
                                                   _buildNameTF(),
-                                                  const SizedBox(height: 16),
+                                                  const SizedBox(height: 12),
                                                   _buildLastnameTF(),
                                                 ],
                                               );
                                             }
                                           },
                                         ),
-                                        const SizedBox(height: 16),
+                                        const SizedBox(height: 12),
 
                                         _buildNumberTF(),
-                                        const SizedBox(height: 16),
-
-                                        // Dropdown Row with flexible layout
-                                        LayoutBuilder(
-                                          builder: (context, constraints) {
-                                            if (constraints.maxWidth > 400) {
-                                              return Row(
-                                                children: [
-                                                  const SizedBox(width: 16),
-                                                ],
-                                              );
-                                            } else {
-                                              return Column(
-                                                children: [
-                                                  // _buildMajorDropdown(),
-                                                  const SizedBox(height: 16),
-                                                  // _buildYearDropdown(),
-                                                ],
-                                              );
-                                            }
-                                          },
-                                        ),
-                                        const SizedBox(height: 16),
+                                        const SizedBox(height: 12),
 
                                         _buildPasswordTF(),
-                                        const SizedBox(height: 16),
+                                        const SizedBox(
+                                          height: 12,
+                                        ), // ลดจาก 16 เหลือ 12
                                         _buildConfirmPasswordTF(),
                                       ],
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 16), // ลดจาก 20 เหลือ 16
                                 _buildTermsCheckbox(),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 16), // ลดจาก 20 เหลือ 16
                                 _buildRegisterBtn(),
-                                const SizedBox(height: 20),
+                                const SizedBox(height: 16), // ลดจาก 20 เหลือ 16
                                 _buildLoginBtn(),
+                                const SizedBox(
+                                  height: 10,
+                                ), // เพิ่ม spacing ล่างเล็กน้อย
                               ],
                             ),
                           );
@@ -522,7 +505,7 @@ class _RegisterPageState extends State<RegisterPage>
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Creating account...',
+                        'ກຳລັງສ້າງບັນຊີ...',
                         style: GoogleFonts.montserrat(
                           color: Colors.white,
                           fontSize: 16,
@@ -545,7 +528,7 @@ class _RegisterPageState extends State<RegisterPage>
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(18), // ลดจาก 20 เหลือ 18
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
@@ -564,12 +547,12 @@ class _RegisterPageState extends State<RegisterPage>
       textInputAction: TextInputAction.next,
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return 'Please enter your code';
+          return 'ກະລຸນາປ້ອນລະຫັດນັກາສືກສາ';
         }
         return null;
       },
       decoration: _buildInputDecoration(
-        labelText: 'Student Code',
+        labelText: 'ລະຫັດນັກາສືກສາ',
         prefixIcon: FontAwesomeIcons.idBadge,
       ),
     );
@@ -582,12 +565,12 @@ class _RegisterPageState extends State<RegisterPage>
       textInputAction: TextInputAction.next,
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return 'Required';
+          return 'ຕ້ອງການ';
         }
         return null;
       },
       decoration: _buildInputDecoration(
-        labelText: 'First Name',
+        labelText: 'ຊື່',
         prefixIcon: FontAwesomeIcons.user,
       ),
     );
@@ -600,12 +583,12 @@ class _RegisterPageState extends State<RegisterPage>
       textInputAction: TextInputAction.next,
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return 'Required';
+          return 'ຕ້ອງການ';
         }
         return null;
       },
       decoration: _buildInputDecoration(
-        labelText: 'Last Name',
+        labelText: 'ນາມສະກຸນ',
         prefixIcon: FontAwesomeIcons.user,
       ),
     );
@@ -619,134 +602,19 @@ class _RegisterPageState extends State<RegisterPage>
       keyboardType: TextInputType.phone,
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return 'Please enter your phone number';
+          return 'ກະລຸນາປ້ອນເບີໂທລະສັບ';
         }
         if (value.length < 8) {
-          return 'Phone number must be at least 8 digits';
+          return 'ເບີໂທລະສັບຕ້ອງມີຢ່າງໜ້ອຍ 8 ຕົວເລກ';
         }
         return null;
       },
       decoration: _buildInputDecoration(
-        labelText: 'Phone Number',
+        labelText: 'ເບີໂທລະສັບ',
         prefixIcon: FontAwesomeIcons.phone,
       ),
     );
   }
-
-  // Widget _buildMajorDropdown() {
-  //   if (_isLoadingDropdowns || majors.isEmpty) {
-  //     return Container(
-  //       height: 56,
-  //       decoration: BoxDecoration(
-  //         color: Colors.white.withOpacity(0.2),
-  //         borderRadius: BorderRadius.circular(10),
-  //       ),
-  //       child: const Center(
-  //         child: SizedBox(
-  //           width: 20,
-  //           height: 20,
-  //           child: CircularProgressIndicator(
-  //             strokeWidth: 2,
-  //             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-  //           ),
-  //         ),
-  //       ),
-  //     );
-  //   }
-
-  //   return DropdownButtonFormField<int>(
-  //     value: selectedMajorId,
-  //     isExpanded: true,
-  //     style: const TextStyle(color: Colors.white),
-  //     dropdownColor: const Color(0xFF1A237E),
-  //     validator: (value) {
-  //       if (value == null) {
-  //         return 'Please select major';
-  //       }
-  //       return null;
-  //     },
-  //     decoration: _buildInputDecoration(
-  //       labelText: 'Major',
-  //       prefixIcon: FontAwesomeIcons.graduationCap,
-  //     ),
-  //     items:
-  //         majors.map((major) {
-  //           return DropdownMenuItem<int>(
-  //             value: major['id'],
-  //             child: Text(
-  //               major['name'] ?? 'Unknown Major',
-  //               style: GoogleFonts.montserrat(
-  //                 color: Colors.white,
-  //                 fontSize: 14,
-  //               ),
-  //               overflow: TextOverflow.ellipsis,
-  //             ),
-  //           );
-  //         }).toList(),
-  //     onChanged: (value) {
-  //       setState(() {
-  //         selectedMajorId = value!;
-  //       });
-  //     },
-  //   );
-  // }
-
-  // Widget _buildYearDropdown() {
-  //   if (_isLoadingDropdowns || years.isEmpty) {
-  //     return Container(
-  //       height: 56,
-  //       decoration: BoxDecoration(
-  //         color: Colors.white.withOpacity(0.2),
-  //         borderRadius: BorderRadius.circular(10),
-  //       ),
-  //       child: const Center(
-  //         child: SizedBox(
-  //           width: 20,
-  //           height: 20,
-  //           child: CircularProgressIndicator(
-  //             strokeWidth: 2,
-  //             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-  //           ),
-  //         ),
-  //       ),
-  //     );
-  //   }
-
-  //   return DropdownButtonFormField<int>(
-  //     value: selectedYearId,
-  //     isExpanded: true,
-  //     style: const TextStyle(color: Colors.white),
-  //     dropdownColor: const Color(0xFF1A237E),
-  //     validator: (value) {
-  //       if (value == null) {
-  //         return 'Please select year';
-  //       }
-  //       return null;
-  //     },
-  //     decoration: _buildInputDecoration(
-  //       labelText: 'Year',
-  //       prefixIcon: FontAwesomeIcons.calendar,
-  //     ),
-  //     items:
-  //         years.map((year) {
-  //           return DropdownMenuItem<int>(
-  //             value: year['id'],
-  //             child: Text(
-  //               year['name'] ?? 'Unknown Year',
-  //               style: GoogleFonts.montserrat(
-  //                 color: Colors.white,
-  //                 fontSize: 14,
-  //               ),
-  //             ),
-  //           );
-  //         }).toList(),
-  //     onChanged: (value) {
-  //       setState(() {
-  //         selectedYearId = value!;
-  //       });
-  //     },
-  //   );
-  // }
 
   Widget _buildPasswordTF() {
     return TextFormField(
@@ -756,15 +624,15 @@ class _RegisterPageState extends State<RegisterPage>
       textInputAction: TextInputAction.next,
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter a password';
+          return 'ກະລຸນາປ້ອນລະຫັດຜ່ານ';
         }
         if (value.length < 6) {
-          return 'Password must be at least 6 characters';
+          return 'ລະຫັດຜ່ານຕ້ອງມີຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ';
         }
         return null;
       },
       decoration: _buildInputDecoration(
-        labelText: 'Password',
+        labelText: 'ລະຫັດຜ່ານ',
         prefixIcon: Icons.lock,
         suffixIcon: IconButton(
           icon: Icon(
@@ -798,7 +666,7 @@ class _RegisterPageState extends State<RegisterPage>
         return null;
       },
       decoration: _buildInputDecoration(
-        labelText: 'Confirm Password',
+        labelText: 'ຢືນຢັນລະຫັດຜ່ານ',
         prefixIcon: Icons.lock_outline,
         suffixIcon: IconButton(
           icon: Icon(
@@ -815,7 +683,7 @@ class _RegisterPageState extends State<RegisterPage>
     );
   }
 
-  // Centralized input decoration method
+  // ปรับปรุง input decoration ให้กระชับมากขึ้น
   InputDecoration _buildInputDecoration({
     required String labelText,
     required dynamic prefixIcon,
@@ -823,8 +691,15 @@ class _RegisterPageState extends State<RegisterPage>
   }) {
     return InputDecoration(
       labelText: labelText,
-      labelStyle: GoogleFonts.montserrat(color: Colors.white70, fontSize: 14),
-      prefixIcon: Icon(prefixIcon, color: Colors.white70, size: 20),
+      labelStyle: GoogleFonts.montserrat(
+        color: Colors.white70,
+        fontSize: 13,
+      ), // ลดจาก 14 เหลือ 13
+      prefixIcon: Icon(
+        prefixIcon,
+        color: Colors.white70,
+        size: 18,
+      ), // ลดจาก 20 เหลือ 18
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white.withOpacity(0.2),
@@ -840,8 +715,14 @@ class _RegisterPageState extends State<RegisterPage>
         borderSide: const BorderSide(color: Colors.red, width: 2),
         borderRadius: BorderRadius.circular(10),
       ),
-      errorStyle: GoogleFonts.montserrat(color: Colors.red[300], fontSize: 12),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      errorStyle: GoogleFonts.montserrat(
+        color: Colors.red[300],
+        fontSize: 11,
+      ), // ลดจาก 12 เหลือ 11
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ), // ลดจาก 16 เหลือ 14
     );
   }
 
@@ -849,22 +730,24 @@ class _RegisterPageState extends State<RegisterPage>
     return GestureDetector(
       onTap: _showTermsDialog,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12.0,
+        ), // ลดจาก 16 เหลือ 12
         child: Wrap(
           alignment: WrapAlignment.center,
           children: [
             Text(
-              'By registering, you agree to our ',
+              'ໂດຍການລົງທະບຽນ, ທ່ານຕົກລົງເຫັນດີກັບພວກເຮົາ ',
               style: GoogleFonts.montserrat(
                 color: Colors.white70,
-                fontSize: 12,
+                fontSize: 11, // ลดจาก 12 เหลือ 11
               ),
             ),
             Text(
-              'Terms & Conditions',
+              'ຂໍ້ກຳນົດ ແລະເງື່ອນໄຂ',
               style: GoogleFonts.montserrat(
                 color: Colors.white,
-                fontSize: 12,
+                fontSize: 11, // ลดจาก 12 เหลือ 11
                 fontWeight: FontWeight.bold,
                 decoration: TextDecoration.underline,
               ),
@@ -878,7 +761,7 @@ class _RegisterPageState extends State<RegisterPage>
   Widget _buildRegisterBtn() {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 48, // ลดจาก 50 เหลือ 48
       child: ElevatedButton(
         onPressed: _isLoading ? null : register,
         style: ElevatedButton.styleFrom(
@@ -902,9 +785,9 @@ class _RegisterPageState extends State<RegisterPage>
                   ),
                 )
                 : Text(
-                  'Create Account',
+                  'ສ້າງບັນຊີ',
                   style: GoogleFonts.montserrat(
-                    fontSize: 18,
+                    fontSize: 17, // ลดจาก 18 เหลือ 17
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF0D47A1),
                   ),
@@ -916,18 +799,24 @@ class _RegisterPageState extends State<RegisterPage>
   Widget _buildLoginBtn() {
     return TextButton(
       onPressed: () => Navigator.pushReplacementNamed(context, "/login"),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 8), // ลด padding
+      ),
       child: Wrap(
         alignment: WrapAlignment.center,
         children: [
           Text(
-            'Already have an Account? ',
-            style: GoogleFonts.montserrat(color: Colors.white70, fontSize: 16),
+            'ມີບັນຊີຢູ່ແລ້ວບໍ? ',
+            style: GoogleFonts.montserrat(
+              color: Colors.white70,
+              fontSize: 15, // ลดจาก 16 เหลือ 15
+            ),
           ),
           Text(
-            'Sign In',
+            'ເຂົ້າສູ່ລະບົບ',
             style: GoogleFonts.montserrat(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 15, // ลดจาก 16 เหลือ 15
               fontWeight: FontWeight.bold,
             ),
           ),
