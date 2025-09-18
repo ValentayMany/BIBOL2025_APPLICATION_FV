@@ -1,4 +1,3 @@
-import 'package:auth_flutter_api/services/news_service.dart';
 import 'package:flutter/material.dart';
 import '../widgets/custom_bottom_nav.dart';
 

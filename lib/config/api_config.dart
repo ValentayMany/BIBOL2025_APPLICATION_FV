@@ -1,47 +1,56 @@
 import 'package:flutter/foundation.dart';
 
-class ApiConfig {
-  // Students API (เดิม)
-  static const String webHost = "http://localhost:8000/api/students";
-  static const String androidEmulatorHost = "http://10.0.2.2:8000/api/students";
-  static const String iosSimulatorHost = "http://localhost:8000/api/students";
-  static const String deviceHost = "http://10.193.21.85:8000/api/students";
+abstract class ApiConfig {
+  // Common configurations
+  static const String newsWebsite = 'https://web2025.bibol.edu.la';
+  static const String baseApiV1 = 'https://web2025.bibol.edu.la/api/v1';
 
-  static String get studentsBaseUrl {
-    if (kIsWeb) {
-      return webHost;
-    } else if (defaultTargetPlatform == TargetPlatform.android) {
-      return kDebugMode ? androidEmulatorHost : deviceHost;
-    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-      return kDebugMode ? iosSimulatorHost : deviceHost;
+  // Media URLs Configuration
+  static const String imageBaseUrl = '$newsWebsite/uploads/images/';
+  static const String mediaBaseUrl = '$newsWebsite/media/';
+
+  static var baseUrl;
+
+  static var connectionTimeout;
+
+  static var defaultHeaders;
+
+  // Helper methods for media URLs
+  static String getImageUrl(String imagePath) {
+    if (imagePath.isEmpty) return '';
+
+    if (imagePath.startsWith('http')) {
+      return imagePath;
     }
-    return webHost;
+
+    if (imagePath.startsWith('/')) {
+      return '$newsWebsite$imagePath';
+    }
+
+    return '$imageBaseUrl$imagePath';
   }
 
-  // News API - แก้ไข
-  static const String baseNewsApi = 'https://web2025.bibol.edu.la/api/v1';
-  static const int defaultTopicId = 7;
+  static String getMediaUrl(String mediaPath) {
+    if (mediaPath.isEmpty) return '';
 
-  // ✅ แก้ไข: เพิ่ม baseUrl ที่ขาดหายไป
-  static String get baseUrl => baseNewsApi;
+    if (mediaPath.startsWith('http')) {
+      return mediaPath;
+    }
 
-  // ✅ แก้ไข URL functions
-  static String getNewsUrl({int page = 1, int count = 10, String lang = 'ar'}) {
-    return '$baseNewsApi/topics/$defaultTopicId/page/$page/count/$count/$lang';
+    if (mediaPath.startsWith('/')) {
+      return '$newsWebsite$mediaPath';
+    }
+
+    return '$mediaBaseUrl$mediaPath';
   }
 
-  static String getNewsByIdUrl(String id) {
-    return '$baseNewsApi/topics/$id'; // แก้จาก /news/ เป็น /topics/
-  }
-
-  static const String newsSearchUrl = '$baseNewsApi/search';
-  static const String websiteInfoUrl = '$baseNewsApi/website-info';
-
+  // Debug helper for base config
   static void printConfig() {
-    print("📡 Current Students API: $studentsBaseUrl");
-    print("📰 Default News URL: ${getNewsUrl()}");
-    print("🔎 Search URL: $newsSearchUrl");
-    print("🌐 Website Info URL: $websiteInfoUrl");
-    print("🆔 News by ID (ex): ${getNewsByIdUrl('123')}");
+    debugPrint("=== 🌐 Base API Configuration ===");
+    debugPrint("News Website: $newsWebsite");
+    debugPrint("Base API V1: $baseApiV1");
+    debugPrint("Image Base URL: $imageBaseUrl");
+    debugPrint("Media Base URL: $mediaBaseUrl");
+    debugPrint("=================================");
   }
 }

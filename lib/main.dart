@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:auth_flutter_api/screens/about_page.dart';
-import 'package:auth_flutter_api/screens/gallery_page.dart';
-import 'package:auth_flutter_api/screens/home_page.dart';
-import 'package:auth_flutter_api/pages/login_page.dart';
-import 'package:auth_flutter_api/screens/news_pages.dart';
-import 'package:auth_flutter_api/screens/profile_page.dart';
-import 'package:auth_flutter_api/pages/register_page.dart';
-import 'package:auth_flutter_api/widgets/splash_screen.dart';
+import 'package:BIBOL/screens/About_page.dart';
+import 'package:BIBOL/screens/Gallery_page.dart';
+import 'package:BIBOL/screens/Home_page.dart';
+import 'package:BIBOL/pages/login_page.dart';
+import 'package:BIBOL/screens/News_pages.dart';
+import 'package:BIBOL/screens/Profile_page.dart';
+import 'package:BIBOL/pages/register_page.dart';
+import 'package:BIBOL/widgets/Splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

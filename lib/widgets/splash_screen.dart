@@ -1,6 +1,7 @@
+import 'package:BIBOL/test/simple_connection_test.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
-import 'package:auth_flutter_api/screens/home_page.dart';
-import 'package:auth_flutter_api/pages/login_page.dart';
+import 'package:BIBOL/screens/Home_page.dart';
+import 'package:BIBOL/pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:google_fonts/google_fonts.dart';

@@ -1,5 +1,5 @@
-import 'package:auth_flutter_api/models/joined_category_model.dart';
-import 'package:auth_flutter_api/models/user_model.dart';
+import 'package:BIBOL/models/joined_category_model.dart';
+import 'package:BIBOL/models/user_model.dart';
 
 class Topic {
   final int id;
