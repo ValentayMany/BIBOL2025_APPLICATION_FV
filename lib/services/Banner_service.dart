@@ -1,10 +1,12 @@
 // services/Banner_service.dart
 import 'dart:convert';
 import 'dart:io';
+
+import '../models/banner_models.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import '../models/Banner_Models.dart';
-import '../models/Banner_response.dart';
+
+import '../models/banner_response.dart';
 import '../config/banner_api_config.dart';
 
 class BannerService {
@@ -44,7 +46,7 @@ class BannerService {
                 '✅ Successfully loaded ${bannerResponse.banners.length} banners',
               );
               return ApiResponse.success(
-                bannerResponse.banners,
+                bannerResponse.banners.cast<BannerModel>(),
                 message: bannerResponse.msg,
               );
             } else {
@@ -288,7 +290,7 @@ class BannerService {
 
             if (bannerResponse.isSuccess && bannerResponse.hasData) {
               return ApiResponse.success(
-                bannerResponse.banner!,
+                bannerResponse.banner! as BannerModel,
                 message: bannerResponse.msg,
               );
             } else {

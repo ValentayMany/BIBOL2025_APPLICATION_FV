@@ -1,4 +1,4 @@
-// models/Banner_Models.dart
+// models/banner_models.dart
 class BannerModel {
   final int? id;
   final String? title;
@@ -9,7 +9,7 @@ class BannerModel {
   final String? linkUrl;
   final String? icon;
 
-  BannerModel({
+  const BannerModel({
     this.id,
     this.title,
     this.details,
@@ -20,6 +20,7 @@ class BannerModel {
     this.icon,
   });
 
+  // จาก JSON
   factory BannerModel.fromJson(Map<String, dynamic> json) {
     return BannerModel(
       id: json['id'],
@@ -33,6 +34,7 @@ class BannerModel {
     );
   }
 
+  // เป็น JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -46,30 +48,17 @@ class BannerModel {
     };
   }
 
-  // Helper getters
-  bool get isActive => true; // ตาม API ไม่มี active field
-
+  // Helper methods
+  bool get isActive => true;
   bool get hasTitle => title?.isNotEmpty == true;
-
   bool get hasDetails => details?.isNotEmpty == true;
-
   bool get hasImage => file?.isNotEmpty == true && file != 'noimg.png';
-
   bool get hasLink => linkUrl?.isNotEmpty == true && linkUrl != '#';
-
-  bool get hasValidImage =>
-      hasImage && file != null && !file!.contains('noimg.png');
-
   String get displayTitle => title ?? 'ไม่มีหัวข้อ';
-
   String get displayDetails => details ?? '';
 
-  String get safeImageUrl => file ?? '';
-
   @override
-  String toString() {
-    return 'BannerModel(id: $id, title: $title, hasImage: $hasImage)';
-  }
+  String toString() => 'BannerModel(id: $id, title: $title)';
 
   @override
   bool operator ==(Object other) =>

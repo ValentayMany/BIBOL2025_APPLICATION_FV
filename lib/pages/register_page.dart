@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../services/Auth_service.dart';
+import '../services/auth_service.dart';
 import 'dart:ui';
 
 class RegisterPage extends StatefulWidget {

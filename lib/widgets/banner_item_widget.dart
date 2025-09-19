@@ -1,7 +1,7 @@
 // widgets/banner_item_widget.dart
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../models/Banner_Models.dart';
+import '../models/banner_models.dart';
 
 class BannerItemWidget extends StatefulWidget {
   final BannerModel banner;

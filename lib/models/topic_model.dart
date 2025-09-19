@@ -1,5 +1,5 @@
-import 'package:BIBOL/models/joined_category_model.dart';
-import 'package:BIBOL/models/user_model.dart';
+import 'package:BIBOL/models/joined_category_model.dart' show JoinedCategory;
+import 'package:BIBOL/models/user_model.dart' show User;
 
 class Topic {
   final int id;

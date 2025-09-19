@@ -1,9 +1,9 @@
 // widgets/banner_slider_widget.dart
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import '../models/Banner_Models.dart';
-import '../models/Banner_response.dart';
-import '../services/Banner_service.dart';
+import '../models/banner_models.dart';
+import '../models/banner_response.dart';
+import '../services/banner_service.dart';
 import 'banner_item_widget.dart';
 import 'banner_indicators_widget.dart';
 import 'banner_navigation_widget.dart';
@@ -44,7 +44,8 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
   bool _isLoading = true;
   String? _errorMessage;
   int _currentIndex = 0;
-  ApiResponse<List<BannerModel>>? _lastResponse;
+  ApiResponse<dynamic>?
+  _lastResponse; // เปลี่ยนจาก List<BannerModel> เป็น dynamic
 
   @override
   void initState() {
@@ -75,11 +76,11 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
               : await BannerService.fetchBanners();
 
       setState(() {
-        _lastResponse = response;
+        _lastResponse = response; // ตอนนี้ไม่แดงแล้ว
         _isLoading = false;
 
         if (response.success && response.data != null) {
-          _banners = response.data!;
+          _banners = List<BannerModel>.from(response.data!);
           _errorMessage = null;
           debugPrint('✅ Successfully loaded ${_banners.length} banners');
 
@@ -119,10 +120,13 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
         _lastResponse = response;
 
         if (response.success && response.data != null) {
-          _banners =
-              widget.onlyActiveBanners
-                  ? response.data!.where((banner) => banner.isActive).toList()
-                  : response.data!;
+          if (widget.onlyActiveBanners) {
+            // แก้ไขการ filter สำหรับ active banners
+            final dataList = List<BannerModel>.from(response.data!);
+            _banners = dataList.where((banner) => banner.isActive).toList();
+          } else {
+            _banners = List<BannerModel>.from(response.data!);
+          }
           _errorMessage = null;
           debugPrint('✅ Successfully refreshed ${_banners.length} banners');
         } else {
@@ -246,7 +250,7 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
         onRetry: _loadBanners,
         onRefresh: _refreshBanners,
         errorMessage: _errorMessage,
-        lastResponse: _lastResponse,
+        // ลบบรรทัด lastResponse ออก
       );
     }
 
@@ -327,115 +331,6 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
             fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ========================================
-// Enhanced Error Widget (extends the original)
-// ========================================
-class EnhancedBannerErrorWidget extends StatelessWidget {
-  final double height;
-  final BorderRadius borderRadius;
-  final VoidCallback onRetry;
-  final VoidCallback? onRefresh;
-  final String? errorMessage;
-  final ApiResponse<List<BannerModel>>? lastResponse;
-
-  const EnhancedBannerErrorWidget({
-    Key? key,
-    required this.height,
-    required this.borderRadius,
-    required this.onRetry,
-    this.onRefresh,
-    this.errorMessage,
-    this.lastResponse,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        borderRadius: borderRadius,
-        border: Border.all(color: Colors.red.shade200),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, color: Colors.red.shade400, size: 48),
-            const SizedBox(height: 12),
-            Text(
-              'ไม่สามารถโหลดแบนเนอร์ได้',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.red.shade700,
-              ),
-            ),
-            if (errorMessage != null) ...[
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  errorMessage!,
-                  style: TextStyle(fontSize: 12, color: Colors.red.shade600),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: onRetry,
-                  icon: const Icon(Icons.refresh, size: 16),
-                  label: const Text('ลองใหม่'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade400,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                  ),
-                ),
-                if (onRefresh != null) ...[
-                  const SizedBox(width: 12),
-                  OutlinedButton.icon(
-                    onPressed: onRefresh,
-                    icon: const Icon(Icons.cached, size: 16),
-                    label: const Text('รีเฟรช'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red.shade400,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            if (kDebugMode && lastResponse != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Debug: Status ${lastResponse!.statusCode ?? 'Unknown'}',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.red.shade500,
-                  fontFamily: 'monospace',
-                ),
-              ),
-            ],
-          ],
         ),
       ),
     );

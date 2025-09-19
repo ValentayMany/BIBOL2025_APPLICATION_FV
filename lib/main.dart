@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:BIBOL/screens/About_page.dart';
-import 'package:BIBOL/screens/Gallery_page.dart';
-import 'package:BIBOL/screens/Home_page.dart';
+import 'package:BIBOL/screens/about_page.dart';
+import 'package:BIBOL/screens/gallery_page.dart';
+import 'package:BIBOL/screens/home_page.dart';
 import 'package:BIBOL/pages/login_page.dart';
-import 'package:BIBOL/screens/News_pages.dart';
-import 'package:BIBOL/screens/Profile_page.dart';
+import 'package:BIBOL/screens/news_pages.dart';
+import 'package:BIBOL/screens/profile_page.dart';
 import 'package:BIBOL/pages/register_page.dart';
-import 'package:BIBOL/widgets/Splash_screen.dart';
+import 'package:BIBOL/widgets/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

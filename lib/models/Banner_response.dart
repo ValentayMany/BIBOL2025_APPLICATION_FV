@@ -1,4 +1,4 @@
-import 'Banner_Models.dart';
+import 'banner_models.dart' show BannerModel;
 
 /// Response model for banner list API
 class BannerListResponse {

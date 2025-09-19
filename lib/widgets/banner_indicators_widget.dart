@@ -1,6 +1,7 @@
 // widgets/banner_indicators_widget.dart
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
+import '../models/banner_models.dart';
 
 class BannerIndicatorsWidget extends StatelessWidget {
   final int itemCount;

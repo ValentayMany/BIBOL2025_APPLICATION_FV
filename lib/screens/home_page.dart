@@ -1,14 +1,22 @@
 // pages/Home_page.dart
 import 'package:BIBOL/models/course_model.dart' show CourseModel;
-import 'package:BIBOL/services/Course_service.dart' show CourseService;
+import 'package:BIBOL/models/news_respones.dart' show NewsResponse;
+import 'package:BIBOL/models/topic_model.dart' show Topic;
+import 'package:BIBOL/services/course_service.dart' show CourseService;
+import 'package:BIBOL/services/news_service.dart' show NewsService;
 import 'package:BIBOL/widgets/custom_bottom_nav.dart';
 import 'package:BIBOL/services/token_service.dart';
 import 'package:BIBOL/widgets/banner_slider_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'
+    show FontAwesomeIcons;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
 
 class HomePage extends StatefulWidget {
+  // Helper function สำหรับลบ HTML tags
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -25,16 +33,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   bool _isLoading = true;
 
-  // 👉 state สำหรับ courses
+  // State สำหรับ courses
   List<CourseModel> _courses = [];
   bool _isCoursesLoading = true;
   String? _errorMessage;
+
+  // State สำหรับ news
+  List<Topic> _latestNews = [];
+  bool _isNewsLoading = true;
+  String? _newsErrorMessage;
 
   @override
   void initState() {
     super.initState();
     _initializeComponents();
-    _fetchCourses(); // โหลดคอร์สด้วย
+    _fetchCourses();
+    _fetchLatestNews();
   }
 
   Future<void> _initializeComponents() async {
@@ -57,6 +71,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         });
       }
     }
+  }
+
+  String _stripHtmlTags(String htmlString) {
+    if (htmlString.isEmpty) return '';
+
+    // ลบ HTML tags ทั้งหมด
+    String stripped = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
+
+    // แทนที่ HTML entities
+    stripped = stripped
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#x27;', "'")
+        .replaceAll('&#x2F;', '/')
+        .replaceAll('&hellip;', '...')
+        .replaceAll('&mdash;', '—')
+        .replaceAll('&ndash;', '–');
+
+    // ลบช่องว่างที่เกินไป
+    stripped = stripped.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+    return stripped;
   }
 
   void _setupAnimations() {
@@ -100,7 +139,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  // 👉 โหลดคอร์สจาก API
+  // โหลดคอร์สจาก API
   Future<void> _fetchCourses() async {
     try {
       final response = await CourseService.fetchCourses();
@@ -115,6 +154,32 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         setState(() {
           _errorMessage = 'ດຶງຂໍ້ມູນບໍ່ສຳເລັດ';
           _isCoursesLoading = false;
+        });
+      }
+    }
+  }
+
+  // โหลดข่าวล่าสุด
+  Future<void> _fetchLatestNews() async {
+    try {
+      final response = await NewsService.getNews(limit: 6, page: 1);
+      if (mounted) {
+        setState(() {
+          if (response.success && response.data.isNotEmpty) {
+            _latestNews =
+                response.data
+                    .expand((newsModel) => newsModel.topics)
+                    .take(6)
+                    .toList();
+          }
+          _isNewsLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _newsErrorMessage = 'ດຶງຂ່າວບໍ່ສຳເລັດ';
+          _isNewsLoading = false;
         });
       }
     }
@@ -315,10 +380,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       body:
           _isLoading
               ? _buildLoadingScreen()
-              : SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  children: [_buildHeaderSection(), _buildContentSection()],
+              : RefreshIndicator(
+                color: Color(0xFF07325D),
+                onRefresh: () async {
+                  await Future.wait([_fetchCourses(), _fetchLatestNews()]);
+                },
+                child: SingleChildScrollView(
+                  physics: AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: [_buildHeaderSection(), _buildContentSection()],
+                  ),
                 ),
               ),
       bottomNavigationBar: CustomBottomNav(
@@ -328,7 +399,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // 👉 Drawer UI
+  // Drawer UI
   Widget _buildDrawer() {
     return Drawer(
       backgroundColor: Colors.white,
@@ -343,58 +414,60 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
+            child: SafeArea(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _isLoggedIn ? Icons.person : Icons.menu_book_rounded,
+                        size: 40,
+                        color: Colors.white,
+                      ),
                     ),
-                    child: Icon(
-                      _isLoggedIn ? Icons.person : Icons.menu_book_rounded,
-                      size: 40,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    _isLoggedIn ? 'ສະບາຍດີ' : 'ເມນູ',
-                    style: GoogleFonts.notoSansLao(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (_isLoggedIn && _userInfo != null) ...[
+                    SizedBox(height: 12),
                     Text(
-                      "${_userInfo!['first_name'] ?? ''} ${_userInfo!['last_name'] ?? ''}"
-                          .trim(),
+                      _isLoggedIn ? 'ສະບາຍດີ' : 'ເມນູ',
                       style: GoogleFonts.notoSansLao(
                         color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (_userInfo!['student_id'] != null)
+                    if (_isLoggedIn && _userInfo != null) ...[
                       Text(
-                        'ລະຫັດ: ${_userInfo!['student_id']}',
+                        "${_userInfo!['first_name'] ?? ''} ${_userInfo!['last_name'] ?? ''}"
+                            .trim(),
                         style: GoogleFonts.notoSansLao(
-                          color: Colors.white70,
-                          fontSize: 12,
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                  ] else if (!_isLoggedIn)
-                    Text(
-                      'ຍິນດີຕ້ອນຮັບ',
-                      style: GoogleFonts.notoSansLao(
-                        color: Colors.white70,
-                        fontSize: 14,
+                      if (_userInfo!['student_id'] != null)
+                        Text(
+                          'ລະຫັດ: ${_userInfo!['student_id']}',
+                          style: GoogleFonts.notoSansLao(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                    ] else if (!_isLoggedIn)
+                      Text(
+                        'ຍິນດີຕ້ອນຮັບ',
+                        style: GoogleFonts.notoSansLao(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -444,7 +517,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // 👉 Loading UI
+  // Loading UI
   Widget _buildLoadingScreen() {
     return Center(
       child: Column(
@@ -452,13 +525,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         children: [
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07325D)),
+            strokeWidth: 3,
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 24),
           Text(
             'ກຳລັງໂຫຼດ...',
             style: GoogleFonts.notoSansLao(
               color: Color(0xFF07325D),
               fontSize: 16,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -466,7 +541,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // 👉 Header Section
+  // Header Section
   Widget _buildHeaderSection() {
     return Container(
       decoration: BoxDecoration(
@@ -481,14 +556,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           FadeTransition(
             opacity: _fadeAnimation,
             child: Container(
-              height: 280,
+              height: MediaQuery.of(context).size.width * 0.6,
               margin: EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: Offset(0, 8),
+                  ),
+                ],
               ),
-              child: const BannerSliderWidget(
-                height: 280,
+              child: BannerSliderWidget(
+                height: MediaQuery.of(context).size.width * 0.6,
                 autoPlay: true,
                 autoPlayInterval: Duration(seconds: 4),
                 showIndicators: true,
@@ -498,13 +580,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  // 👉 Content Section (Courses)
+  // Content Section (Courses + News)
   Widget _buildContentSection() {
     return Container(
       decoration: BoxDecoration(
@@ -517,100 +599,521 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: SlideTransition(
         position: _slideAnimation,
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: EdgeInsets.fromLTRB(20, 30, 20, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Column(
+              // หลักสูตรการศึกษา
+              _buildCoursesSection(),
+
+              SizedBox(height: 50),
+
+              // ข่าวสารล่าสุด
+              _buildNewsSection(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Courses Section
+  Widget _buildCoursesSection() {
+    return Column(
+      children: [
+        Center(
+          child: Column(
+            children: [
+              Text(
+                'ຫຼັກສູດການສຶກສາ',
+                style: GoogleFonts.notoSansLao(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF07325D),
+                ),
+              ),
+              Container(
+                width: 80,
+                height: 4,
+                margin: EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              SizedBox(height: 30),
+            ],
+          ),
+        ),
+
+        // Courses Grid
+        _isCoursesLoading
+            ? Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07325D)),
+                  strokeWidth: 3,
+                ),
+              ),
+            )
+            : LayoutBuilder(
+              builder: (context, constraints) {
+                // คำนวณจำนวนคอลัมน์ตามขนาดหน้าจอ
+                int crossAxisCount = 2;
+                if (constraints.maxWidth > 600) {
+                  crossAxisCount = 3;
+                } else if (constraints.maxWidth > 900) {
+                  crossAxisCount = 4;
+                }
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: _courses.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.85,
+                  ),
+                  itemBuilder: (context, index) {
+                    final course = _courses[index];
+                    return _buildCourseCard(course);
+                  },
+                );
+              },
+            ),
+      ],
+    );
+  }
+
+  Widget _buildCourseCard(CourseModel course) {
+    return GestureDetector(
+      onTap: () {
+        // ไปหน้า detail ของ course
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 12,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () {
+              // ไปหน้า detail ของ course
+            },
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Icon หรือรูป
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child:
+                        course.icon != null
+                            ? ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: Image.network(
+                                course.icon!,
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (_, __, ___) => Icon(
+                                      FontAwesomeIcons.graduationCap,
+                                      size: 30,
+                                      color: Colors.white,
+                                    ),
+                              ),
+                            )
+                            : Icon(Icons.book, color: Colors.white, size: 30),
+                  ),
+                  SizedBox(height: 16),
+
+                  // ชื่อหลักสูตร
+                  Text(
+                    course.title,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 8),
+
+                  // รายละเอียด
+                  Text(
+                    _stripHtmlTags(course.details),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.8),
+                      height: 1.4,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // News Section ที่ปรับปรุงใหม่
+  Widget _buildNewsSection() {
+    return Column(
+      children: [
+        // หัวข้อข่าวสาร
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ຂ່າວສານລ່າສຸດ',
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF07325D),
+                  ),
+                ),
+                Container(
+                  width: 80,
+                  height: 4,
+                  margin: EdgeInsets.only(top: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
+            ),
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/news');
+              },
+              // icon: Icon(
+              //   Icons.arrow_forward_ios,
+              //   size: 16,
+              //   color: Color(0xFF07325D),
+              // ),
+              label: Text(
+                'ເບິ່ງທັງຫມົດ',
+                style: GoogleFonts.notoSansLao(
+                  color: Color(0xFF07325D),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        SizedBox(height: 30),
+
+        // รายการข่าวแบบ Grid เหมือน Courses
+        _isNewsLoading
+            ? Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07325D)),
+                  strokeWidth: 3,
+                ),
+              ),
+            )
+            : _latestNews.isEmpty
+            ? Container(
+              padding: EdgeInsets.all(60),
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.article_outlined,
+                      size: 50,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'ບໍ່ມີຂ່າວສານໃໝ່',
+                    style: GoogleFonts.notoSansLao(
+                      color: Colors.grey[600],
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            )
+            : LayoutBuilder(
+              builder: (context, constraints) {
+                // คำนวณจำนวนคอลัมน์ตามขนาดหน้าจอ
+                int crossAxisCount = 2;
+                if (constraints.maxWidth > 600) {
+                  crossAxisCount = 3;
+                } else if (constraints.maxWidth > 900) {
+                  crossAxisCount = 4;
+                }
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: _latestNews.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemBuilder: (context, index) {
+                    final news = _latestNews[index];
+                    return _buildNewsCard(news);
+                  },
+                );
+              },
+            ),
+      ],
+    );
+  }
+
+  Widget _buildNewsCard(Topic news) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            Navigator.pushNamed(context, '/news/detail', arguments: news.id);
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // รูปข่าว
+              Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  color: Colors.grey[200],
+                ),
+                child: Stack(
                   children: [
-                    Text(
-                      'ຫຼັກສູດການສຶກສາ',
-                      style: GoogleFonts.notoSansLao(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF07325D),
-                      ),
-                    ),
-                    Container(
-                      width: 60,
-                      height: 4,
-                      margin: EdgeInsets.only(top: 8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+                    if (news.photoFile.isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
                         ),
-                        borderRadius: BorderRadius.circular(2),
+                        child: Image.network(
+                          news.photoFile,
+                          width: double.infinity,
+                          height: 120,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (_, __, ___) => Container(
+                                width: double.infinity,
+                                height: 120,
+                                color: Colors.grey[200],
+                                child: Icon(
+                                  Icons.image,
+                                  color: Colors.grey[400],
+                                  size: 40,
+                                ),
+                              ),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: double.infinity,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(0xFF07325D).withOpacity(0.8),
+                              Color(0xFF0A4A73).withOpacity(0.8),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.article,
+                          color: Colors.white,
+                          size: 40,
+                        ),
+                      ),
+
+                    // Badge สำหรับวันที่
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${news.date.day}/${news.date.month}',
+                          style: GoogleFonts.notoSansLao(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ),
-                    SizedBox(height: 20),
                   ],
                 ),
               ),
 
-              // 👉 Courses List
-              if (_isCoursesLoading) ...[
-                Center(
-                  child: CircularProgressIndicator(color: Color(0xFF07325D)),
-                ),
-              ] else if (_errorMessage != null) ...[
-                Center(
-                  child: Text(
-                    _errorMessage!,
-                    style: TextStyle(color: Colors.red),
+              // เนื้อหาข่าว
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // หัวข้อข่าว
+                      Text(
+                        _stripHtmlTags(news.title),
+                        style: GoogleFonts.notoSansLao(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF07325D),
+                          height: 1.3,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+
+                      SizedBox(height: 8),
+
+                      // รายละเอียดข่าว
+                      Expanded(
+                        child: Text(
+                          _stripHtmlTags(news.details),
+                          style: GoogleFonts.notoSansLao(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            height: 1.4,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+
+                      SizedBox(height: 12),
+
+                      // ข้อมูลเพิ่มเติมและปุ่ม
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.visibility,
+                            size: 14,
+                            color: Colors.grey[500],
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            '${news.visits}',
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: 11,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          Spacer(),
+                          Container(
+                            height: 28,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/news/detail',
+                                  arguments: news.id,
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF07325D),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: EdgeInsets.symmetric(horizontal: 12),
+                              ),
+                              child: Text(
+                                'ອ່ານເພີ່ມ',
+                                style: GoogleFonts.notoSansLao(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ] else ...[
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: _courses.length,
-                  itemBuilder: (context, index) {
-                    final course = _courses[index];
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      margin: EdgeInsets.only(bottom: 16),
-                      elevation: 3,
-                      child: ListTile(
-                        contentPadding: EdgeInsets.all(16),
-                        leading:
-                            course.icon != null
-                                ? Image.network(
-                                  course.icon!,
-                                  width: 40,
-                                  height: 40,
-                                  errorBuilder:
-                                      (_, __, ___) => Icon(
-                                        Icons.book,
-                                        color: Color(0xFF07325D),
-                                      ),
-                                )
-                                : Icon(Icons.book, color: Color(0xFF07325D)),
-                        title: Text(
-                          course.title,
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF07325D),
-                          ),
-                        ),
-                        subtitle: Text(
-                          course.details,
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        onTap: () {
-                          // 👉 Action เมื่อกดคอร์ส (ไปหน้า detail)
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ],
+              ),
             ],
           ),
         ),

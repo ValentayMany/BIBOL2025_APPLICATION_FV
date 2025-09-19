@@ -1,6 +1,6 @@
 // widgets/banner_overlay_widget.dart
 import 'package:flutter/material.dart';
-import '../models/Banner_Models.dart';
+import '../models/banner_models.dart';
 
 class BannerOverlayWidget extends StatelessWidget {
   final BannerModel banner;

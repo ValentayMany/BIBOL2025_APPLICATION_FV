@@ -1,7 +1,7 @@
 // widgets/banner_states_widget.dart
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import '../models/Banner_response.dart';
+import '../models/banner_response.dart';
 
 // ========================================
 // Loading State Widget
