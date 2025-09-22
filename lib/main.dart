@@ -1,12 +1,14 @@
+import 'package:BIBOL/test/simple_connection_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:BIBOL/screens/about_page.dart';
-import 'package:BIBOL/screens/gallery_page.dart';
-import 'package:BIBOL/screens/home_page.dart';
-import 'package:BIBOL/pages/login_page.dart';
-import 'package:BIBOL/screens/news_pages.dart';
-import 'package:BIBOL/screens/profile_page.dart';
-import 'package:BIBOL/pages/register_page.dart';
+import 'package:BIBOL/screens/About/about_page.dart';
+import 'package:BIBOL/screens/Gallery/gallery_page.dart';
+import 'package:BIBOL/screens/Home/home_page.dart';
+import 'package:BIBOL/screens/R&L/login_page.dart';
+import 'package:BIBOL/screens/News/news_pages.dart';
+import 'package:BIBOL/screens/Profile/profile_page.dart';
+import 'package:BIBOL/screens/R&L/register_page.dart';
+import 'package:BIBOL/models/course/course_model.dart'; // เพิ่ม import สำหรับ CourseModel
 import 'package:BIBOL/widgets/splash_screen.dart';
 
 void main() {
@@ -47,6 +49,12 @@ class MyApp extends StatelessWidget {
         "/gallery": (context) => GalleryPage(),
         "/about": (context) => AboutPage(),
         "/profile": (context) => ProfilePage(),
+        // เพิ่ม route สำหรับ course detail
+        "/course-detail": (context) {
+          final CourseModel course =
+              ModalRoute.of(context)!.settings.arguments as CourseModel;
+          return CourseDetailPage(course: course);
+        },
       },
 
       // Handle unknown routes
@@ -81,6 +89,20 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(builder: (context) => AboutPage());
           case '/profile':
             return MaterialPageRoute(builder: (context) => ProfilePage());
+
+          // เพิ่ม case สำหรับ course detail
+          case '/course-detail':
+            if (settings.arguments is CourseModel) {
+              final CourseModel course = settings.arguments as CourseModel;
+              return MaterialPageRoute(
+                builder: (context) => CourseDetailPage(course: course),
+              );
+            }
+            // ถ้าไม่มี arguments หรือ arguments ไม่ถูกต้อง
+            return MaterialPageRoute(
+              builder: (context) => const UnknownRoutePage(),
+            );
+
           default:
             return null;
         }
@@ -152,17 +174,26 @@ class AppNavigator {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
-  static Future<void> navigateTo(String routeName) async {
+  static Future<void> navigateTo(String routeName, {Object? arguments}) async {
     try {
-      await navigatorKey.currentState?.pushNamed(routeName);
+      await navigatorKey.currentState?.pushNamed(
+        routeName,
+        arguments: arguments,
+      );
     } catch (e) {
       print('❌ Navigation Error: $e');
     }
   }
 
-  static Future<void> navigateAndReplace(String routeName) async {
+  static Future<void> navigateAndReplace(
+    String routeName, {
+    Object? arguments,
+  }) async {
     try {
-      await navigatorKey.currentState?.pushReplacementNamed(routeName);
+      await navigatorKey.currentState?.pushReplacementNamed(
+        routeName,
+        arguments: arguments,
+      );
     } catch (e) {
       print('❌ Navigation Error: $e');
     }
@@ -186,6 +217,18 @@ class AppNavigator {
       print('❌ Navigation Error: $e');
     }
   }
+
+  // เพิ่ม method สำหรับ navigate ไป course detail
+  static Future<void> navigateToCourseDetail(CourseModel course) async {
+    try {
+      await navigatorKey.currentState?.pushNamed(
+        AppRoutes.courseDetail,
+        arguments: course,
+      );
+    } catch (e) {
+      print('❌ Navigation Error: $e');
+    }
+  }
 }
 
 // Route Constants
@@ -198,6 +241,7 @@ class AppRoutes {
   static const String gallery = '/gallery';
   static const String about = '/about';
   static const String profile = '/profile';
+  static const String courseDetail = '/course-detail'; // เพิ่ม route constant
 
   static List<String> get allRoutes => [
     splash,
@@ -208,5 +252,6 @@ class AppRoutes {
     gallery,
     about,
     profile,
+    courseDetail, // เพิ่มในลิสต์
   ];
 }
