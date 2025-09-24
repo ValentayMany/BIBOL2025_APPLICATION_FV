@@ -12,18 +12,11 @@ class CourseModel {
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) {
-    String? iconValue = json['icon'];
-
-    // ถ้าเป็น fa-* ให้เป็น null เพื่อใช้ไอคอน default
-    if (iconValue != null && iconValue.startsWith('fa-')) {
-      iconValue = null;
-    }
-
     return CourseModel(
       id: json['id'],
       title: json['title'],
       details: json['details'],
-      icon: iconValue,
+      icon: json['icon'],
     );
   }
 }

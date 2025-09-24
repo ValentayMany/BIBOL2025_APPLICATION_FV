@@ -13,8 +13,11 @@ class NewsApiConfig {
     return '$baseNewsApi/topics/$defaultTopicId/page/$page/count/$count/$lang';
   }
 
+  // ✅ แก้ไข: URL pattern สำหรับ get news by ID
   static String getNewsByIdUrl(String id) {
-    return '$baseNewsApi/topics/$id';
+    // เนื่องจาก API ไม่มี endpoint สำหรับ single topic
+    // เราจะใช้ endpoint เดียวกับ list แต่ filter หา ID ที่ต้องการ
+    return '$baseNewsApi/topics/$defaultTopicId/page/1/count/100/ar';
   }
 
   // Search & Info URLs
@@ -42,7 +45,7 @@ class NewsApiConfig {
   }
 
   static bool isValidCount(int? count) {
-    return count != null && count > 0 && count <= 100; // จำกัดไม่เกิน 100
+    return count != null && count > 0 && count <= 100;
   }
 
   // URL builder with validation

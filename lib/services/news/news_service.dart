@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:BIBOL/config/news/news_api_config.dart';
-import 'package:BIBOL/models/news/news_respones.dart' show NewsResponse;
+import 'package:BIBOL/models/news/news_response.dart' show NewsResponse;
 import 'package:BIBOL/models/topic/topic_model.dart' show Topic;
 import 'package:BIBOL/models/website/website_info_model.dart'
     show WebsiteInfoModel;
@@ -69,35 +69,138 @@ class NewsService {
     );
   }
 
+  // ✅ แก้ไข getNewsById ให้ทำงานกับ API structure ที่แท้จริง
   static Future<Topic?> getNewsById(String id) async {
     try {
+      // ตรวจสอบ ID ก่อน
+      if (id.isEmpty) {
+        print('❌ News ID is empty');
+        return null;
+      }
+
+      final numericId = int.tryParse(id);
+      if (numericId == null) {
+        print('❌ Invalid news ID format: $id');
+        return null;
+      }
+
+      // ✅ ใช้ list API แล้ว filter หา ID ที่ต้องการ
       final url = NewsApiConfig.getNewsByIdUrl(id);
-      print('🔍 Fetching news by ID from: $url');
+      print('🔍 Fetching news from list API: $url');
 
       final response = await http
           .get(Uri.parse(url), headers: _getHeaders())
           .timeout(_defaultTimeout);
 
-      print('📡 News by ID API Response Status: ${response.statusCode}');
-      _logResponse(response);
+      print('📡 News API Response Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
+        try {
+          final jsonData = json.decode(response.body);
+          print(
+            '📊 JSON Structure keys: ${jsonData is Map ? jsonData.keys.toList() : 'Not a Map'}',
+          );
 
-        if (jsonData['data'] != null) {
+          // ✅ Parse topics list และหา topic ที่มี ID ตรงกัน
+          if (jsonData is Map &&
+              jsonData['topics'] != null &&
+              jsonData['topics'] is List) {
+            final topics = jsonData['topics'] as List;
+            print(
+              '📝 Found ${topics.length} topics, searching for ID: $numericId',
+            );
+
+            for (var topicData in topics) {
+              if (topicData is Map && topicData['id'] == numericId) {
+                print('✅ Found matching topic: ${topicData['title']}');
+                return Topic.fromJson(topicData as Map<String, dynamic>);
+              }
+            }
+
+            print(
+              '❌ Topic with ID $numericId not found in ${topics.length} topics',
+            );
+            // แสดง IDs ที่มี สำหรับ debug
+            final availableIds =
+                topics
+                    .where((t) => t is Map && t['id'] != null)
+                    .map((t) => t['id'])
+                    .toList();
+            print('📋 Available IDs: $availableIds');
+            return null;
+          } else {
+            print('❌ No topics array found in response');
+            return null;
+          }
+        } catch (parseError) {
+          print('❌ JSON parsing error: $parseError');
+          print('📄 Raw response: ${response.body.substring(0, 500)}...');
+          return null;
+        }
+      } else {
+        print('❌ HTTP Error ${response.statusCode}: ${response.reasonPhrase}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Network/Connection error in getNewsById: $e');
+      return null;
+    }
+  }
+
+  // ✅ Helper method เพื่อ parse Topic จาก response แบบต่างๆ
+  static Topic? _parseTopicFromResponse(dynamic jsonData) {
+    try {
+      // กรณีที่ 1: response เป็น topic object โดยตรง
+      if (jsonData is Map<String, dynamic> && jsonData.containsKey('id')) {
+        print('📝 Parsing as direct topic object');
+        return Topic.fromJson(jsonData);
+      }
+
+      // กรณีที่ 2: response มี key 'data' และข้างในเป็น topic
+      if (jsonData is Map && jsonData['data'] != null) {
+        print('📝 Parsing from data field');
+        if (jsonData['data'] is Map<String, dynamic>) {
           return Topic.fromJson(jsonData['data']);
-        } else if (jsonData is Map<String, dynamic> &&
-            jsonData.containsKey('id')) {
-          return Topic.fromJson(jsonData);
-        } else if (jsonData['topics'] != null &&
-            jsonData['topics'] is List &&
-            jsonData['topics'].isNotEmpty) {
-          return Topic.fromJson(jsonData['topics'][0]);
+        } else if (jsonData['data'] is List && jsonData['data'].isNotEmpty) {
+          return Topic.fromJson(jsonData['data'][0]);
         }
       }
+
+      // กรณีที่ 3: response มี key 'topics' array
+      if (jsonData is Map &&
+          jsonData['topics'] != null &&
+          jsonData['topics'] is List) {
+        print('📝 Parsing from topics array');
+        final topics = jsonData['topics'] as List;
+        if (topics.isNotEmpty) {
+          return Topic.fromJson(topics[0]);
+        }
+      }
+
+      // กรณีที่ 4: response เป็น array โดยตรง
+      if (jsonData is List && jsonData.isNotEmpty) {
+        print('📝 Parsing from direct array');
+        return Topic.fromJson(jsonData[0]);
+      }
+
+      // กรณีที่ 5: response มี key 'topic' (singular)
+      if (jsonData is Map && jsonData['topic'] != null) {
+        print('📝 Parsing from topic field');
+        return Topic.fromJson(jsonData['topic']);
+      }
+
+      // กรณีที่ 6: response มี key 'result'
+      if (jsonData is Map && jsonData['result'] != null) {
+        print('📝 Parsing from result field');
+        if (jsonData['result'] is Map<String, dynamic>) {
+          return Topic.fromJson(jsonData['result']);
+        }
+      }
+
+      print('❌ No recognized topic structure found in response');
       return null;
     } catch (e) {
-      print('❌ Error fetching news by id: $e');
+      print('❌ Error in _parseTopicFromResponse: $e');
       return null;
     }
   }
@@ -199,15 +302,15 @@ class NewsService {
 
   static String _getErrorMessage(dynamic error) {
     if (error is SocketException) {
-      return 'ไม่สามารถเชื่อมต่อกับอินเทอร์เน็ตได้';
+      return 'ບໍ່ສາມາດເຊື່ອມຕໍ່ອິນເຕີເນັດໄດ້';
     } else if (error is HttpException) {
-      return 'เซิร์ฟเวอร์ไม่สามารถตอบสนองได้';
+      return 'ເຊີບເວີບໍ່ສາມາດຕອບສະໜອງໄດ້';
     } else if (error is FormatException) {
-      return 'ข้อมูลที่ได้รับไม่ถูกต้อง';
+      return 'ຂໍ້ມູນທີ່ໄດ້ຮັບບໍ່ຖືກຕ້ອງ';
     } else if (error.toString().contains('TimeoutException')) {
-      return 'หมดเวลาในการเชื่อมต่อ';
+      return 'ໝົດເວລາໃນການເຊື່ອມຕໍ່';
     }
-    return 'เกิดข้อผิดพลาดที่ไม่คาดคิด: ${error.toString()}';
+    return 'ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ: ${error.toString()}';
   }
 
   // Other methods
@@ -245,5 +348,23 @@ class NewsService {
   static Future<NewsResponse> refreshNews() async {
     print('🔄 Refreshing news...');
     return getNews(limit: 20, page: 1);
+  }
+
+  // ✅ เพิ่ม method สำหรับ debug API response
+  static Future<void> debugNewsApi(String id) async {
+    print('🐛 DEBUG: Testing news API with ID: $id');
+    try {
+      final url = NewsApiConfig.getNewsByIdUrl(id);
+      print('🐛 DEBUG URL: $url');
+
+      final response = await http.get(Uri.parse(url), headers: _getHeaders());
+
+      print('🐛 DEBUG Status: ${response.statusCode}');
+      print('🐛 DEBUG Headers: ${response.headers}');
+      print('🐛 DEBUG Body Length: ${response.body.length}');
+      print('🐛 DEBUG Body: ${response.body}');
+    } catch (e) {
+      print('🐛 DEBUG Error: $e');
+    }
   }
 }

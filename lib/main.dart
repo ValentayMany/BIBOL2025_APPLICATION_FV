@@ -1,3 +1,4 @@
+import 'package:BIBOL/screens/News/news_detail.dart';
 import 'package:BIBOL/test/simple_connection_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +9,7 @@ import 'package:BIBOL/screens/R&L/login_page.dart';
 import 'package:BIBOL/screens/News/news_pages.dart';
 import 'package:BIBOL/screens/Profile/profile_page.dart';
 import 'package:BIBOL/screens/R&L/register_page.dart';
-import 'package:BIBOL/models/course/course_model.dart'; // เพิ่ม import สำหรับ CourseModel
+import 'package:BIBOL/models/course/course_model.dart';
 import 'package:BIBOL/widgets/splash_screen.dart';
 
 void main() {
@@ -45,7 +46,7 @@ class MyApp extends StatelessWidget {
         "/login": (context) => LoginPage(),
         "/register": (context) => RegisterPage(),
         "/home": (context) => HomePage(),
-        "/news": (context) => NewsPage(),
+        "/news": (context) => NewsListPage(),
         "/gallery": (context) => GalleryPage(),
         "/about": (context) => AboutPage(),
         "/profile": (context) => ProfilePage(),
@@ -82,7 +83,7 @@ class MyApp extends StatelessWidget {
           case '/home':
             return MaterialPageRoute(builder: (context) => HomePage());
           case '/news':
-            return MaterialPageRoute(builder: (context) => NewsPage());
+            return MaterialPageRoute(builder: (context) => NewsListPage());
           case '/gallery':
             return MaterialPageRoute(builder: (context) => GalleryPage());
           case '/about':
@@ -99,6 +100,18 @@ class MyApp extends StatelessWidget {
               );
             }
             // ถ้าไม่มี arguments หรือ arguments ไม่ถูกต้อง
+            return MaterialPageRoute(
+              builder: (context) => const UnknownRoutePage(),
+            );
+
+          // เพิ่ม case สำหรับ news detail
+          case '/news/detail':
+            if (settings.arguments is String) {
+              final String newsId = settings.arguments as String;
+              return MaterialPageRoute(
+                builder: (context) => NewsDetailPage(newsId: newsId),
+              );
+            }
             return MaterialPageRoute(
               builder: (context) => const UnknownRoutePage(),
             );
@@ -229,6 +242,18 @@ class AppNavigator {
       print('❌ Navigation Error: $e');
     }
   }
+
+  // เพิ่ม method สำหรับ navigate ไป news detail
+  static Future<void> navigateToNewsDetail(String newsId) async {
+    try {
+      await navigatorKey.currentState?.pushNamed(
+        AppRoutes.newsDetail,
+        arguments: newsId,
+      );
+    } catch (e) {
+      print('❌ Navigation Error: $e');
+    }
+  }
 }
 
 // Route Constants
@@ -241,7 +266,8 @@ class AppRoutes {
   static const String gallery = '/gallery';
   static const String about = '/about';
   static const String profile = '/profile';
-  static const String courseDetail = '/course-detail'; // เพิ่ม route constant
+  static const String courseDetail = '/course-detail';
+  static const String newsDetail = '/news/detail'; // เพิ่ม route constant
 
   static List<String> get allRoutes => [
     splash,
@@ -252,6 +278,7 @@ class AppRoutes {
     gallery,
     about,
     profile,
-    courseDetail, // เพิ่มในลิสต์
+    courseDetail,
+    newsDetail, // เพิ่มในลิสต์
   ];
 }
