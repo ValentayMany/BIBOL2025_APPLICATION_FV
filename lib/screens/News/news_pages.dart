@@ -1,9 +1,14 @@
+import 'dart:ui';
+import 'package:BIBOL/screens/News/all_news_details.dart';
 import 'package:flutter/material.dart';
 import 'package:BIBOL/services/news/news_service.dart';
 import 'package:BIBOL/models/news/news_response.dart';
 import 'package:BIBOL/models/topic/topic_model.dart';
 import 'package:BIBOL/models/topic/joined_category_model.dart';
 import '../../widgets/custom_bottom_nav.dart';
+
+// Primary color for this screen
+const Color kPrimaryColor = Color(0xFF07325D);
 
 class NewsListPage extends StatefulWidget {
   final String? categoryId;
@@ -17,17 +22,19 @@ class NewsListPage extends StatefulWidget {
 }
 
 class _NewsListPageState extends State<NewsListPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int _currentIndex = 1;
   NewsResponse? _newsResponse;
   bool _isLoading = true;
   bool _isLoadingMore = false;
   String _searchQuery = '';
   int _currentPage = 1;
-  final int _itemsPerPage = 20;
+  final int _itemsPerPage = 35;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   late AnimationController _animationController;
+  late AnimationController _fabAnimationController;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Category management
   List<Topic> _allTopics = [];
@@ -35,11 +42,22 @@ class _NewsListPageState extends State<NewsListPage>
   String _selectedCategoryId = 'all';
   bool _hasMoreData = true;
 
+  // Theme colors - Updated to use 0xFF07325D variations
+  final primaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+  );
+
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: Duration(milliseconds: 600),
+      duration: Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    _fabAnimationController = AnimationController(
+      duration: Duration(milliseconds: 300),
       vsync: this,
     );
     _scrollController.addListener(_onScroll);
@@ -51,6 +69,7 @@ class _NewsListPageState extends State<NewsListPage>
     _searchController.dispose();
     _scrollController.dispose();
     _animationController.dispose();
+    _fabAnimationController.dispose();
     super.dispose();
   }
 
@@ -61,9 +80,15 @@ class _NewsListPageState extends State<NewsListPage>
         _hasMoreData) {
       _loadMoreNews();
     }
+
+    // FAB animation based on scroll
+    if (_scrollController.position.pixels > 100) {
+      _fabAnimationController.forward();
+    } else {
+      _fabAnimationController.reverse();
+    }
   }
 
-  // โหลดข่าวเริ่มต้น
   Future<void> _loadInitialNews() async {
     setState(() => _isLoading = true);
 
@@ -106,16 +131,12 @@ class _NewsListPageState extends State<NewsListPage>
     }
   }
 
-  // อัปเดตหมวดหมู่ที่มี - ป้องกันหมวดซ้ำโดยใช้ title เป็น key
   void _updateAvailableCategories() {
-    final Map<String, JoinedCategory> uniqueCategories =
-        {}; // ใช้ title เป็น key
+    final Map<String, JoinedCategory> uniqueCategories = {};
 
-    // เก็บหมวดหมู่ที่ไม่ซ้ำตาม title
     for (final topic in _allTopics) {
       if (topic.joinedCategories.isNotEmpty) {
         for (final category in topic.joinedCategories) {
-          // ใช้ title เป็น key เพื่อป้องกันหมวดที่ชื่อเดียวกัน
           uniqueCategories[category.title] = category;
         }
       }
@@ -126,32 +147,13 @@ class _NewsListPageState extends State<NewsListPage>
           uniqueCategories.values.toList()
             ..sort((a, b) => a.title.compareTo(b.title));
     });
-
-    // Debug: แสดงจำนวนข่าวในแต่ละหมวด
-    print('=== หมวดหมู่และจำนวนข่าว (ไม่ซ้ำตาม title) ===');
-    print('ทั้งหมด: ${_allTopics.length} ข่าว');
-
-    for (final category in _availableCategories) {
-      final count = _getCategoryCountByTitle(category.title);
-      print('${category.title}: $count ข่าว');
-    }
-    print('=============================');
   }
 
-  // นับจำนวนข่าวในแต่ละหมวดหมู่โดยใช้ title
-  int _getCategoryCountByTitle(String categoryTitle) {
-    return _allTopics.where((topic) {
-      return topic.joinedCategories.any((cat) => cat.title == categoryTitle);
-    }).length;
-  }
-
-  // ได้รับ topics ที่ถูกกรองตามหมวดหมู่ที่เลือก - ใช้ title แทน id
   List<Topic> get _filteredTopics {
     if (_selectedCategoryId == 'all') {
       return _allTopics;
     }
 
-    // หาหมวดหมู่ที่เลือกจาก id
     final selectedCategory = _availableCategories.firstWhere(
       (cat) => cat.id.toString() == _selectedCategoryId,
       orElse:
@@ -166,26 +168,11 @@ class _NewsListPageState extends State<NewsListPage>
 
     if (selectedCategory.title.isEmpty) return _allTopics;
 
-    // กรองข่าวที่มีหมวดหมู่ตรงกัน
     return _allTopics.where((topic) {
       return topic.joinedCategories.any(
         (cat) => cat.title == selectedCategory.title,
       );
     }).toList();
-  }
-
-  // นับจำนวนข่าวในแต่ละหมวดหมู่ - แก้ปัญหาการนับซ้ำ
-  int _getCategoryCount(String categoryId) {
-    if (categoryId == 'all') return _allTopics.length;
-
-    final catId = int.tryParse(categoryId);
-    if (catId == null) return 0;
-
-    // นับเฉพาะข่าวที่หมวดแรกตรงกับที่เราต้องการ
-    return _allTopics.where((topic) {
-      return topic.joinedCategories.isNotEmpty &&
-          topic.joinedCategories.first.id == catId;
-    }).length;
   }
 
   Future<void> _loadMoreNews() async {
@@ -238,7 +225,7 @@ class _NewsListPageState extends State<NewsListPage>
     try {
       final response = await NewsService.searchNews(
         query.trim(),
-        limit: 50, // เพิ่มจำนวนข่าวที่ค้นหา
+        limit: 50,
         page: 1,
       );
 
@@ -269,11 +256,35 @@ class _NewsListPageState extends State<NewsListPage>
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red[600],
+        content: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.error_outline, color: Colors.white, size: 20),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: EdgeInsets.all(20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 12,
+        duration: Duration(seconds: 4),
       ),
     );
   }
@@ -289,7 +300,23 @@ class _NewsListPageState extends State<NewsListPage>
   void _onTopicTap(Topic topic) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TopicDetailPage(topic: topic)),
+      PageRouteBuilder(
+        pageBuilder:
+            (context, animation, secondaryAnimation) =>
+                TopicDetailPage(topic: topic),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1.0, 0.0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+            ),
+            child: FadeTransition(opacity: animation, child: child),
+          );
+        },
+        transitionDuration: Duration(milliseconds: 500),
+      ),
     );
   }
 
@@ -318,129 +345,334 @@ class _NewsListPageState extends State<NewsListPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text(
-          widget.categoryTitle ?? 'ຂ່າວສານທັງໝົດ',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.grey[800],
-        elevation: 0,
-        centerTitle: true,
-        shadowColor: Colors.black12,
-        actions: [
-          Container(
-            margin: EdgeInsets.only(right: 8),
-            child: IconButton(
-              icon: Container(
-                padding: EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.refresh_rounded,
-                  color: Colors.blue[600],
-                  size: 20,
-                ),
-              ),
-              onPressed: () => _loadNews(isRefresh: true),
-            ),
+      key: _scaffoldKey,
+      backgroundColor: Color(0xFFF8FAFF),
+      drawer: _buildModernDrawer(),
+      floatingActionButton: ScaleTransition(
+        scale: _fabAnimationController,
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            _scrollController.animateTo(
+              0,
+              duration: Duration(milliseconds: 500),
+              curve: Curves.easeOutCubic,
+            );
+          },
+          backgroundColor: Color(0xFF07325D),
+          icon: Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white),
+          label: Text(
+            'ກັບຂື້ນ',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
-        ],
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+        ),
       ),
-      body: RefreshIndicator(
-        onRefresh: () => _loadNews(isRefresh: true),
-        color: Colors.blue[600],
-        child: Column(
-          children: [
-            // Search Section
-            Container(
-              color: Colors.white,
-              padding: EdgeInsets.fromLTRB(20, 16, 20, 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Colors.grey[50]!, Colors.grey[100]!],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[200]!),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+      body: CustomScrollView(
+        controller: _scrollController,
+        physics: BouncingScrollPhysics(),
+        slivers: [
+          // Modern Header Section
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: primaryGradient,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40),
                 ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (value) {
-                    setState(() => _searchQuery = value);
-                    Future.delayed(Duration(milliseconds: 500), () {
-                      if (_searchQuery == value) {
-                        _searchNews(value);
-                      }
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'ຄົ້ນຫາຂ່າວ...',
-                    hintStyle: TextStyle(
-                      color: Colors.grey[500],
-                      fontWeight: FontWeight.w400,
-                    ),
-                    prefixIcon: Container(
-                      padding: EdgeInsets.all(12),
-                      child: Icon(
-                        Icons.search_rounded,
-                        color: Colors.blue[600],
-                        size: 22,
-                      ),
-                    ),
-                    suffixIcon:
-                        _searchQuery.isNotEmpty
-                            ? IconButton(
-                              icon: Container(
-                                padding: EdgeInsets.all(4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF07325D).withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Header with drawer button and notifications
+                    Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[400],
-                                  shape: BoxShape.circle,
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
                                 ),
-                                child: Icon(
-                                  Icons.clear_rounded,
-                                  color: Colors.white,
-                                  size: 16,
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.menu_rounded,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  onPressed: () {
+                                    _scaffoldKey.currentState?.openDrawer();
+                                  },
                                 ),
                               ),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                                _loadNews(isRefresh: true);
-                              },
-                            )
-                            : null,
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 18),
+                              Spacer(),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.notifications_outlined,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                      onPressed: () {
+                                        // TODO: Handle notifications
+                                      },
+                                    ),
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5),
+
+                          // Logo and title
+                          TweenAnimationBuilder<double>(
+                            duration: Duration(milliseconds: 800),
+                            tween: Tween(begin: 0.0, end: 1.0),
+                            builder: (context, value, child) {
+                              return Transform.scale(
+                                scale: 0.8 + (0.2 * value),
+                                child: Opacity(
+                                  opacity: value,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        width: 90,
+                                        height: 90,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.15),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white.withOpacity(
+                                              0.3,
+                                            ),
+                                            width: 3,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(
+                                                0.1,
+                                              ),
+                                              blurRadius: 20,
+                                              offset: Offset(0, 10),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Image(
+                                          image: AssetImage(
+                                            'assets/images/LOGO.png',
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'ຂ່າວສານ',
+                                        style: TextStyle(
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.white,
+                                          letterSpacing: 1.2,
+                                        ),
+                                      ),
+                                      Text(
+                                        'ສະຖາບັນການທະນາຄານ',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.white.withOpacity(0.9),
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+
+                          SizedBox(height: 12),
+
+                          // Enhanced search bar
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 25,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(30),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(
+                                  sigmaX: 10,
+                                  sigmaY: 10,
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.95),
+                                    borderRadius: BorderRadius.circular(30),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.5),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: TextField(
+                                    controller: _searchController,
+                                    onChanged: (value) {
+                                      setState(() => _searchQuery = value);
+                                      Future.delayed(
+                                        Duration(milliseconds: 500),
+                                        () {
+                                          if (_searchQuery == value) {
+                                            _searchNews(value);
+                                          }
+                                        },
+                                      );
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: 'ຄົ້ນຫາຂ່າວທີ່ສົນໃຈ...',
+                                      hintStyle: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      prefixIcon: Container(
+                                        padding: EdgeInsets.all(12),
+                                        child: Icon(
+                                          Icons.search_rounded,
+                                          color: Color(0xFF07325D),
+                                          size: 26,
+                                        ),
+                                      ),
+                                      suffixIcon:
+                                          _searchQuery.isNotEmpty
+                                              ? Container(
+                                                padding: EdgeInsets.all(8),
+                                                child: IconButton(
+                                                  icon: Container(
+                                                    padding: EdgeInsets.all(4),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.grey[300],
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.close_rounded,
+                                                      color: Colors.grey[600],
+                                                      size: 18,
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    _searchController.clear();
+                                                    setState(
+                                                      () => _searchQuery = '',
+                                                    );
+                                                    _loadNews(isRefresh: true);
+                                                  },
+                                                ),
+                                              )
+                                              : null,
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 18,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Enhanced Category Filter with glassmorphism
+          if (_availableCategories.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: BouncingScrollPhysics(),
+                  child: Row(
+                    children: [
+                      _buildGlassCategoryChip(
+                        id: 'all',
+                        title: 'ທັງໝົດ',
+                        icon: Icons.grid_view_rounded,
+                        isSelected: _selectedCategoryId == 'all',
+                      ),
+                      SizedBox(width: 16),
+                      ..._availableCategories.map((category) {
+                        return Padding(
+                          padding: EdgeInsets.only(right: 16),
+                          child: _buildGlassCategoryChip(
+                            id: category.id.toString(),
+                            title: category.title,
+                            icon: Icons.label_rounded,
+                            isSelected:
+                                _selectedCategoryId == category.id.toString(),
+                          ),
+                        );
+                      }).toList(),
+                    ],
                   ),
                 ),
               ),
             ),
 
-            // Category Filter Section
-            if (_availableCategories.isNotEmpty) _buildCategoryList(),
-
-            // Content
-            Expanded(
-              child:
-                  _isLoading && _allTopics.isEmpty
-                      ? _buildLoadingState()
-                      : _buildNewsList(),
-            ),
-          ],
-        ),
+          // Content
+          _isLoading && _allTopics.isEmpty
+              ? SliverFillRemaining(child: _buildLoadingState())
+              : _buildNewsGrid(),
+        ],
       ),
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _currentIndex,
@@ -449,589 +681,137 @@ class _NewsListPageState extends State<NewsListPage>
     );
   }
 
-  Widget _buildCategoryList() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.blue[50]!, Colors.blue[100]!],
-              ),
-              border: Border(bottom: BorderSide(color: Colors.blue[200]!)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[600],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.category_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text(
-                  'ໝວດໝູ່',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.blue[800],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ปุ่ม "ທັງໝົດ" - ไม่มีตัวเลข
-          _buildCategoryListItem(
-            id: 'all',
-            title: 'ທັງໝົດ',
-            count: null, // ลบตัวเลขออก
-            isSelected: _selectedCategoryId == 'all',
-            isAllCategory: true,
-          ),
-
-          // รายการหมวดหมู่
-          ..._availableCategories.map((category) {
-            return _buildCategoryListItem(
-              id: category.id.toString(),
-              title: category.title,
-              count: _getCategoryCountByTitle(category.title),
-              isSelected: _selectedCategoryId == category.id.toString(),
-              isAllCategory: false,
-            );
-          }).toList(),
-
-          Container(
-            height: 2,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue[200]!, Colors.transparent],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryListItem({
-    required String id,
-    required String title,
-    int? count, // เปลี่ยนเป็น optional
-    required bool isSelected,
-    required bool isAllCategory,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient:
-            isSelected
-                ? LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [Colors.blue, Colors.blue],
-                )
-                : null,
-        color: isSelected ? null : Colors.white,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              _selectedCategoryId = id;
-            });
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: isSelected ? Colors.blue[600]! : Colors.transparent,
-                  width: 4,
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                // Icon for category
-                Container(
-                  padding: EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color:
-                        isSelected
-                            ? Colors.blue[600]
-                            : isAllCategory
-                            ? Colors.grey[400]
-                            : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    isAllCategory ? Icons.apps_rounded : Icons.bookmark_outline,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-                SizedBox(width: 12),
-
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: isSelected ? Colors.blue[800] : Colors.grey[700],
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                ),
-
-                // แสดงจำนวนเฉพาะเมื่อมีค่า count และไม่ใช่หมวด "ທັງໝົດ"
-                if (count != null && !isAllCategory)
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      gradient:
-                          isSelected
-                              ? LinearGradient(
-                                colors: [Colors.blue[600]!, Colors.blue[500]!],
-                              )
-                              : LinearGradient(
-                                colors: [Colors.grey[300]!, Colors.grey[400]!],
-                              ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: (isSelected ? Colors.blue : Colors.grey)
-                              .withOpacity(0.3),
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      count.toString(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+  Widget _buildModernDrawer() {
+    return Drawer(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              shape: BoxShape.circle,
-            ),
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              color: Colors.blue[600],
-            ),
-          ),
-          SizedBox(height: 24),
-          Text(
-            'ກຳລັງໂຫຼດຂ່າວ...',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNewsList() {
-    final displayTopics = _filteredTopics;
-
-    if (displayTopics.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return ListView.builder(
-      controller: _scrollController,
-      padding: EdgeInsets.all(20),
-      itemCount: displayTopics.length + (_isLoadingMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= displayTopics.length) {
-          return _buildLoadingMoreIndicator();
-        }
-
-        return AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            final slideAnimation = Tween<Offset>(
-              begin: Offset(0, 0.3),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(
-                parent: _animationController,
-                curve: Interval(
-                  (index * 0.05).clamp(0.0, 1.0),
-                  ((index * 0.05) + 0.3).clamp(0.0, 1.0),
-                  curve: Curves.easeOutCubic,
-                ),
-              ),
-            );
-
-            return SlideTransition(
-              position: slideAnimation,
-              child: FadeTransition(
-                opacity: _animationController,
-                child: _buildNewsCard(displayTopics[index], index),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildNewsCard(Topic topic, int index) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 20,
-            offset: Offset(0, 4),
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () => _onTopicTap(topic),
+        child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image Section
-              if (topic.hasImage && topic.photoFile.isNotEmpty)
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  child: Container(
-                    height: 220,
-                    width: double.infinity,
-                    child: Stack(
-                      children: [
-                        Image.network(
-                          topic.photoFile,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              height: 220,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.grey[200]!,
-                                    Colors.grey[300]!,
-                                  ],
-                                ),
-                              ),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.blue[600],
-                                  value:
-                                      loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress
-                                                  .cumulativeBytesLoaded /
-                                              loadingProgress
-                                                  .expectedTotalBytes!
-                                          : null,
-                                ),
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            print(
-                              '❌ Image error for ${topic.photoFile}: $error',
-                            );
-                            return Container(
-                              height: 220,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.grey[200]!,
-                                    Colors.grey[300]!,
-                                  ],
-                                ),
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.image_not_supported_outlined,
-                                      size: 50,
-                                      color: Colors.grey[400],
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      'ບໍ່ສາມາດໂຫຼດຮູບພາບໄດ້',
-                                      style: TextStyle(
-                                        color: Colors.grey[500],
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        // Gradient overlay
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.1),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-              // Content Section
-              Padding(
-                padding: EdgeInsets.all(20),
+              // Header
+              Container(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Categories - แสดงเฉพาะหมวดแรก
-                    if (topic.joinedCategories.isNotEmpty) ...[
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.blue[500]!, Colors.blue[600]!],
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 15,
+                            offset: Offset(0, 8),
                           ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.local_offer_rounded,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              topic.joinedCategories.first.title,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
-                      SizedBox(height: 16),
-                    ],
-
-                    // Title
-                    Text(
-                      topic.displayTitle,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.grey[800],
-                        height: 1.3,
+                      child: Icon(
+                        Icons.account_circle_rounded,
+                        color: Color(0xFF07325D),
+                        size: 50,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-
-                    // Description
-                    if (topic.details.isNotEmpty) ...[
-                      SizedBox(height: 12),
-                      Text(
-                        topic.displayDetails,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 15,
-                          height: 1.5,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
+                    SizedBox(height: 20),
+                    Text(
+                      'ສະບາຍດີ!',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
                       ),
-                    ],
-
-                    SizedBox(height: 16),
-
-                    // Footer
-                    Row(
-                      children: [
-                        // Date
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.access_time_rounded,
-                                size: 14,
-                                color: Colors.grey[500],
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                _formatDate(topic.date.toString()),
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        SizedBox(width: 8),
-
-                        // Views count
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.visibility_rounded,
-                                size: 14,
-                                color: Colors.grey[500],
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                '${topic.visits}',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Spacer(),
-
-                        // Read More Arrow
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Colors.blue[500]!, Colors.blue[600]!],
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.blue.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'ອ່ານຕໍ່',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(width: 4),
-                              Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 14,
-                                color: Colors.white,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    ),
+                    Text(
+                      'ຍິນດີຕ້ອນຮັບ',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
               ),
+
+              // Menu Items
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      _buildDrawerItem(
+                        icon: Icons.home_rounded,
+                        title: 'ໜ້າຫຼັກ',
+                        onTap:
+                            () => Navigator.pushReplacementNamed(
+                              context,
+                              '/home',
+                            ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.newspaper_rounded,
+                        title: 'ຂ່າວສານ',
+                        isSelected: true,
+                        onTap: () => Navigator.pop(context),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.photo_library_rounded,
+                        title: 'ຮູບພາບ',
+                        onTap:
+                            () => Navigator.pushReplacementNamed(
+                              context,
+                              '/gallery',
+                            ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.info_rounded,
+                        title: 'ກ່ຽວກັບ',
+                        onTap:
+                            () => Navigator.pushReplacementNamed(
+                              context,
+                              '/about',
+                            ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.person_rounded,
+                        title: 'ໂປຣໄຟລ໌',
+                        onTap:
+                            () => Navigator.pushReplacementNamed(
+                              context,
+                              '/profile',
+                            ),
+                      ),
+                      SizedBox(height: 20),
+                      Divider(color: Colors.white.withOpacity(0.3)),
+                      SizedBox(height: 20),
+                      _buildDrawerItem(
+                        icon: Icons.settings_rounded,
+                        title: 'ຕັ້ງຄ່າ',
+                        onTap: () {
+                          // TODO: Settings
+                        },
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.help_rounded,
+                        title: 'ຊ່ວຍເຫຼືອ',
+                        onTap: () {
+                          // TODO: Help
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Footer
             ],
           ),
         ),
@@ -1039,21 +819,638 @@ class _NewsListPageState extends State<NewsListPage>
     );
   }
 
-  Widget _buildLoadingMoreIndicator() {
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isSelected = false,
+  }) {
     return Container(
-      padding: EdgeInsets.all(20),
-      child: Center(
-        child: Container(
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.blue[50],
-            shape: BoxShape.circle,
-          ),
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: Colors.blue[600],
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color:
+                  isSelected
+                      ? Colors.white.withOpacity(0.2)
+                      : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color:
+                    isSelected
+                        ? Colors.white.withOpacity(0.3)
+                        : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.white, size: 24),
+                SizedBox(width: 16),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+                if (isSelected) ...[
+                  Spacer(),
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildGlassCategoryChip({
+    required String id,
+    required String title,
+    required IconData icon,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCategoryId = id;
+        });
+      },
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 400),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        decoration: BoxDecoration(
+          gradient:
+              isSelected
+                  ? LinearGradient(
+                    colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+                  )
+                  : null,
+          color: isSelected ? null : Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(
+            color:
+                isSelected
+                    ? Colors.white.withOpacity(0.3)
+                    : Colors.grey.withOpacity(0.2),
+            width: 1.5,
+          ),
+          boxShadow:
+              isSelected
+                  ? [
+                    BoxShadow(
+                      color: Color(0xFF07325D).withOpacity(0.4),
+                      blurRadius: 15,
+                      offset: Offset(0, 8),
+                    ),
+                  ]
+                  : [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.15),
+                      blurRadius: 10,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? Colors.white : Color(0xFF07325D),
+            ),
+            SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: isSelected ? Colors.white : Colors.grey[700],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Container(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF07325D).withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: CircularProgressIndicator(
+                strokeWidth: 4,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            SizedBox(height: 32),
+            Text(
+              'ກຳລັງໂຫຼດຂ່າວ...',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'ກະລຸນາລໍຖ້າສັກຄູ່',
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewsGrid() {
+    final displayTopics = _filteredTopics;
+
+    if (displayTopics.isEmpty) {
+      return SliverFillRemaining(child: _buildEmptyState());
+    }
+
+    int itemCount = displayTopics.length;
+    if (_isLoadingMore) itemCount += 4;
+
+    return SliverToBoxAdapter(
+      child: Container(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // Stats row
+            Container(
+              margin: EdgeInsets.only(bottom: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF07325D).withOpacity(0.1),
+                    Color(0xFF0A4A85).withOpacity(0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Color(0xFF07325D).withOpacity(0.1)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.article_rounded,
+                    color: Color(0xFF07325D),
+                    size: 20,
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'ພົບ ${displayTopics.length} ຂ່າວ',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  Spacer(),
+                  if (_selectedCategoryId != 'all') ...[
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'ໝວດ: ${_availableCategories.firstWhere((cat) => cat.id.toString() == _selectedCategoryId, orElse: () => JoinedCategory(id: 0, title: '', icon: null, photo: null, href: '')).title}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Grid
+            GridView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                childAspectRatio: 0.8,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                if (index >= displayTopics.length) {
+                  return _buildLoadingCard();
+                }
+
+                return AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    final slideAnimation = Tween<Offset>(
+                      begin: Offset(0, 0.3),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: _animationController,
+                        curve: Interval(
+                          (index * 0.1).clamp(0.0, 1.0),
+                          ((index * 0.1) + 0.4).clamp(0.0, 1.0),
+                          curve: Curves.easeOutBack,
+                        ),
+                      ),
+                    );
+
+                    return SlideTransition(
+                      position: slideAnimation,
+                      child: FadeTransition(
+                        opacity: _animationController,
+                        child: _buildModernNewsCard(
+                          displayTopics[index],
+                          index,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernNewsCard(Topic topic, int index) {
+    final gradients = [
+      LinearGradient(colors: [Color(0xFF07325D), Color(0xFF0A4A85)]),
+      LinearGradient(colors: [Color(0xFF07325D), Color(0xFF1D5A96)]),
+      LinearGradient(colors: [Color(0xFF0A4A85), Color(0xFF07325D)]),
+      LinearGradient(colors: [Color(0xFF1D5A96), Color(0xFF07325D)]),
+      LinearGradient(
+        colors: [Color(0xFF07325D).withOpacity(0.8), Color(0xFF0A4A85)],
+      ),
+      LinearGradient(colors: [Color(0xFF0A4A85), Color(0xFF1D5A96)]),
+    ];
+
+    final cardGradient = gradients[index % gradients.length];
+
+    return GestureDetector(
+      onTap: () => _onTopicTap(topic),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 15,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            decoration: BoxDecoration(color: Colors.white),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image section
+                Expanded(
+                  flex: 3,
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        child:
+                            topic.hasImage && topic.photoFile.isNotEmpty
+                                ? Image.network(
+                                  topic.photoFile,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (
+                                    context,
+                                    child,
+                                    loadingProgress,
+                                  ) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        gradient: cardGradient,
+                                      ),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 3,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        gradient: cardGradient,
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.article_rounded,
+                                          color: Colors.white,
+                                          size: 40,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                                : Container(
+                                  decoration: BoxDecoration(
+                                    gradient: cardGradient,
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.article_rounded,
+                                      color: Colors.white,
+                                      size: 40,
+                                    ),
+                                  ),
+                                ),
+                      ),
+                      // Gradient overlay
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.7),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Category tag
+                      if (topic.joinedCategories.isNotEmpty)
+                        Positioned(
+                          top: 12,
+                          left: 12,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              topic.joinedCategories.first.title,
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      // Date
+                      Positioned(
+                        bottom: 12,
+                        right: 12,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _formatDate(topic.date.toString()),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Content section
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title
+                        Expanded(
+                          child: Text(
+                            topic.displayTitle,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey[800],
+                              height: 1.3,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        // Bottom section
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.visibility_rounded,
+                              size: 14,
+                              color: Colors.grey[500],
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              '${topic.visits}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Spacer(),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: cardGradient,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                'ອ່ານ',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07325D)),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    height: 14,
+                    width: double.infinity * 0.7,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                  ),
+                  Spacer(),
+                  Row(
+                    children: [
+                      Container(
+                        height: 10,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                      Spacer(),
+                      Container(
+                        height: 24,
+                        width: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1077,733 +1474,120 @@ class _NewsListPageState extends State<NewsListPage>
                 .title
             : '';
 
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.grey[100]!, Colors.grey[200]!],
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    blurRadius: 20,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Icon(
-                isFiltered ? Icons.filter_alt_outlined : Icons.article_outlined,
-                size: 50,
-                color: Colors.grey[400],
-              ),
-            ),
-            SizedBox(height: 32),
-            Text(
-              isFiltered
-                  ? 'ບໍ່ມີຂ່າວໃນໝວດ "$selectedCategoryName"'
-                  : _searchQuery.isNotEmpty
-                  ? 'ບໍ່ພົບຂ່າວ'
-                  : 'ຍັງບໍ່ມີຂ່າວ',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Colors.grey[700],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 12),
-            Text(
-              isFiltered
-                  ? 'ລອງເລືອກໝວດອື່ນເບິ່ງ'
-                  : _searchQuery.isNotEmpty
-                  ? 'ລອງຄົ້ນຫາຄຳອື່ນ'
-                  : 'ຂ່າວຈະອັບເດດໃນໄວໆນີ້',
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: 16,
-                height: 1.5,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32),
-            if (isFiltered || _searchQuery.isNotEmpty)
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue[500]!, Colors.blue[600]!],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (isFiltered) {
-                      setState(() => _selectedCategoryId = 'all');
-                    } else {
-                      _searchController.clear();
-                      setState(() => _searchQuery = '');
-                      _loadNews(isRefresh: true);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    shadowColor: Colors.transparent,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Text(
-                    isFiltered ? 'ເບິ່ງຂ່າວທັງໝົດ' : 'ລ້າງການຄົ້ນຫາ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class TopicDetailPage extends StatefulWidget {
-  final Topic topic;
-
-  const TopicDetailPage({Key? key, required this.topic}) : super(key: key);
-
-  @override
-  State<TopicDetailPage> createState() => _TopicDetailPageState();
-}
-
-class _TopicDetailPageState extends State<TopicDetailPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text(
-          'ລາຍລະອຽດຂ່າວ',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.grey[800],
-        elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: EdgeInsets.all(8),
+    return Container(
+      padding: EdgeInsets.all(40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
             decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF07325D).withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
+                ),
+              ],
             ),
             child: Icon(
-              Icons.arrow_back_ios_rounded,
-              color: Colors.grey[600],
-              size: 18,
+              isFiltered ? Icons.filter_alt_outlined : Icons.article_outlined,
+              size: 50,
+              color: Colors.white,
             ),
           ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          Container(
-            margin: EdgeInsets.only(right: 12),
-            child: IconButton(
-              icon: Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue[500]!, Colors.blue[600]!],
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.share_rounded, color: Colors.white, size: 18),
-              ),
-              onPressed: () {
-                // TODO: Implement share functionality
-              },
+          SizedBox(height: 32),
+          Text(
+            isFiltered
+                ? 'ບໍ່ມີຂ່າວໃນໝວດ "$selectedCategoryName"'
+                : _searchQuery.isNotEmpty
+                ? 'ບໍ່ພົບຂ່າວ'
+                : 'ຍັງບໍ່ມີຂ່າວ',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Colors.grey[700],
             ),
+            textAlign: TextAlign.center,
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Main Image
-            if (widget.topic.hasImage && widget.topic.photoFile.isNotEmpty)
-              Container(
-                width: double.infinity,
-                height: 280,
-                margin: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 20,
-                      offset: Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.network(
-                    widget.topic.photoFile,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        height: 280,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.grey[200]!, Colors.grey[300]!],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                            color: Colors.blue[600],
-                          ),
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 280,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.grey[200]!, Colors.grey[300]!],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.image_not_supported_outlined,
-                                size: 60,
-                                color: Colors.grey[400],
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                'ບໍ່ສາມາດໂຫຼດຮູບພາບໄດ້',
-                                style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-
+          SizedBox(height: 16),
+          Text(
+            isFiltered
+                ? 'ລອງເລືອກໝວດອື່ນເບິ່ງ'
+                : _searchQuery.isNotEmpty
+                ? 'ລອງຄົ້ນຫາຄຳອື່ນ'
+                : 'ຂ່າວຈະອັບເດດໃນໄວໆນີ້',
+            style: TextStyle(
+              color: Colors.grey[500],
+              fontSize: 16,
+              height: 1.6,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          if (isFiltered || _searchQuery.isNotEmpty) ...[
+            SizedBox(height: 32),
             Container(
-              margin: EdgeInsets.all(16),
-              padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+                ),
+                borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 20,
-                    offset: Offset(0, 4),
+                    color: Color(0xFF07325D).withOpacity(0.4),
+                    blurRadius: 15,
+                    offset: Offset(0, 8),
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Categories
-                  if (widget.topic.joinedCategories.isNotEmpty) ...[
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 8,
-                      children:
-                          widget.topic.joinedCategories.map((category) {
-                            return Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.blue[500]!,
-                                    Colors.blue[600]!,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.blue.withOpacity(0.3),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.local_offer_rounded,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    category.title,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                    ),
-                    SizedBox(height: 24),
-                  ],
-
-                  // Title
-                  Text(
-                    widget.topic.displayTitle,
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.grey[800],
-                      height: 1.3,
-                    ),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (isFiltered) {
+                    setState(() => _selectedCategoryId = 'all');
+                  } else {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                    _loadNews(isRefresh: true);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
                   ),
-
-                  SizedBox(height: 20),
-
-                  // Metadata
-                  Container(
-                    padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.grey[50]!, Colors.grey[100]!],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isFiltered
+                          ? Icons.grid_view_rounded
+                          : Icons.refresh_rounded,
+                      color: Colors.white,
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.blue[100],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.access_time_rounded,
-                            size: 18,
-                            color: Colors.blue[600],
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Text(
-                          _formatDate(widget.topic.date.toString()),
-                          style: TextStyle(
-                            color: Colors.grey[700],
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Spacer(),
-                        Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.green[100],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.visibility_rounded,
-                            size: 18,
-                            color: Colors.green[600],
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Text(
-                          '${widget.topic.visits} ຄົນເບິ່ງ',
-                          style: TextStyle(
-                            color: Colors.grey[700],
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 32),
-
-                  // Content
-                  if (widget.topic.details.isNotEmpty) ...[
-                    Container(
-                      width: double.infinity,
-                      child: _buildHtmlContent(widget.topic.details),
-                    ),
-                  ] else ...[
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(50),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.grey[50]!, Colors.grey[100]!],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey[200]!),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.article_outlined,
-                            size: 60,
-                            color: Colors.grey[400],
-                          ),
-                          SizedBox(height: 20),
-                          Text(
-                            'ບໍ່ມີເນື້ອຫາລາຍລະອຽດ',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            'ຂ່າວນີ້ອາດຈະມີແຕ່ຫົວຂໍ້ ຫຼື ເນື້ອຫາຍັງບໍ່ໄດ້ເພີ່ມ',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[400],
-                              height: 1.5,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                    SizedBox(width: 8),
+                    Text(
+                      isFiltered ? 'ເບິ່ງຂ່າວທັງໝົດ' : 'ລ້າງການຄົ້ນຫາ',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
                       ),
                     ),
                   ],
-
-                  // Author info
-                  if (widget.topic.user != null) ...[
-                    SizedBox(height: 32),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.blue[50]!, Colors.blue[100]!],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.blue[200]!),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.blue[400]!, Colors.blue[600]!],
-                              ),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.blue.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                          SizedBox(width: 20),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'ເຂົ້າຮຽນໂດຍ',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.blue[600],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  widget.topic.user!.name,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.blue[800],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
-
-            // Additional images
-            if (widget.topic.details.contains('<img'))
-              Container(
-                margin: EdgeInsets.all(16),
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 20,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.purple[100],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.photo_library_rounded,
-                            color: Colors.purple[600],
-                            size: 20,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Text(
-                          'ຮູບພາບເພີ່ມເຕີມ',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.grey[800],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    _buildAdditionalImages(widget.topic.details),
-                  ],
-                ),
-              ),
-
-            SizedBox(height: 20),
           ],
-        ),
+        ],
       ),
-    );
-  }
-
-  String _formatDate(String? dateStr) {
-    if (dateStr == null || dateStr.isEmpty) return '';
-
-    try {
-      final date = DateTime.parse(dateStr);
-      final now = DateTime.now();
-      final difference = now.difference(date);
-
-      if (difference.inDays > 0) {
-        return '${difference.inDays} ວັນທີ່ຜ່ານມາ';
-      } else if (difference.inHours > 0) {
-        return '${difference.inHours} ຊົ່ວໂມງທີ່ຜ່ານມາ';
-      } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes} ນາທີທີ່ຜ່ານມາ';
-      } else {
-        return 'ຫາກໍ່ນີ້';
-      }
-    } catch (e) {
-      return dateStr;
-    }
-  }
-
-  Widget _buildHtmlContent(String htmlContent) {
-    final cleanText =
-        htmlContent
-            .replaceAll(RegExp(r'<[^>]*>'), '')
-            .replaceAll('&nbsp;', ' ')
-            .replaceAll('&amp;', '&')
-            .replaceAll('&lt;', '<')
-            .replaceAll('&gt;', '>')
-            .replaceAll('&quot;', '"')
-            .trim();
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Text(
-        cleanText.isNotEmpty ? cleanText : 'ບໍ່ມີເນື້ອຫາ',
-        style: TextStyle(
-          fontSize: 17,
-          color: Colors.grey[700],
-          height: 1.7,
-          fontWeight: FontWeight.w400,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAdditionalImages(String htmlContent) {
-    final imgRegex = RegExp(
-      r'<img[^>]+src="([^"]*)"[^>]*>',
-      caseSensitive: false,
-    );
-    final matches = imgRegex.allMatches(htmlContent);
-
-    if (matches.isEmpty) {
-      return SizedBox.shrink();
-    }
-
-    final imageUrls = matches.map((match) => match.group(1)!).toList();
-
-    return Column(
-      children:
-          imageUrls.asMap().entries.map((entry) {
-            final index = entry.key;
-            final url = entry.value;
-
-            return Container(
-              margin: EdgeInsets.only(bottom: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.purple[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'ຮູບທີ່ ${index + 1}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.purple[700],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      width: double.infinity,
-                      constraints: BoxConstraints(maxHeight: 300),
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 15,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Image.network(
-                        url,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            height: 200,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.grey[200]!, Colors.grey[300]!],
-                              ),
-                            ),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.purple[600],
-                              ),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 200,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.grey[200]!, Colors.grey[300]!],
-                              ),
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.broken_image_outlined,
-                                    size: 50,
-                                    color: Colors.grey[400],
-                                  ),
-                                  SizedBox(height: 12),
-                                  Text(
-                                    'ບໍ່ສາມາດໂຫຼດຮູບພາບໄດ້',
-                                    style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
     );
   }
 }

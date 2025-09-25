@@ -1,4 +1,4 @@
-// pages/Home_page.dart - Fixed Image Loading Version
+// pages/Home_page.dart - Updated with News-style Header
 import 'package:BIBOL/models/course/course_model.dart' show CourseModel;
 import 'package:BIBOL/models/news/news_response.dart' show NewsResponse;
 import 'package:BIBOL/models/topic/topic_model.dart' show Topic;
@@ -14,6 +14,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart'
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import '../../services/auth/auth_service.dart';
+import 'dart:ui';
 
 class HomePage extends StatefulWidget {
   @override
@@ -46,19 +47,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
 
+  // Add GlobalKey for scaffold
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Theme colors - Same as News Page
+  final primaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+  );
+
   @override
   void initState() {
     super.initState();
-    _setupImageErrorHandling(); // ✅ เพิ่มการจัดการ Image Error
+    _setupImageErrorHandling();
     _initializeComponents();
     _fetchCourses();
     _fetchLatestNews();
   }
 
-  // ✅ เพิ่มการจัดการ Error สำหรับ Images
   void _setupImageErrorHandling() {
     FlutterError.onError = (FlutterErrorDetails details) {
-      // ซ่อน error ที่เกี่ยวกับ network images
       if (details.exception.toString().contains('HTTP request failed') ||
           details.exception.toString().contains('images.unsplash.com') ||
           details.exception.toString().contains('404') ||
@@ -66,7 +75,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         print('🖼️ Image loading error (ignored): ${details.exception}');
         return;
       }
-      // แสดง error อื่นๆ ตามปกติ
       FlutterError.presentError(details);
     };
   }
@@ -96,10 +104,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String _stripHtmlTags(String htmlString) {
     if (htmlString.isEmpty) return '';
 
-    // ลบ HTML tags ทั้งหมด
     String stripped = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
 
-    // แทนที่ HTML entities
     stripped = stripped
         .replaceAll('&nbsp;', ' ')
         .replaceAll('&amp;', '&')
@@ -112,7 +118,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         .replaceAll('&mdash;', '—')
         .replaceAll('&ndash;', '–');
 
-    // ลบช่องว่างที่เกินไป
     stripped = stripped.replaceAll(RegExp(r'\s+'), ' ').trim();
 
     return stripped;
@@ -159,7 +164,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  // โหลดคอร์สจาก API
   Future<void> _fetchCourses() async {
     try {
       final response = await CourseService.fetchCourses();
@@ -179,7 +183,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
-  // โหลดข่าวล่าสุด (จำกัด 4 ตัว)
   Future<void> _fetchLatestNews() async {
     try {
       final response = await NewsService.getNews(limit: 4, page: 1);
@@ -302,39 +305,62 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildDrawerItem(
-    IconData icon,
-    String title,
-    String? route, {
-    VoidCallback? onTap,
-    bool isLogout = false,
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isSelected = false,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: isLogout ? Colors.red : Color(0xFF07325D),
-          size: 24,
-        ),
-        title: Text(
-          title,
-          style: GoogleFonts.notoSansLao(
-            color: isLogout ? Colors.red : Colors.grey[800],
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color:
+                  isSelected
+                      ? Colors.white.withOpacity(0.2)
+                      : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color:
+                    isSelected
+                        ? Colors.white.withOpacity(0.3)
+                        : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: Colors.white, size: 24),
+                SizedBox(width: 16),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+                if (isSelected) ...[
+                  Spacer(),
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
-        onTap:
-            onTap ??
-            () {
-              Navigator.pop(context);
-              if (route != null) {
-                Navigator.pushReplacementNamed(context, route);
-              }
-            },
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );
   }
@@ -342,15 +368,211 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-
-      drawer: _buildDrawer(),
+      key: _scaffoldKey,
+      backgroundColor: Color(0xFFF8FAFF),
+      drawer: _buildModernDrawer(),
       body:
           _isLoading
               ? _buildLoadingScreen()
               : CustomScrollView(
+                physics: BouncingScrollPhysics(),
                 slivers: [
-                  _buildSliverAppBar(),
+                  // Modern Header Section - Same style as News Page
+                  SliverToBoxAdapter(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: primaryGradient,
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(40),
+                          bottomRight: Radius.circular(40),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0xFF07325D).withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: SafeArea(
+                        child: Column(
+                          children: [
+                            // Header with drawer button and notifications
+                            Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.white.withOpacity(
+                                              0.3,
+                                            ),
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        child: IconButton(
+                                          icon: Icon(
+                                            Icons.menu_rounded,
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
+                                          onPressed: () {
+                                            _scaffoldKey.currentState
+                                                ?.openDrawer();
+                                          },
+                                        ),
+                                      ),
+                                      Spacer(),
+                                      if (_isLoggedIn)
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(
+                                              0.2,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(
+                                                0.3,
+                                              ),
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          child: IconButton(
+                                            icon: Icon(
+                                              Icons.power_settings_new,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                            onPressed: _handleLogout,
+                                            tooltip: 'ອອກຈາກລະບົບ',
+                                          ),
+                                        )
+                                      else
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(
+                                              0.2,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(
+                                                0.3,
+                                              ),
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          child: TextButton(
+                                            onPressed: () async {
+                                              final result =
+                                                  await Navigator.pushNamed(
+                                                    context,
+                                                    '/login',
+                                                  );
+                                              if (result == true) {
+                                                await _checkLoginStatus();
+                                              }
+                                            },
+                                            child: Text(
+                                              'ເຂົ້າສູ່ລະບົບ',
+                                              style: GoogleFonts.notoSansLao(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+
+                                  // Logo and title
+                                  TweenAnimationBuilder<double>(
+                                    duration: Duration(milliseconds: 800),
+                                    tween: Tween(begin: 0.0, end: 1.0),
+                                    builder: (context, value, child) {
+                                      return Transform.scale(
+                                        scale: 0.8 + (0.2 * value),
+                                        child: Opacity(
+                                          opacity: value,
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                width: 90,
+                                                height: 90,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white
+                                                      .withOpacity(0.15),
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: Colors.white
+                                                        .withOpacity(0.3),
+                                                    width: 3,
+                                                  ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black
+                                                          .withOpacity(0.1),
+                                                      blurRadius: 20,
+                                                      offset: Offset(0, 10),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Image(
+                                                  image: AssetImage(
+                                                    'assets/images/LOGO.png',
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(height: 15),
+                                              Text(
+                                                'ສະຖາບັນການທະນາຄານ',
+                                                style: TextStyle(
+                                                  fontSize: 30,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Colors.white,
+                                                  letterSpacing: 1.2,
+                                                ),
+                                              ),
+
+                                              Text(
+                                                '🎊ຍິນດີຕ້ອນຮັບ🎊',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.white
+                                                      .withOpacity(0.9),
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Main Content
                   SliverToBoxAdapter(
                     child: Column(
                       children: [
@@ -373,266 +595,356 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // Drawer UI
-  Widget _buildDrawer() {
+  // Modern Drawer (Same as News Page)
+  Widget _buildModernDrawer() {
     return Drawer(
-      backgroundColor: Colors.white,
-
-      child: Column(
-        children: [
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: SafeArea(
-              child: Center(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: EdgeInsets.all(30),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(16),
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white,
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 15,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      child: Icon(
-                        _isLoggedIn ? Icons.person : Icons.menu_book_rounded,
-                        size: 40,
-                        color: Colors.white,
-                      ),
+                      child:
+                          _isLoggedIn
+                              ? Icon(
+                                Icons.account_circle_rounded,
+                                color: Color(0xFF07325D),
+                                size: 50,
+                              )
+                              : Icon(
+                                Icons.menu_book_rounded,
+                                color: Color(0xFF07325D),
+                                size: 50,
+                              ),
                     ),
-                    SizedBox(height: 12),
+                    SizedBox(height: 20),
                     Text(
-                      _isLoggedIn ? 'ສະບາຍດີ' : 'ເມນູ',
-                      style: GoogleFonts.notoSansLao(
+                      _isLoggedIn ? 'ສະບາຍດີ!' : 'ສະບາຍດີ!',
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     if (_isLoggedIn && _userInfo != null) ...[
                       Text(
                         "${_userInfo!['first_name'] ?? ''} ${_userInfo!['last_name'] ?? ''}"
                             .trim(),
-                        style: GoogleFonts.notoSansLao(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                       if (_userInfo!['student_id'] != null)
                         Text(
                           'ລະຫັດ: ${_userInfo!['student_id']}',
-                          style: GoogleFonts.notoSansLao(
-                            color: Colors.white70,
-                            fontSize: 12,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.6),
+                            fontSize: 14,
                           ),
                         ),
-                    ] else if (!_isLoggedIn)
+                    ] else
                       Text(
                         'ຍິນດີຕ້ອນຮັບ',
-                        style: GoogleFonts.notoSansLao(
-                          color: Colors.white70,
-                          fontSize: 14,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                   ],
                 ),
               ),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              children: [
-                _buildDrawerItem(Icons.home_rounded, 'ໜ້າຫຼັກ', '/home'),
-                _buildDrawerItem(Icons.article_rounded, 'ຂ່າວສານ', '/news'),
-                _buildDrawerItem(
-                  Icons.photo_library_rounded,
-                  'ຄັງຮູບ',
-                  '/gallery',
-                ),
-                _buildDrawerItem(Icons.info_rounded, 'ກ່ຽວກັບ', '/about'),
-                Divider(color: Colors.grey[300], thickness: 1, height: 32),
-                if (_isLoggedIn) ...[
-                  _buildDrawerItem(Icons.person_rounded, 'ໂປຣໄຟລ', '/profile'),
-                  _buildDrawerItem(
-                    Icons.logout_rounded,
-                    'ອອກຈາກລະບົບ',
-                    null,
-                    onTap: _handleLogout,
-                    isLogout: true,
-                  ),
-                ] else
-                  _buildDrawerItem(
-                    Icons.login_rounded,
-                    'ເຂົ້າສູ່ລະບົບ',
-                    null,
-                    onTap: () async {
-                      Navigator.pop(context);
-                      final result = await Navigator.pushNamed(
-                        context,
-                        '/login',
-                      );
-                      if (result == true) {
-                        await _checkLoginStatus();
-                      }
-                    },
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  // Modern Sliver App Bar
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      expandedHeight: 280,
-      floating: false,
-      pinned: true,
-      backgroundColor: Color(0xFF07325D),
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: Stack(
-            children: [
-              // Background pattern
-
-              // Banner Slider
-              Positioned(
-                bottom: 20,
-                left: 20,
-                right: 20,
+              // Menu Items
+              Expanded(
                 child: Container(
-                  height: 160,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: Offset(0, 8),
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      _buildDrawerItem(
+                        icon: Icons.home_rounded,
+                        title: 'ໜ້າຫຼັກ',
+                        isSelected: true,
+                        onTap: () => Navigator.pop(context),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.newspaper_rounded,
+                        title: 'ຂ່າວສານ',
+                        onTap:
+                            () => Navigator.pushReplacementNamed(
+                              context,
+                              '/news',
+                            ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.photo_library_rounded,
+                        title: 'ຮູບພາບ',
+                        onTap:
+                            () => Navigator.pushReplacementNamed(
+                              context,
+                              '/gallery',
+                            ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.info_rounded,
+                        title: 'ກ່ຽວກັບ',
+                        onTap:
+                            () => Navigator.pushReplacementNamed(
+                              context,
+                              '/about',
+                            ),
+                      ),
+                      if (_isLoggedIn)
+                        _buildDrawerItem(
+                          icon: Icons.person_rounded,
+                          title: 'ໂປຣໄຟລ໌',
+                          onTap:
+                              () => Navigator.pushReplacementNamed(
+                                context,
+                                '/profile',
+                              ),
+                        ),
+                      SizedBox(height: 20),
+                      Divider(color: Colors.white.withOpacity(0.3)),
+                      SizedBox(height: 20),
+                      _buildDrawerItem(
+                        icon: Icons.settings_rounded,
+                        title: 'ຕັ້ງຄ່າ',
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.help_rounded,
+                        title: 'ຊ່ວຍເຫຼືອ',
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
                       ),
                     ],
                   ),
-                  child: BannerSliderWidget(
-                    height: 160,
-                    autoPlay: true,
-                    autoPlayInterval: Duration(seconds: 4),
-                    showIndicators: true,
-                    showNavigationButtons: false,
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                    margin: EdgeInsets.zero,
-                  ),
+                ),
+              ),
+
+              // Footer
+              Container(
+                padding: EdgeInsets.all(30),
+                child: Column(
+                  children: [
+                    if (_isLoggedIn)
+                      Container(
+                        width: double.infinity,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _handleLogout,
+                            borderRadius: BorderRadius.circular(25),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(25),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.logout_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'ອອກຈາກລະບົບ',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: double.infinity,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () async {
+                              Navigator.pop(context);
+                              final result = await Navigator.pushNamed(
+                                context,
+                                '/login',
+                              );
+                              if (result == true) {
+                                await _checkLoginStatus();
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(25),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(25),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.login_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'ເຂົ້າສູ່ລະບົບ',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
       ),
-      title: Text(
-        'ສະຖາບັນການທະນາຄານ',
-        style: GoogleFonts.notoSansLao(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      centerTitle: true,
-      actions: [
-        if (_isLoggedIn)
-          Container(
-            margin: EdgeInsets.only(right: 8),
-            child: IconButton(
-              onPressed: _handleLogout,
-              icon: Icon(
-                Icons.power_settings_new,
-                color: Colors.white,
-                size: 20,
-              ),
-              tooltip: 'ອອກຈາກລະບົບ',
-            ),
-          )
-        else
-          Container(
-            margin: EdgeInsets.only(right: 8),
-            child: TextButton(
-              onPressed: () async {
-                final result = await Navigator.pushNamed(context, '/login');
-                if (result == true) {
-                  await _checkLoginStatus();
-                }
-              },
-              child: Text(
-                'ເຂົ້າສູ່ລະບົບ',
-                style: GoogleFonts.notoSansLao(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 
   // Search Section
   Widget _buildSearchSection() {
     return Container(
-      margin: EdgeInsets.all(20),
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 10,
-              offset: Offset(0, 4),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 25,
+              offset: Offset(0, 8),
             ),
           ],
         ),
-        child: TextField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: 'ຄົ້ນຫາຫຼັກສູດ ຫຼື ຂ່າວສານ...',
-            hintStyle: GoogleFonts.notoSansLao(
-              color: Colors.grey[500],
-              fontSize: 14,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.95),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.5),
+                  width: 1.5,
+                ),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  setState(() {});
+                },
+                decoration: InputDecoration(
+                  hintText: 'ຄົ້ນຫາຫຼັກສູດ ຫຼື ຂ່າວສານ...',
+                  hintStyle: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  prefixIcon: Container(
+                    padding: EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: Color(0xFF07325D),
+                      size: 26,
+                    ),
+                  ),
+                  suffixIcon:
+                      _searchController.text.isNotEmpty
+                          ? Container(
+                            padding: EdgeInsets.all(8),
+                            child: IconButton(
+                              icon: Container(
+                                padding: EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  color: Colors.grey[600],
+                                  size: 18,
+                                ),
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {});
+                              },
+                            ),
+                          )
+                          : null,
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 18,
+                  ),
+                ),
+              ),
             ),
-            prefixIcon: Icon(Icons.search, color: Color(0xFF07325D)),
-            suffixIcon:
-                _searchController.text.isNotEmpty
-                    ? IconButton(
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {});
-                      },
-                      icon: Icon(Icons.clear, color: Colors.grey[400]),
-                    )
-                    : Icon(Icons.tune, color: Colors.grey[400]),
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           ),
-          style: GoogleFonts.notoSansLao(fontSize: 14),
-          onChanged: (value) {
-            setState(() {});
-          },
         ),
       ),
     );
@@ -785,7 +1097,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               )
               : Container(
-                height: 180, // ปรับความสูงให้ตรงกับ card
+                height: 180,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(horizontal: 20),
@@ -807,7 +1119,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // ✅ แก้ไข Course Card - เพิ่ม Error Handling สำหรับรูปภาพ
   Widget _buildModernCourseCard(CourseModel course) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -843,7 +1154,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header - ลดขนาดลง
                     Row(
                       children: [
                         Container(
@@ -865,7 +1175,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                     SizedBox(height: 25),
 
-                    // Course Title - จำกัดบรรทัด
                     Expanded(
                       flex: 3,
                       child: Column(
@@ -889,7 +1198,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                     SizedBox(height: 12),
 
-                    // Action Button - ลดขนาดลง
                     Container(
                       width: double.infinity,
                       height: 36,
@@ -937,9 +1245,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // ✅ Helper method สำหรับสร้าง Course Icon ที่ปลอดภัย
   Widget _buildCourseIcon(CourseModel course) {
-    // ตรวจสอบว่า icon เป็น URL หรือไม่
     if (course.icon != null &&
         course.icon!.isNotEmpty &&
         Uri.tryParse(course.icon!) != null &&
@@ -970,7 +1276,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       );
     }
 
-    // Default icon
     return Icon(FontAwesomeIcons.graduationCap, size: 18, color: Colors.white);
   }
 
@@ -1060,7 +1365,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               )
               : Column(
                 children: [
-                  // Featured News (First news item)
                   if (_latestNews.isNotEmpty)
                     Container(
                       margin: EdgeInsets.symmetric(horizontal: 20),
@@ -1069,7 +1373,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
                   SizedBox(height: 20),
 
-                  // Other news items
                   if (_latestNews.length > 1)
                     Container(
                       height: 220,
@@ -1095,7 +1398,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // ✅ แก้ไข Featured News Card - เพิ่ม Error Handling
   Widget _buildFeaturedNewsCard(Topic news) {
     return Container(
       height: 250,
@@ -1125,7 +1427,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           },
           child: Row(
             children: [
-              // Image section
               Container(
                 width: 140,
                 height: 250,
@@ -1144,7 +1445,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ),
 
-              // Content section
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.all(20),
@@ -1251,7 +1551,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // ✅ แก้ไข Compact News Card - เพิ่ม Error Handling
   Widget _buildCompactNewsCard(Topic news) {
     return Container(
       decoration: BoxDecoration(
@@ -1362,7 +1661,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // ✅ Helper method สำหรับสร้างรูปภาพข่าวที่ปลอดภัย
   Widget _buildNewsImage(String imageUrl, {double? height}) {
     if (imageUrl.isNotEmpty && Uri.tryParse(imageUrl) != null) {
       return Image.network(
@@ -1404,7 +1702,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       );
     }
 
-    // Default placeholder
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -1538,7 +1835,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildFloatingActionButton() {
     return FloatingActionButton(
       onPressed: () {
-        // Show quick menu or search
         showModalBottomSheet(
           context: context,
           backgroundColor: Colors.transparent,
@@ -1569,7 +1865,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       title: Text('ຄົ້ນຫາ', style: GoogleFonts.notoSansLao()),
                       onTap: () {
                         Navigator.pop(context);
-                        // Focus on search field
                       },
                     ),
                     ListTile(
