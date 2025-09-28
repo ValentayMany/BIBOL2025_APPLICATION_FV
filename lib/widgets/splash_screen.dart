@@ -1,8 +1,7 @@
 import 'package:BIBOL/screens/Home/home_page.dart';
-import 'package:BIBOL/test/simple_connection_test.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
-import 'package:BIBOL/screens/R&L/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
@@ -16,267 +15,391 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  late AnimationController _rotationController;
-  late AnimationController _pulseController;
-  late AnimationController _fadeController;
-  late AnimationController _slideController;
-  late AnimationController _waveController;
-  late AnimationController _shimmerController;
-  late AnimationController _logoController;
+  // Animation Controllers - Optimized for better performance
+  late AnimationController _primaryController;
+  late AnimationController _backgroundController;
+  late AnimationController _transitionController;
 
-  late Animation<double> _rotationAnimation;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _waveAnimation;
-  late Animation<double> _shimmerAnimation;
+  // Animations
   late Animation<double> _logoScaleAnimation;
-  late Animation<double> _logoRotationAnimation;
+  late Animation<double> _logoFadeAnimation;
+  late Animation<double> _titleSlideAnimation;
+  late Animation<double> _titleFadeAnimation;
+  late Animation<double> _subtitleAnimation;
+  late Animation<double> _loadingAnimation;
+  late Animation<double> _backgroundAnimation;
+  late Animation<double> _particleAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Enhanced rotation animation for background
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 25),
-      vsync: this,
-    )..repeat();
-
-    // Smooth pulse animation for logo
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    // Staggered fade animation
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 1800),
-      vsync: this,
+    // Set status bar to transparent for immersive experience
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarBrightness: Brightness.dark,
+        statusBarIconBrightness: Brightness.light,
+      ),
     );
 
-    // Elastic slide animation
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    // Wave animation for background effect
-    _waveController = AnimationController(
-      duration: const Duration(seconds: 8),
-      vsync: this,
-    )..repeat();
-
-    // Shimmer effect for text
-    _shimmerController = AnimationController(
-      duration: const Duration(milliseconds: 2500),
-      vsync: this,
-    )..repeat();
-
-    // Logo entrance animation
-    _logoController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    );
-
-    _rotationAnimation = Tween<double>(begin: 0, end: 2 * math.pi).animate(
-      CurvedAnimation(parent: _rotationController, curve: Curves.linear),
-    );
-
-    _pulseAnimation = Tween<double>(begin: 0.98, end: 1.08).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.elasticInOut),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOutCubic),
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.8),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
-    );
-
-    _waveAnimation = Tween<double>(
-      begin: 0,
-      end: 2 * math.pi,
-    ).animate(_waveController);
-
-    _shimmerAnimation = Tween<double>(begin: -2, end: 2).animate(
-      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOutSine),
-    );
-
-    _logoScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
-    );
-
-    _logoRotationAnimation = Tween<double>(begin: -0.5, end: 0.0).animate(
-      CurvedAnimation(parent: _logoController, curve: Curves.easeOutBack),
-    );
-
-    // Orchestrated animation sequence
+    _initializeAnimations();
     _startAnimationSequence();
   }
 
+  void _initializeAnimations() {
+    // Primary animation controller for main content
+    _primaryController = AnimationController(
+      duration: const Duration(milliseconds: 3000),
+      vsync: this,
+    );
+
+    // Background animation controller
+    _backgroundController = AnimationController(
+      duration: const Duration(seconds: 20),
+      vsync: this,
+    )..repeat();
+
+    // Transition controller for smooth exit
+    _transitionController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    // Logo animations - staggered and smooth
+    _logoScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _primaryController,
+        curve: const Interval(0.0, 0.4, curve: Curves.elasticOut),
+      ),
+    );
+
+    _logoFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _primaryController,
+        curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
+      ),
+    );
+
+    // Title animations - cascading effect
+    _titleSlideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _primaryController,
+        curve: const Interval(0.2, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _titleFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _primaryController,
+        curve: const Interval(0.25, 0.65, curve: Curves.easeOut),
+      ),
+    );
+
+    // Subtitle animation
+    _subtitleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _primaryController,
+        curve: const Interval(0.4, 0.8, curve: Curves.easeOut),
+      ),
+    );
+
+    // Loading animation
+    _loadingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _primaryController,
+        curve: const Interval(0.6, 1.0, curve: Curves.easeInOut),
+      ),
+    );
+
+    // Background animations
+    _backgroundAnimation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
+      CurvedAnimation(parent: _backgroundController, curve: Curves.linear),
+    );
+
+    _particleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _primaryController,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
+      ),
+    );
+  }
+
   void _startAnimationSequence() async {
-    // Logo entrance
-    await Future.delayed(const Duration(milliseconds: 300));
-    _logoController.forward();
+    // Start the main animation sequence
+    _primaryController.forward();
 
-    // Text fade in
-    await Future.delayed(const Duration(milliseconds: 700));
-    _fadeController.forward();
+    // Add haptic feedback for better user experience
+    await Future.delayed(const Duration(milliseconds: 500));
+    HapticFeedback.lightImpact();
 
-    // Text slide in
-    await Future.delayed(const Duration(milliseconds: 200));
-    _slideController.forward();
+    // Auto navigate after animation completes
+    await Future.delayed(
+      const Duration(milliseconds: 3500),
+    ); // รอให้ animation เสร็จ
+    _navigateToHome();
+  }
+
+  Future<void> _navigateToHome() async {
+    // Smooth transition out
+    await _transitionController.forward();
+
+    // Navigate with custom transition
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
+          transitionDuration: const Duration(milliseconds: 600),
+          reverseTransitionDuration: const Duration(milliseconds: 400),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+              ),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.1),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+        ),
+      );
+    }
   }
 
   @override
   void dispose() {
-    _rotationController.dispose();
-    _pulseController.dispose();
-    _fadeController.dispose();
-    _slideController.dispose();
-    _waveController.dispose();
-    _shimmerController.dispose();
-    _logoController.dispose();
+    _primaryController.dispose();
+    _backgroundController.dispose();
+    _transitionController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSplashScreen(
-      splash: _buildSplashContent(),
-      nextScreen: HomePage(),
-      splashTransition: SplashTransition.fadeTransition,
-      pageTransitionType: PageTransitionType.rightToLeftWithFade,
-      backgroundColor: const Color(0xFF0A1628),
-      duration: 4000,
-      splashIconSize: MediaQuery.of(context).size.height,
-    );
-  }
+    final screenSize = MediaQuery.of(context).size;
+    final mediaQuery = MediaQuery.of(context);
 
-  Widget _buildSplashContent() {
+    // Enhanced screen detection
+    final isSmallScreen = screenSize.height < 700;
+    final isVerySmallScreen = screenSize.height < 600;
+    final isTablet = screenSize.shortestSide >= 600;
+    final isLandscape = screenSize.width > screenSize.height;
+    final textScaleFactor = mediaQuery.textScaleFactor;
+
+    // Dynamic scaling based on screen type
+    final scaleFactor = isTablet ? 1.3 : (isVerySmallScreen ? 0.8 : 1.0);
+
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          // Enhanced Animated Background
-          _buildModernBackground(),
-
-          // Main Content with Glass Morphism Effect
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.1),
-                    Colors.white.withOpacity(0.05),
-                  ],
-                ),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Enhanced Animated Logo
-                  _buildAnimatedLogo(),
-                  const SizedBox(height: 50),
-                  // Enhanced Animated Title
-                  _buildAnimatedTitle(),
-                  const SizedBox(height: 40),
-                  // Modern Loading Indicator
-                  _buildModernLoader(),
-                ],
-              ),
+      backgroundColor: const Color(0xFF0A1628),
+      body: AnimatedBuilder(
+        animation: _transitionController,
+        builder: (context, child) {
+          return Opacity(
+            opacity: 1.0 - _transitionController.value,
+            child: _buildSplashContent(
+              screenSize,
+              isSmallScreen,
+              scaleFactor,
+              isTablet,
+              isLandscape,
             ),
-          ),
-
-          // Floating Action Elements
-          _buildFloatingElements(),
-
-          // Enhanced Bottom Info
-          _buildBottomInfo(),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildAnimatedLogo() {
+  Widget _buildSplashContent(
+    Size screenSize,
+    bool isSmallScreen,
+    double scaleFactor,
+    bool isTablet,
+    bool isLandscape,
+  ) {
+    return Stack(
+      children: [
+        // Enhanced Background
+        _buildResponsiveBackground(screenSize),
+
+        // Main Content
+        SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenSize.width * (isTablet ? 0.15 : 0.08),
+                  vertical: isSmallScreen ? 20 : 40,
+                ),
+                child:
+                    isLandscape && !isTablet
+                        ? _buildLandscapeLayout(scaleFactor)
+                        : _buildPortraitLayout(isSmallScreen, scaleFactor),
+              ),
+            ),
+          ),
+        ),
+
+        // Bottom Info
+        _buildResponsiveBottomInfo(screenSize),
+
+        // Particles Effect
+        _buildParticleEffect(screenSize),
+      ],
+    );
+  }
+
+  Widget _buildPortraitLayout(bool isSmallScreen, double scaleFactor) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Logo Section
+        _buildResponsiveLogo(isSmallScreen, scaleFactor),
+
+        SizedBox(height: (isSmallScreen ? 30 : 50) * scaleFactor),
+
+        // Title Section
+        _buildResponsiveTitle(isSmallScreen, scaleFactor),
+
+        SizedBox(height: (isSmallScreen ? 25 : 40) * scaleFactor),
+
+        // Loading Section
+        _buildResponsiveLoader(),
+      ],
+    );
+  }
+
+  Widget _buildLandscapeLayout(double scaleFactor) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 1,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildResponsiveLogo(false, scaleFactor * 0.8),
+              const SizedBox(height: 20),
+              _buildResponsiveLoader(),
+            ],
+          ),
+        ),
+        const SizedBox(width: 40),
+        Expanded(
+          flex: 1,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [_buildResponsiveTitle(false, scaleFactor * 0.9)],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResponsiveBackground(Size screenSize) {
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        _logoScaleAnimation,
-        _logoRotationAnimation,
-        _pulseAnimation,
-      ]),
+      animation: _backgroundAnimation,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _logoScaleAnimation.value * _pulseAnimation.value,
-          child: Transform.rotate(
-            angle: _logoRotationAnimation.value,
+        return Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF0A1628),
+                const Color(0xFF1A2B47),
+                const Color(0xFF2D4A6B).withOpacity(0.8),
+                const Color(0xFF0F1B2E),
+              ],
+              stops: const [0.0, 0.3, 0.7, 1.0],
+            ),
+          ),
+          child: CustomPaint(
+            painter: ModernWavePainter(_backgroundAnimation.value),
+            size: screenSize,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildResponsiveLogo(bool isSmallScreen, double scaleFactor) {
+    double logoSize = ((isSmallScreen ? 120 : 160) * scaleFactor).clamp(
+      80,
+      200,
+    );
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([_logoScaleAnimation, _logoFadeAnimation]),
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _logoFadeAnimation,
+          child: Transform.scale(
+            scale: _logoScaleAnimation.value,
             child: Container(
+              width: logoSize,
+              height: logoSize,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.white.withOpacity(0.2),
+                    Colors.white.withOpacity(0.15),
                     Colors.blue.withOpacity(0.1),
                   ],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Colors.blue.withOpacity(0.2),
                     blurRadius: 30,
-                    spreadRadius: 5,
+                    spreadRadius: 2,
                   ),
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withOpacity(0.1),
                     blurRadius: 15,
-                    offset: const Offset(-5, -5),
+                    offset: const Offset(-2, -2),
                   ),
                 ],
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.1),
+                  width: 1,
+                ),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(24),
                 child: Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withOpacity(0.1),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
+                  padding: const EdgeInsets.all(12),
                   child: Hero(
                     tag: 'app_logo',
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(12),
                       child: Image.asset(
                         'assets/images/LOGO.png',
-                        height: 160,
-                        width: 160,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.account_balance,
+                              size: logoSize * 0.5,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -289,156 +412,160 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildAnimatedTitle() {
-    return SlideTransition(
-      position: _slideAnimation,
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Column(
+  Widget _buildResponsiveTitle(bool isSmallScreen, double scaleFactor) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        _titleSlideAnimation,
+        _titleFadeAnimation,
+        _subtitleAnimation,
+      ]),
+      builder: (context, child) {
+        return Column(
           children: [
-            // Main Title with Shimmer Effect
-            AnimatedBuilder(
-              animation: _shimmerAnimation,
-              builder: (context, child) {
-                return ShaderMask(
-                  shaderCallback: (bounds) {
-                    return LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: const [
-                        Colors.white60,
-                        Colors.white,
-                        Colors.white60,
-                      ],
-                      stops: [
-                        0.0,
-                        _shimmerAnimation.value.clamp(0.0, 1.0),
-                        1.0,
-                      ],
-                    ).createShader(bounds);
-                  },
-                  child: Text(
-                    'ສະຖາບັນການທະນາຄານ',
-                    style: GoogleFonts.notoSansLao(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      height: 1.2,
-                      shadows: [
-                        Shadow(
-                          offset: const Offset(0, 4),
-                          blurRadius: 8,
-                          color: Colors.black.withOpacity(0.3),
-                        ),
-                        Shadow(
-                          offset: const Offset(0, 2),
-                          blurRadius: 4,
-                          color: Colors.blue.withOpacity(0.5),
-                        ),
-                      ],
+            // Main Title
+            Transform.translate(
+              offset: Offset(0, _titleSlideAnimation.value),
+              child: FadeTransition(
+                opacity: _titleFadeAnimation,
+                child: Text(
+                  'ສະຖາບັນການທະນາຄານ',
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: ((isSmallScreen ? 24 : 28) * scaleFactor).clamp(
+                      18,
+                      36,
                     ),
-                    textAlign: TextAlign.center,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.2,
+                    shadows: [
+                      Shadow(
+                        offset: const Offset(0, 2),
+                        blurRadius: 8,
+                        color: Colors.black.withOpacity(0.5),
+                      ),
+                      Shadow(
+                        offset: const Offset(0, 1),
+                        blurRadius: 4,
+                        color: Colors.blue.withOpacity(0.3),
+                      ),
+                    ],
                   ),
-                );
-              },
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+
+            SizedBox(height: isSmallScreen ? 8 : 12),
+
+            // Subtitle
+            FadeTransition(
+              opacity: _subtitleAnimation,
+              child: Text(
+                'Banking Institute',
+                style: GoogleFonts.montserrat(
+                  fontSize: ((isSmallScreen ? 14 : 16) * scaleFactor).clamp(
+                    12,
+                    20,
+                  ),
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white.withOpacity(0.9),
+                  letterSpacing: 2,
+                  shadows: [
+                    Shadow(
+                      offset: const Offset(0, 1),
+                      blurRadius: 4,
+                      color: Colors.black.withOpacity(0.3),
+                    ),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
 
             const SizedBox(height: 12),
 
-            // Animated Subtitle
-            Text(
-              'Banking Institute',
-              style: GoogleFonts.montserrat(
-                fontSize: 18,
-                fontWeight: FontWeight.w400,
-                color: Colors.white.withOpacity(0.9),
-                letterSpacing: 3,
-                shadows: [
-                  Shadow(
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
-                    color: Colors.black.withOpacity(0.3),
-                  ),
-                ],
+            // Animated Underline
+            FadeTransition(
+              opacity: _subtitleAnimation,
+              child: AnimatedBuilder(
+                animation: _subtitleAnimation,
+                builder: (context, child) {
+                  return Container(
+                    width: 80 * _subtitleAnimation.value,
+                    height: 2,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.blue.withOpacity(0.8),
+                          Colors.white.withOpacity(0.8),
+                          Colors.blue.withOpacity(0.8),
+                          Colors.transparent,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  );
+                },
               ),
             ),
-
-            const SizedBox(height: 8),
-
-            // Animated Underline
-            AnimatedBuilder(
-              animation: _fadeController,
-              builder: (context, child) {
-                return Container(
-                  width: 100 * _fadeController.value,
-                  height: 2,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        Colors.blue.withOpacity(0.8),
-                        Colors.white.withOpacity(0.8),
-                        Colors.blue.withOpacity(0.8),
-                        Colors.transparent,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(1),
-                  ),
-                );
-              },
-            ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildModernLoader() {
+  Widget _buildResponsiveLoader() {
     return FadeTransition(
-      opacity: _fadeAnimation,
+      opacity: _loadingAnimation,
       child: Column(
         children: [
-          // Custom Animated Progress Indicator
           SizedBox(
-            width: 60,
-            height: 60,
+            width: 50,
+            height: 50,
             child: Stack(
               children: [
-                // Outer ring
-                SizedBox(
-                  width: 60,
-                  height: 60,
+                // Outer Progress Ring
+                SizedBox.expand(
                   child: CircularProgressIndicator(
-                    strokeWidth: 3,
+                    strokeWidth: 2.5,
                     backgroundColor: Colors.white.withOpacity(0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.blue.withOpacity(0.8),
+                      Colors.blue.withOpacity(0.7),
                     ),
                   ),
                 ),
-                // Inner pulsing dot
+                // Center Dot
                 Center(
                   child: AnimatedBuilder(
-                    animation: _pulseController,
+                    animation: _backgroundController,
                     builder: (context, child) {
-                      return Container(
-                        width: 12 * _pulseAnimation.value,
-                        height: 12 * _pulseAnimation.value,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              Colors.white,
-                              Colors.blue.withOpacity(0.6),
+                      return Transform.scale(
+                        scale:
+                            1.0 +
+                            math.sin(
+                                  _backgroundController.value * 4 * math.pi,
+                                ) *
+                                0.2,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                Colors.white,
+                                Colors.blue.withOpacity(0.6),
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.4),
+                                blurRadius: 6,
+                                spreadRadius: 1,
+                              ),
                             ],
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.blue.withOpacity(0.5),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
                         ),
                       );
                     },
@@ -447,12 +574,12 @@ class _SplashScreenState extends State<SplashScreen>
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Text(
-            'Initializing Experience...',
+            'Please wait...',
             style: GoogleFonts.montserrat(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.8),
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.7),
               fontWeight: FontWeight.w300,
               letterSpacing: 1,
             ),
@@ -462,132 +589,70 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildModernBackground() {
-    return Stack(
-      children: [
-        // Base Gradient
-        Container(
-          decoration: const BoxDecoration(
+  Widget _buildResponsiveBottomInfo(Size screenSize) {
+    return Positioned(
+      bottom: 20,
+      left: 20,
+      right: 20,
+      child: FadeTransition(
+        opacity: _subtitleAnimation,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
             gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF0A1628),
-                Color(0xFF1A2B47),
-                Color(0xFF2D4A6B),
-                Color(0xFF0F1B2E),
-              ],
-              stops: [0.0, 0.3, 0.7, 1.0],
+              colors: [Colors.white.withOpacity(0.08), Colors.transparent],
+            ),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.15),
+              width: 0.5,
             ),
           ),
-        ),
-
-        // Animated Wave Pattern
-        AnimatedBuilder(
-          animation: _waveAnimation,
-          builder: (context, child) {
-            return CustomPaint(
-              painter: WavePainter(_waveAnimation.value),
-              size: Size.infinite,
-            );
-          },
-        ),
-
-        // Dynamic Circles with Enhanced Effects
-        AnimatedBuilder(
-          animation: _rotationAnimation,
-          builder: (context, child) {
-            return Stack(
-              children: [
-                // Large morphing circle
-                Positioned(
-                  top: -150,
-                  left: -150,
-                  child: Transform.rotate(
-                    angle: _rotationAnimation.value,
-                    child: Container(
-                      width: 350,
-                      height: 350,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.blue.withOpacity(0.15),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Version 1.0.0',
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  color: Colors.white.withOpacity(0.6),
+                  fontWeight: FontWeight.w300,
                 ),
-                // Medium circle with different rotation speed
-                Positioned(
-                  top: 150,
-                  right: -120,
-                  child: Transform.rotate(
-                    angle: -_rotationAnimation.value * 1.5,
-                    child: Container(
-                      width: 250,
-                      height: 250,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.cyan.withOpacity(0.1),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+              ),
+              Text(
+                '© 2025 Banking Institute',
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  color: Colors.white.withOpacity(0.6),
+                  fontWeight: FontWeight.w300,
                 ),
-                // Bottom floating circles
-                Positioned(
-                  bottom: -100,
-                  left: -80,
-                  child: Transform.rotate(
-                    angle: _rotationAnimation.value * 0.8,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.lightBlue.withOpacity(0.12),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildFloatingElements() {
-    return Stack(
-      children: List.generate(20, (index) {
-        return AnimatedBuilder(
-          animation: _rotationController,
-          builder: (context, child) {
-            final double animationValue =
-                (_rotationController.value + index * 0.05) % 1.0;
-            final double size = 2 + (index % 4) * 1.5;
-            final double opacity =
-                (math.sin(animationValue * math.pi * 2) * 0.4 + 0.3).abs();
+  Widget _buildParticleEffect(Size screenSize) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_backgroundAnimation, _particleAnimation]),
+      builder: (context, child) {
+        return Stack(
+          children: List.generate(15, (index) {
+            final double progress =
+                (_backgroundAnimation.value + index * 0.08) % 1.0;
+            final double opacity = (_particleAnimation.value *
+                    (math.sin(progress * math.pi * 2) * 0.3 + 0.4))
+                .clamp(0.0, 1.0);
+            final double size = 1.5 + (index % 3) * 0.8;
 
             return Positioned(
-              left: (50 + index * 37.0) % MediaQuery.of(context).size.width,
+              left: (30 + index * 28.0) % screenSize.width,
               top:
-                  100 +
-                  (animationValue * MediaQuery.of(context).size.height * 0.7) +
-                  math.sin(animationValue * math.pi * 4) * 50,
+                  80 +
+                  (progress * screenSize.height * 0.6) +
+                  math.sin(progress * math.pi * 6) * 30,
               child: Opacity(
                 opacity: opacity,
                 child: Container(
@@ -597,83 +662,26 @@ class _SplashScreenState extends State<SplashScreen>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        Colors.white.withOpacity(0.8),
-                        Colors.blue.withOpacity(0.3),
+                        Colors.white.withOpacity(0.6),
+                        Colors.blue.withOpacity(0.2),
                       ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
-                        blurRadius: size * 2,
-                      ),
-                    ],
                   ),
                 ),
               ),
             );
-          },
+          }),
         );
-      }),
-    );
-  }
-
-  Widget _buildBottomInfo() {
-    return Positioned(
-      bottom: 40,
-      left: 0,
-      right: 0,
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  colors: [Colors.white.withOpacity(0.1), Colors.transparent],
-                ),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    'Version 1.0.0',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.7),
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '© 2025 Banking Institute',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 10,
-                      color: Colors.white.withOpacity(0.5),
-                      fontWeight: FontWeight.w300,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      },
     );
   }
 }
 
-// Custom Wave Painter for Background Effect
-class WavePainter extends CustomPainter {
+// Optimized Wave Painter with better performance
+class ModernWavePainter extends CustomPainter {
   final double animationValue;
 
-  WavePainter(this.animationValue);
+  ModernWavePainter(this.animationValue);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -683,18 +691,19 @@ class WavePainter extends CustomPainter {
           ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.blue.withOpacity(0.05), Colors.transparent],
+            colors: [Colors.blue.withOpacity(0.03), Colors.transparent],
           ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     final path = Path();
-    final waveHeight = 50.0;
-    final waveLength = size.width / 2;
+    final waveHeight = size.height * 0.05; // Responsive wave height
+    final waveLength = size.width * 0.8;
 
-    path.moveTo(0, size.height * 0.7);
+    path.moveTo(0, size.height * 0.75);
 
-    for (double x = 0; x <= size.width; x++) {
+    for (double x = 0; x <= size.width; x += 2) {
+      // Optimize by reducing points
       final y =
-          size.height * 0.7 +
+          size.height * 0.75 +
           waveHeight *
               math.sin((x / waveLength + animationValue) * 2 * math.pi);
       path.lineTo(x, y);

@@ -548,13 +548,6 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
                   color: Colors.grey[600],
                 ),
               ),
-              Text(
-                'ID: ${widget.topic.id}',
-                style: GoogleFonts.roboto(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
             ],
           ),
         ],

@@ -4,42 +4,78 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:BIBOL/models/course/course_model.dart';
 
-// เพิ่ม CustomPainter สำหรับ background pattern
+// Enhanced CustomPainter with more beautiful patterns
 class BackgroundPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint =
         Paint()
-          ..color = Colors.white.withOpacity(0.05)
+          ..color = Colors.white.withOpacity(0.08)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.0;
+          ..strokeWidth = 0.8;
 
-    // สร้าง grid pattern
-    for (double i = 0; i < size.width; i += 30) {
+    // Create beautiful geometric pattern
+    for (double i = 0; i < size.width; i += 40) {
       canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
     }
 
-    for (double i = 0; i < size.height; i += 30) {
+    for (double i = 0; i < size.height; i += 40) {
       canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
     }
 
-    // เพิ่มวงกลมเป็น decoration
-    final circlePaint =
+    // Add elegant decorative circles with gradient effect
+    final circlePaint1 =
         Paint()
-          ..color = Colors.white.withOpacity(0.08)
-          ..style = PaintingStyle.fill;
+          ..shader = RadialGradient(
+            colors: [
+              Colors.white.withOpacity(0.15),
+              Colors.white.withOpacity(0.05),
+            ],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.8, size.height * 0.3),
+              radius: 30,
+            ),
+          );
+
+    final circlePaint2 =
+        Paint()
+          ..shader = RadialGradient(
+            colors: [
+              Colors.white.withOpacity(0.12),
+              Colors.white.withOpacity(0.03),
+            ],
+          ).createShader(
+            Rect.fromCircle(
+              center: Offset(size.width * 0.2, size.height * 0.7),
+              radius: 25,
+            ),
+          );
 
     canvas.drawCircle(
       Offset(size.width * 0.8, size.height * 0.3),
-      20,
-      circlePaint,
+      30,
+      circlePaint1,
     );
-
     canvas.drawCircle(
       Offset(size.width * 0.2, size.height * 0.7),
-      15,
-      circlePaint,
+      25,
+      circlePaint2,
     );
+
+    // Add diamond shapes
+    final diamondPaint =
+        Paint()
+          ..color = Colors.white.withOpacity(0.06)
+          ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(size.width * 0.1, size.height * 0.2);
+    path.lineTo(size.width * 0.12, size.height * 0.18);
+    path.lineTo(size.width * 0.14, size.height * 0.2);
+    path.lineTo(size.width * 0.12, size.height * 0.22);
+    path.close();
+    canvas.drawPath(path, diamondPaint);
   }
 
   @override
@@ -59,54 +95,60 @@ class _CourseDetailPageState extends State<CourseDetailPage>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _slideController;
+  late AnimationController _scaleController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
-    _setupErrorHandling(); // เพิ่ม error handling
+    _setupErrorHandling();
   }
 
   void _setupAnimations() {
     _fadeController = AnimationController(
-      duration: Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 1000),
       vsync: this,
     );
     _slideController = AnimationController(
-      duration: Duration(milliseconds: 600),
+      duration: Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _scaleController = AnimationController(
+      duration: Duration(milliseconds: 1200),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
+    );
 
     _slideAnimation = Tween<Offset>(
-      begin: Offset(0, 0.3),
+      begin: Offset(0, 0.4),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
     );
 
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
+    );
+
     _fadeController.forward();
     _slideController.forward();
+    _scaleController.forward();
   }
 
-  // ✅ เพิ่มการจัดการ Error สำหรับ Images
   void _setupErrorHandling() {
     FlutterError.onError = (FlutterErrorDetails details) {
-      // ซ่อน error ที่เกี่ยวกับ network images
       if (details.exception.toString().contains('HTTP request failed') ||
           details.exception.toString().contains('images.unsplash.com') ||
           details.exception.toString().contains('404')) {
-        // ไม่แสดง error แต่ log ไว้
         print('🖼️ Image loading error (ignored): ${details.exception}');
         return;
       }
-      // แสดง error อื่นๆ ตามปกติ
       FlutterError.presentError(details);
     };
   }
@@ -115,27 +157,37 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
   Widget _buildCourseIcon() {
     return Container(
-      width: 80,
-      height: 80,
+      width: 90,
+      height: 90,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 15,
-            offset: Offset(0, 8),
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.8),
+            blurRadius: 10,
+            offset: Offset(-5, -5),
           ),
         ],
       ),
       child: Icon(
         FontAwesomeIcons.graduationCap,
-        size: 40,
+        size: 45,
         color: Color(0xFF07325D),
       ),
     );
@@ -170,16 +222,19 @@ class _CourseDetailPageState extends State<CourseDetailPage>
               opacity: _fadeAnimation,
               child: SlideTransition(
                 position: _slideAnimation,
-                child: Column(
-                  children: [
-                    _buildCourseOverviewCard(),
-                    _buildCourseDetailsSection(),
-                    _buildCurriculumSection(),
-                    _buildCareerProspectsSection(),
-                    _buildAdmissionRequirementsSection(),
-                    _buildContactSection(),
-                    SizedBox(height: 100),
-                  ],
+                child: ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: Column(
+                    children: [
+                      _buildCourseOverviewCard(),
+                      _buildCourseDetailsSection(),
+                      _buildCurriculumSection(),
+                      _buildCareerProspectsSection(),
+                      _buildAdmissionRequirementsSection(),
+                      _buildContactSection(),
+                      SizedBox(height: 100),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -192,7 +247,7 @@ class _CourseDetailPageState extends State<CourseDetailPage>
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 300,
+      expandedHeight: 320,
       floating: false,
       pinned: true,
       backgroundColor: Color(0xFF07325D),
@@ -204,8 +259,19 @@ class _CourseDetailPageState extends State<CourseDetailPage>
         icon: Container(
           padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              colors: [Colors.white, Colors.grey[100]!],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
           child: Icon(Icons.arrow_back_ios, color: Color(0xFF07325D), size: 20),
         ),
@@ -218,8 +284,19 @@ class _CourseDetailPageState extends State<CourseDetailPage>
           icon: Container(
             padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.grey[100]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
             child: Icon(
               Icons.share_outlined,
@@ -234,26 +311,27 @@ class _CourseDetailPageState extends State<CourseDetailPage>
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+              colors: [Color(0xFF07325D), Color(0xFF0A4A73), Color(0xFF0D5A8A)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
           ),
           child: Stack(
             children: [
-              // ✅ Background Pattern ที่ปลอดภัย
+              // Enhanced Background Pattern
               CustomPaint(
                 painter: BackgroundPatternPainter(),
                 child: Container(),
               ),
 
-              // Gradient Overlay
+              // Beautiful Gradient Overlay
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Color(0xFF07325D).withOpacity(0.8),
+                      Color(0xFF07325D).withOpacity(0.7),
                       Color(0xFF0A4A73).withOpacity(0.8),
+                      Color(0xFF0D5A8A).withOpacity(0.9),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -261,7 +339,7 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                 ),
               ),
 
-              // Content
+              // Content with enhanced styling
               Positioned(
                 bottom: 30,
                 left: 20,
@@ -269,47 +347,68 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Course Icon
+                    // Enhanced Course Icon with animation
                     Hero(
                       tag: 'course_icon_${widget.course.id}',
                       child: _buildCourseIcon(),
                     ),
-                    SizedBox(height: 16),
+                    SizedBox(height: 20),
 
-                    // Course Title
+                    // Enhanced Course Title with shadow
                     Hero(
                       tag: 'course_title_${widget.course.id}',
                       child: Material(
                         color: Colors.transparent,
-                        child: Text(
-                          widget.course.title,
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            height: 1.2,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            widget.course.title,
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.3,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: 12),
 
-                    // Course Type Badge
+                    // Enhanced Course Type Badge
                     Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                        horizontal: 16,
+                        vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(20),
+                        gradient: LinearGradient(
+                          colors: [Colors.white, Colors.grey[50]!],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Text(
                         _getCourseTypeFromTitle(),
                         style: GoogleFonts.notoSansLao(
-                          fontSize: 12,
+                          fontSize: 13,
                           color: Color(0xFF07325D),
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -323,7 +422,6 @@ class _CourseDetailPageState extends State<CourseDetailPage>
     );
   }
 
-  // ✅ ฟังก์ชันใหม่เพื่อดึงประเภทหลักสูตรจากชื่อ
   String _getCourseTypeFromTitle() {
     final title = widget.course.title.toLowerCase();
     if (title.contains('ປະລິນຍາໂທ')) return 'ປະລິນຍາໂທ ລະບົບ 2 ປີ';
@@ -337,104 +435,122 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   Widget _buildCourseOverviewCard() {
     return Container(
       margin: EdgeInsets.all(20),
-      padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.white.withOpacity(0.8),
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: Offset(-5, -5),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Color(0xFF07325D).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.school_outlined,
-                  color: Color(0xFF07325D),
-                  size: 24,
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'ລາຍລະອຽດຫຼັກສູດ',
-                  style: GoogleFonts.notoSansLao(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF07325D),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-
-          // แสดง details จาก API
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Color(0xFF07325D).withOpacity(0.03),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Color(0xFF07325D).withOpacity(0.1),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              _stripHtmlTags(widget.course.details),
-              style: GoogleFonts.notoSansLao(
-                fontSize: 15,
-                color: Colors.grey[800],
-                height: 1.7,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-
-          SizedBox(height: 20),
-
-          // แยกแสดงสาขาต่างๆ ถ้ามี
-          if (widget.course.details.contains('ສາຂາ')) ...[
+      child: Padding(
+        padding: EdgeInsets.all(28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
               children: [
-                Icon(
-                  Icons.account_tree_outlined,
-                  color: Color(0xFF07325D),
-                  size: 20,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  'ສາຂາວິຊາທີ່ເປີດສອນ',
-                  style: GoogleFonts.notoSansLao(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF07325D).withOpacity(0.1),
+                        Color(0xFF07325D).withOpacity(0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.school_outlined,
                     color: Color(0xFF07325D),
+                    size: 28,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'ລາຍລະອຽດຫຼັກສູດ',
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF07325D),
+                    ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 12),
-            _buildMajorsList(),
+            SizedBox(height: 24),
+
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF07325D).withOpacity(0.02),
+                    Color(0xFF07325D).withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Color(0xFF07325D).withOpacity(0.15),
+                  width: 1.5,
+                ),
+              ),
+              child: Text(
+                _stripHtmlTags(widget.course.details),
+                style: GoogleFonts.notoSansLao(
+                  fontSize: 16,
+                  color: Colors.grey[800],
+                  height: 1.8,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+
+            SizedBox(height: 24),
+
+            if (widget.course.details.contains('ສາຂາ')) ...[
+              Row(
+                children: [
+                  Icon(
+                    Icons.account_tree_outlined,
+                    color: Color(0xFF07325D),
+                    size: 24,
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'ສາຂາວິຊາທີ່ເປີດສອນ',
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF07325D),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              _buildMajorsList(),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildMajorsList() {
-    // ดึงชื่อสาขาจาก details
     List<String> majors = _extractMajorsFromDetails(widget.course.details);
 
     return Column(
@@ -442,48 +558,54 @@ class _CourseDetailPageState extends State<CourseDetailPage>
           majors
               .map(
                 (major) => Container(
-                  margin: EdgeInsets.only(bottom: 8),
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  margin: EdgeInsets.only(bottom: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                      colors: [Colors.white, Colors.grey[50]!],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                      color: Color(0xFF07325D).withOpacity(0.15),
-                      width: 1,
+                      color: Color(0xFF07325D).withOpacity(0.2),
+                      width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 10,
+                        height: 10,
                         decoration: BoxDecoration(
-                          color: Color(0xFF07325D),
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+                          ),
                           shape: BoxShape.circle,
                         ),
                       ),
-                      SizedBox(width: 12),
+                      SizedBox(width: 16),
                       Expanded(
                         child: Text(
                           major,
                           style: GoogleFonts.notoSansLao(
-                            fontSize: 14,
+                            fontSize: 15,
                             color: Colors.grey[700],
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                       Icon(
                         Icons.arrow_forward_ios,
-                        size: 14,
-                        color: Colors.grey[400],
+                        size: 16,
+                        color: Color(0xFF07325D).withOpacity(0.6),
                       ),
                     ],
                   ),
@@ -494,7 +616,6 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   }
 
   List<String> _extractMajorsFromDetails(String details) {
-    // ดึงสาขาจากข้อความ details
     List<String> majors = [];
 
     if (details.contains('ສາຂາການທະນາຄານ')) majors.add('ສາຂາການທະນາຄານ');
@@ -524,28 +645,28 @@ class _CourseDetailPageState extends State<CourseDetailPage>
             icon: Icons.access_time,
             title: 'ໄລຍະເວລາການສຶກສາ',
             content: _getCourseDuration(),
-            color: Color(0xFF2E7D32),
+            colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
           ),
           SizedBox(height: 16),
           _buildDetailCard(
             icon: Icons.schedule,
             title: 'ລະບົບການສຶກສາ',
             content: _getCourseSystem(),
-            color: Color(0xFF1976D2),
+            colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
           ),
           SizedBox(height: 16),
           _buildDetailCard(
             icon: Icons.school,
             title: 'ລະດັບການສຶກສາ',
             content: _getCourseLevel(),
-            color: Color(0xFF7B1FA2),
+            colors: [Color(0xFF7B1FA2), Color(0xFFBA68C8)],
           ),
           SizedBox(height: 16),
           _buildDetailCard(
             icon: Icons.payments,
             title: 'ຄ່າທຳນຽມການສຶກສາ',
             content: 'ຕິດຕໍ່ສອບຖາມລາຄາ',
-            color: Color(0xFFE65100),
+            colors: [Color(0xFFE65100), Color(0xFFFF9800)],
           ),
         ],
       ),
@@ -578,33 +699,39 @@ class _CourseDetailPageState extends State<CourseDetailPage>
     required IconData icon,
     required String title,
     required String content,
-    required Color color,
+    required List<Color> colors,
   }) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2), width: 1),
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colors[0].withOpacity(0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 6,
-            offset: Offset(0, 2),
+            color: colors[0].withOpacity(0.1),
+            blurRadius: 12,
+            offset: Offset(0, 6),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+              gradient: LinearGradient(
+                colors: colors.map((c) => c.withOpacity(0.15)).toList(),
+              ),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: colors[0], size: 28),
           ),
-          SizedBox(width: 16),
+          SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -614,16 +741,16 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                   style: GoogleFonts.notoSansLao(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey[800],
+                    color: Colors.grey[700],
                   ),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: 6),
                 Text(
                   content,
                   style: GoogleFonts.notoSansLao(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: color,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: colors[0],
                   ),
                 ),
               ],
@@ -635,143 +762,149 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   }
 
   Widget _buildCurriculumSection() {
-    // แยกข้อมูลหลักสูตรจาก details
     List<String> majors = _extractMajorsFromDetails(widget.course.details);
 
     return Container(
       margin: EdgeInsets.all(20),
-      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: Offset(0, 8),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.menu_book, color: Color(0xFF07325D), size: 24),
-              SizedBox(width: 8),
-              Text(
-                'ຫຼັກສູດການສຶກສາ',
-                style: GoogleFonts.notoSansLao(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF07325D),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-
-          // ข้อมูลหลักสูตรหลัก
-          Container(
-            width: double.infinity,
-            child: Column(
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                // ระยะเวลาการศึกษา
-                _buildCurriculumInfoCard(
-                  Icons.access_time,
-                  'ໄລຍະເວລາການສຶກສາ',
-                  _getCourseDuration(),
-                  Color(0xFF4CAF50),
-                ),
-
-                SizedBox(height: 12),
-
-                // ระบบการศึกษา
-                _buildCurriculumInfoCard(
-                  Icons.schedule,
-                  'ລະບົບການສຶກສາ',
-                  _getCourseSystem(),
-                  Color(0xFFFF9800),
-                ),
-
-                SizedBox(height: 12),
-
-                // ภาษาการศึกษา
-                _buildCurriculumInfoCard(
-                  Icons.language,
-                  'ພາສາການສຶກສາ',
-                  'ລາວ, ອັງກິດ',
-                  Color(0xFF9C27B0),
-                ),
-              ],
-            ),
-          ),
-
-          SizedBox(height: 20),
-
-          // หลักสูตรประกอบด้วย
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.list_alt, color: Colors.white, size: 20),
-                SizedBox(width: 8),
+                Icon(Icons.menu_book, color: Color(0xFF07325D), size: 28),
+                SizedBox(width: 12),
                 Text(
-                  majors.isNotEmpty ? 'ສາຂາວິຊາທີ່ເປີດສອນ' : 'ຫຼັກສູດປະກອບດ້ວຍ',
+                  'ຫຼັກສູດການສຶກສາ',
                   style: GoogleFonts.notoSansLao(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF07325D),
                   ),
                 ),
               ],
             ),
-          ),
-          SizedBox(height: 12),
+            SizedBox(height: 20),
 
-          // แสดงรายการหลักสูตร
-          _buildCurriculumComponents(),
-        ],
+            Column(
+              children: [
+                _buildCurriculumInfoCard(
+                  Icons.access_time,
+                  'ໄລຍະເວລາການສຶກສາ',
+                  _getCourseDuration(),
+                  [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                ),
+                SizedBox(height: 16),
+                _buildCurriculumInfoCard(
+                  Icons.schedule,
+                  'ລະບົບການສຶກສາ',
+                  _getCourseSystem(),
+                  [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                ),
+                SizedBox(height: 16),
+                _buildCurriculumInfoCard(
+                  Icons.language,
+                  'ພາສາການສຶກສາ',
+                  'ລາວ, ອັງກິດ',
+                  [Color(0xFF9C27B0), Color(0xFFBA68C8)],
+                ),
+              ],
+            ),
+
+            SizedBox(height: 24),
+
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF07325D).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.list_alt, color: Colors.white, size: 24),
+                  SizedBox(width: 12),
+                  Text(
+                    majors.isNotEmpty
+                        ? 'ສາຂາວິຊາທີ່ເປີດສອນ'
+                        : 'ຫຼັກສູດປະກອບດ້ວຍ',
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 16),
+
+            _buildCurriculumComponents(),
+          ],
+        ),
       ),
     );
   }
 
-  // ✅ Widget สำหรับแสดงข้อมูลหลักสูตร
   Widget _buildCurriculumInfoCard(
     IconData icon,
     String title,
     String content,
-    Color color,
+    List<Color> colors,
   ) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors[0].withOpacity(0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 2),
+            color: colors[0].withOpacity(0.15),
+            blurRadius: 10,
+            offset: Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(10),
+            padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              gradient: LinearGradient(
+                colors: colors.map((c) => c.withOpacity(0.15)).toList(),
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: colors[0], size: 24),
           ),
           SizedBox(width: 16),
           Expanded(
@@ -783,15 +916,16 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                   style: GoogleFonts.notoSansLao(
                     fontSize: 13,
                     color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+                SizedBox(height: 4),
                 Text(
                   content,
                   style: GoogleFonts.notoSansLao(
                     fontSize: 16,
-                    color: color,
-                    fontWeight: FontWeight.bold,
+                    color: colors[0],
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
@@ -805,7 +939,6 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   Widget _buildCurriculumComponents() {
     List<String> majors = _extractMajorsFromDetails(widget.course.details);
 
-    // ถ้าไม่มีสาขา ให้ใช้รายการหลักสูตรทั่วไป
     List<String> curriculumComponents =
         majors.isNotEmpty
             ? majors
@@ -823,41 +956,47 @@ class _CourseDetailPageState extends State<CourseDetailPage>
           curriculumComponents
               .map(
                 (component) => Container(
-                  margin: EdgeInsets.only(bottom: 8),
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  margin: EdgeInsets.only(bottom: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                      colors: [Colors.white, Colors.grey[50]!],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: Color(0xFF07325D).withOpacity(0.15),
-                      width: 1,
+                      color: Color(0xFF07325D).withOpacity(0.2),
+                      width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 10,
+                        height: 10,
                         decoration: BoxDecoration(
-                          color: Color(0xFF07325D),
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+                          ),
                           shape: BoxShape.circle,
                         ),
                       ),
-                      SizedBox(width: 12),
+                      SizedBox(width: 16),
                       Expanded(
                         child: Text(
                           component,
                           style: GoogleFonts.notoSansLao(
-                            fontSize: 14,
+                            fontSize: 15,
                             color: Colors.grey[700],
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -872,77 +1011,102 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   Widget _buildCareerProspectsSection() {
     return Container(
       margin: EdgeInsets.all(20),
-      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: Offset(0, 8),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.work_outline, color: Color(0xFF07325D), size: 24),
-              SizedBox(width: 8),
-              Text(
-                'ໂອກາດໃນການເຮັດວຽກ',
-                style: GoogleFonts.notoSansLao(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF07325D),
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.work_outline, color: Color(0xFF07325D), size: 28),
+                SizedBox(width: 12),
+                Text(
+                  'ໂອກາດໃນການເຮັດວຽກ',
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF07325D),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          _buildCareerOption(
-            'ທະນາຄານ',
-            'ນັກວິເຄາະສິນເຊື່ອ, ບັນດາເຈົ້າໜ້າທີ່ທະນາຄານ',
-            FontAwesomeIcons.university,
-          ),
-          SizedBox(height: 12),
-          _buildCareerOption(
-            'ບໍລິສັດການເງິນ',
-            'ທີ່ປຶກສາການເງິນ, ນັກວິເຄາະການລົງທຶນ',
-            FontAwesomeIcons.chartLine,
-          ),
-          SizedBox(height: 12),
-          _buildCareerOption(
-            'ລັດວິສາຫະກິດ',
-            'ເຈົ້າໜ້າທີ່ການເງິນ, ນັກບັນຊີ',
-            FontAwesomeIcons.building,
-          ),
-        ],
+              ],
+            ),
+            SizedBox(height: 20),
+            _buildCareerOption(
+              'ທະນາຄານ',
+              'ນັກວິເຄາະສິນເຊື່ອ, ບັນດາເຈົ້າໜ້າທີ່ທະນາຄານ',
+              FontAwesomeIcons.university,
+              [Color(0xFF1976D2), Color(0xFF42A5F5)],
+            ),
+            SizedBox(height: 16),
+            _buildCareerOption(
+              'ບໍລິສັດການເງິນ',
+              'ທີ່ປຶກສາການເງິນ, ນັກວິເຄາະການລົງທຶນ',
+              FontAwesomeIcons.chartLine,
+              [Color(0xFF388E3C), Color(0xFF66BB6A)],
+            ),
+            SizedBox(height: 16),
+            _buildCareerOption(
+              'ລັດວິສາຫະກິດ',
+              'ເຈົ້າໜ້າທີ່ການເງິນ, ນັກບັນຊີ',
+              FontAwesomeIcons.building,
+              [Color(0xFFE65100), Color(0xFFFF9800)],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildCareerOption(String title, String description, IconData icon) {
+  Widget _buildCareerOption(
+    String title,
+    String description,
+    IconData icon,
+    List<Color> colors,
+  ) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Color(0xFF07325D).withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Color(0xFF07325D).withOpacity(0.1), width: 1),
+        gradient: LinearGradient(
+          colors: colors.map((c) => c.withOpacity(0.08)).toList(),
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors[0].withOpacity(0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: colors[0].withOpacity(0.1),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(10),
+            padding: EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Color(0xFF07325D).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              gradient: LinearGradient(
+                colors: colors.map((c) => c.withOpacity(0.15)).toList(),
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: Color(0xFF07325D), size: 20),
+            child: Icon(icon, color: colors[0], size: 24),
           ),
-          SizedBox(width: 16),
+          SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -950,17 +1114,18 @@ class _CourseDetailPageState extends State<CourseDetailPage>
                 Text(
                   title,
                   style: GoogleFonts.notoSansLao(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF07325D),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: colors[0],
                   ),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: 6),
                 Text(
                   description,
                   style: GoogleFonts.notoSansLao(
-                    fontSize: 13,
+                    fontSize: 14,
                     color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -974,72 +1139,88 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   Widget _buildAdmissionRequirementsSection() {
     return Container(
       margin: EdgeInsets.all(20),
-      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey[50]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: Offset(0, 8),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.fact_check_outlined,
-                color: Color(0xFF07325D),
-                size: 24,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'ເງື່ອນໄຂການເຂົ້າສຶກສາ',
-                style: GoogleFonts.notoSansLao(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.fact_check_outlined,
                   color: Color(0xFF07325D),
+                  size: 28,
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          _buildRequirementItem('ຈົບການສຶກສາຊັ້ນມັດທະຍົມຕອນປາຍ ຫຼື ເທົ່າທຽມ'),
-          _buildRequirementItem('ຜ່ານການສອບເຂົ້າຂອງສະຖາບັນ'),
-          _buildRequirementItem('ມີສຸຂະພາບແຂງແຮງ'),
-          _buildRequirementItem('ສົ່ງເອກະສານຄົບຖ້ວນ'),
-        ],
+                SizedBox(width: 12),
+                Text(
+                  'ເງື່ອນໄຂການເຂົ້າສຶກສາ',
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF07325D),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            _buildRequirementItem('ຈົບການສຶກສາຊັ້ນມັດທະຍົມຕອນປາຍ ຫຼື ເທົ່າທຽມ'),
+            _buildRequirementItem('ຜ່ານການສອບເຂົ້າຂອງສະຖາບັນ'),
+            _buildRequirementItem('ມີສຸຂະພາບແຂງແຮງ'),
+            _buildRequirementItem('ສົ່ງເອກະສານຄົບຖ້ວນ'),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildRequirementItem(String requirement) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             margin: EdgeInsets.only(top: 2),
-            padding: EdgeInsets.all(2),
+            padding: EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Color(0xFF4CAF50),
+              gradient: LinearGradient(
+                colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+              ),
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF4CAF50).withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
-            child: Icon(Icons.check, color: Colors.white, size: 12),
+            child: Icon(Icons.check, color: Colors.white, size: 14),
           ),
-          SizedBox(width: 12),
+          SizedBox(width: 16),
           Expanded(
             child: Text(
               requirement,
               style: GoogleFonts.notoSansLao(
-                fontSize: 14,
+                fontSize: 15,
                 color: Colors.grey[700],
-                height: 1.5,
+                height: 1.6,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -1051,65 +1232,67 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   Widget _buildContactSection() {
     return Container(
       margin: EdgeInsets.all(20),
-      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+          colors: [Color(0xFF07325D), Color(0xFF0A4A73), Color(0xFF0D5A8A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFF07325D).withOpacity(0.3),
-            blurRadius: 15,
-            offset: Offset(0, 8),
+            color: Color(0xFF07325D).withOpacity(0.4),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.contact_support_outlined,
-                color: Colors.white,
-                size: 24,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'ຕິດຕໍ່ສອບຖາມ',
-                style: GoogleFonts.notoSansLao(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: EdgeInsets.all(28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.contact_support_outlined,
                   color: Colors.white,
+                  size: 28,
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          _buildContactItem(
-            Icons.phone,
-            'ໂທລະສັບ',
-            '020 5555 5555',
-            Colors.white,
-          ),
-          SizedBox(height: 12),
-          _buildContactItem(
-            Icons.email_outlined,
-            'ອີເມລ',
-            'info@bibol.edu.la',
-            Colors.white,
-          ),
-          SizedBox(height: 12),
-          _buildContactItem(
-            Icons.location_on_outlined,
-            'ທີ່ຕັ້ງ',
-            'ວຽງຈັນ, ສປປ ລາວ',
-            Colors.white,
-          ),
-        ],
+                SizedBox(width: 12),
+                Text(
+                  'ຕິດຕໍ່ສອບຖາມ',
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 24),
+            _buildContactItem(
+              Icons.phone,
+              'ໂທລະສັບ',
+              '020 5555 5555',
+              Colors.white,
+            ),
+            SizedBox(height: 16),
+            _buildContactItem(
+              Icons.email_outlined,
+              'ອີເມລ',
+              'info@bibol.edu.la',
+              Colors.white,
+            ),
+            SizedBox(height: 16),
+            _buildContactItem(
+              Icons.location_on_outlined,
+              'ທີ່ຕັ້ງ',
+              'ວຽງຈັນ, ສປປ ລາວ',
+              Colors.white,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1122,23 +1305,32 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   ) {
     return Row(
       children: [
-        Icon(icon, color: color.withOpacity(0.8), size: 20),
-        SizedBox(width: 12),
+        Container(
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: color, size: 24),
+        ),
+        SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
               style: GoogleFonts.notoSansLao(
-                fontSize: 12,
+                fontSize: 13,
                 color: color.withOpacity(0.8),
+                fontWeight: FontWeight.w500,
               ),
             ),
+            SizedBox(height: 2),
             Text(
               content,
               style: GoogleFonts.notoSansLao(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
                 color: color,
               ),
             ),
@@ -1149,109 +1341,162 @@ class _CourseDetailPageState extends State<CourseDetailPage>
   }
 
   Widget _buildFloatingActionButton() {
-    return FloatingActionButton.extended(
-      onPressed: () {
-        HapticFeedback.mediumImpact();
-        // Show application form or contact
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.transparent,
-          isScrollControlled: true,
-          builder:
-              (context) => Container(
-                height: MediaQuery.of(context).size.height * 0.7,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF07325D), Color(0xFF0A4A73)],
+        ),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF07325D).withOpacity(0.4),
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: FloatingActionButton.extended(
+        onPressed: () {
+          HapticFeedback.mediumImpact();
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: Colors.transparent,
+            isScrollControlled: true,
+            builder:
+                (context) => Container(
+                  height: MediaQuery.of(context).size.height * 0.75,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.white, Colors.grey[50]!],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(25),
+                      topRight: Radius.circular(25),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: Offset(0, -5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 5,
+                        margin: EdgeInsets.only(top: 15),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(28),
+                        child: Column(
+                          children: [
+                            Text(
+                              'ສົນໃຈສະໝັກຮຽນ?',
+                              style: GoogleFonts.notoSansLao(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF07325D),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'ເລືອກວິທີການທີ່ທ່ານຕ້ອງການ',
+                              style: GoogleFonts.notoSansLao(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            SizedBox(height: 32),
+                            Container(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  // Handle application
+                                },
+                                icon: Icon(Icons.app_registration, size: 24),
+                                label: Text(
+                                  'ແບບຟອມສະໝັກຮຽນ',
+                                  style: GoogleFonts.notoSansLao(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xFF07325D),
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  elevation: 8,
+                                  shadowColor: Color(
+                                    0xFF07325D,
+                                  ).withOpacity(0.4),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            Container(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () {
+                                  // Handle contact
+                                },
+                                icon: Icon(Icons.phone, size: 24),
+                                label: Text(
+                                  'ຕິດຕໍ່ສອບຖາມ',
+                                  style: GoogleFonts.notoSansLao(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Color(0xFF07325D),
+                                  side: BorderSide(
+                                    color: Color(0xFF07325D),
+                                    width: 2,
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      margin: EdgeInsets.only(top: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          Text(
-                            'ສົນໃຈສະໝັກຮຽນ?',
-                            style: GoogleFonts.notoSansLao(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF07325D),
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // Handle application
-                            },
-                            icon: Icon(Icons.app_registration),
-                            label: Text(
-                              'ແບບຟອມສະໝັກຮຽນ',
-                              style: GoogleFonts.notoSansLao(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF07325D),
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              // Handle contact
-                            },
-                            icon: Icon(Icons.phone),
-                            label: Text(
-                              'ຕິດຕໍ່ສອບຖາມ',
-                              style: GoogleFonts.notoSansLao(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Color(0xFF07325D),
-                              side: BorderSide(color: Color(0xFF07325D)),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-        );
-      },
-      backgroundColor: Color(0xFF07325D),
-      foregroundColor: Colors.white,
-      icon: Icon(Icons.school),
-      label: Text(
-        'ສະໝັກຮຽນ',
-        style: GoogleFonts.notoSansLao(fontWeight: FontWeight.w600),
+          );
+        },
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        icon: Icon(Icons.school, size: 24),
+        label: Text(
+          'ສະໝັກຮຽນ',
+          style: GoogleFonts.notoSansLao(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
+        ),
       ),
     );
   }
