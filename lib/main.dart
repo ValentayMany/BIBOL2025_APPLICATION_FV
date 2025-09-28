@@ -1,4 +1,4 @@
-import 'package:BIBOL/screens/News/news_detail.dart';
+import 'package:BIBOL/screens/News/news_detail_in_home.dart';
 import 'package:BIBOL/test/simple_connection_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
