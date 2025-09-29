@@ -1,26 +1,198 @@
-// ignore_for_file: unnecessary_null_comparison, prefer_interpolation_to_compose_strings, sized_box_for_whitespace
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:BIBOL/services/news/news_service.dart';
 import 'package:BIBOL/models/topic/topic_model.dart';
 import 'package:intl/intl.dart';
 
-class TopicDetailPage extends StatefulWidget {
-  final Topic topic;
+class NewsDetailPage extends StatefulWidget {
+  final String newsId;
 
-  const TopicDetailPage({Key? key, required this.topic}) : super(key: key);
+  const NewsDetailPage({Key? key, required this.newsId}) : super(key: key);
 
   @override
-  State<TopicDetailPage> createState() => _TopicDetailPageState();
+  State<NewsDetailPage> createState() => _NewsDetailPageState();
 }
 
-class _TopicDetailPageState extends State<TopicDetailPage> {
+class _NewsDetailPageState extends State<NewsDetailPage> {
+  Topic? _news;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNewsDetail();
+  }
+
+  Future<void> _fetchNewsDetail() async {
+    try {
+      print('🔍 DEBUG: Starting to fetch news with ID: ${widget.newsId}');
+      final news = await NewsService.getNewsById(widget.newsId);
+
+      if (mounted) {
+        setState(() {
+          if (news != null) {
+            print('✅ DEBUG: Successfully received news: ${news.title}');
+            _news = news;
+            _errorMessage = null;
+          } else {
+            print('❌ DEBUG: News is null');
+            _errorMessage = 'ບໍ່ພົບຂ່າວທີ່ເລືອກ (ID: ${widget.newsId})';
+          }
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('❌ DEBUG: Exception in _fetchNewsDetail: $e');
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'ບໍ່ສາມາດໂຫຼດຂ່າວໄດ້: ${e.toString()}';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  // ✅ ปรับปรุงการแยก HTML content และรูปภาพ
+  Map<String, dynamic> _parseHtmlContent(String htmlString) {
+    if (htmlString.isEmpty) return {'text': '', 'images': []};
+
+    // หา URLs ของรูปภาพใน HTML
+    final RegExp imgRegExp = RegExp(
+      r'<img[^>]+src="([^"]*)"[^>]*>',
+      caseSensitive: false,
+    );
+    final Iterable<RegExpMatch> imgMatches = imgRegExp.allMatches(htmlString);
+
+    List<String> imageUrls = [];
+    for (final RegExpMatch match in imgMatches) {
+      final String? imageUrl = match.group(1);
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        imageUrls.add(imageUrl);
+      }
+    }
+
+    // ลบ HTML tags ทั้งหมด
+    String cleanText = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
+
+    // แปลง HTML entities
+    cleanText = cleanText
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#x27;', "'")
+        .replaceAll('&#x2F;', '/')
+        .replaceAll('&hellip;', '...')
+        .replaceAll('&mdash;', '—')
+        .replaceAll('&ndash;', '–');
+
+    // ทำความสะอาด whitespace
+    cleanText = cleanText.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+    return {'text': cleanText, 'images': imageUrls};
+  }
+
+  String _formatDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) {
+      return DateFormat('dd/MM/yyyy').format(DateTime.now());
+    }
+
+    try {
+      final date = DateTime.parse(dateString);
+      return DateFormat('dd/MM/yyyy').format(date);
+    } catch (e) {
+      return DateFormat('dd/MM/yyyy').format(DateTime.now());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.white, body: _buildMainContent());
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body:
+          _isLoading
+              ? _buildLoadingScreen()
+              : _errorMessage != null
+              ? _buildErrorScreen()
+              : _buildMainContent(),
+    );
+  }
+
+  Widget _buildLoadingScreen() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07325D)),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'ກຳລັງໂຫຼດ...',
+            style: GoogleFonts.notoSansLao(
+              fontSize: 16,
+              color: Color(0xFF07325D),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorScreen() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+          SizedBox(height: 16),
+          Text(
+            _errorMessage ?? 'ເກີດຂໍ້ຜິດພາດ',
+            style: GoogleFonts.notoSansLao(
+              fontSize: 16,
+              color: Colors.red[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 8),
+          Text(
+            'News ID: ${widget.newsId}',
+            style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey[500]),
+          ),
+          SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF07325D)),
+            child: Text(
+              'ກັບຄືນ',
+              style: GoogleFonts.notoSansLao(color: Colors.white),
+            ),
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _isLoading = true;
+                _errorMessage = null;
+              });
+              _fetchNewsDetail();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[600]),
+            child: Text(
+              'ລອງໃໝ່',
+              style: GoogleFonts.notoSansLao(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildMainContent() {
+    if (_news == null) return _buildErrorScreen();
+
     return CustomScrollView(
       slivers: [
         // App Bar
@@ -60,18 +232,17 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
                 // Header with official document style
                 _buildOfficialHeader(),
 
-                // Main Topic Image (photo_file)
-                if (widget.topic.hasImage && widget.topic.photoFile.isNotEmpty)
-                  _buildMainTopicImage(),
+                // Main News Image (photo_file)
+                if (_news!.photoFile.isNotEmpty) _buildMainNewsImage(),
 
-                // Topic Title
-                _buildTopicTitle(),
+                // News Title
+                _buildNewsTitle(),
 
-                // Topic Meta Info
-                _buildTopicMetaInfo(),
+                // News Meta Info
+                _buildNewsMetaInfo(),
 
-                // Topic Content with embedded images
-                _buildFullTopicContent(),
+                // News Content with embedded images
+                _buildFullNewsContent(),
 
                 // Footer
                 _buildFooter(),
@@ -171,13 +342,14 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
     );
   }
 
-  Widget _buildMainTopicImage() {
+  // ✅ รูปภาพหลักของข่าว (photo_file)
+  Widget _buildMainNewsImage() {
     return Container(
       margin: EdgeInsets.all(24),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Image.network(
-          widget.topic.photoFile,
+          _news!.photoFile,
           width: double.infinity,
           height: 250,
           fit: BoxFit.cover,
@@ -229,7 +401,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
     );
   }
 
-  Widget _buildTopicTitle() {
+  Widget _buildNewsTitle() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
@@ -246,7 +418,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
           ),
           SizedBox(height: 16),
           Text(
-            _parseHtmlContent(widget.topic.title)['text'],
+            _parseHtmlContent(_news!.title)['text'],
             style: GoogleFonts.notoSansLao(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -260,52 +432,9 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
     );
   }
 
-  Widget _buildTopicMetaInfo() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue[200]!, width: 1),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.calendar_today, size: 16, color: Color(0xFF07325D)),
-              SizedBox(width: 8),
-              Text(
-                'ວັນທີ: ${_formatDate(widget.topic.date.toString())}',
-                style: GoogleFonts.notoSansLao(
-                  fontSize: 14,
-                  color: Color(0xFF07325D),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Icon(Icons.visibility, size: 16, color: Colors.grey[600]),
-              SizedBox(width: 8),
-              Text(
-                '${widget.topic.visits} ຄົນເບິ່ງ',
-                style: GoogleFonts.notoSansLao(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFullTopicContent() {
-    final contentData = _parseHtmlContent(widget.topic.details);
+  // ✅ แสดงเนื้อหาข่าวพร้อมรูปภาพที่ฝังอยู่ในเนื้อหา
+  Widget _buildFullNewsContent() {
+    final contentData = _parseHtmlContent(_news!.details);
     final String cleanText = contentData['text'];
     final List<String> embeddedImages = List<String>.from(
       contentData['images'],
@@ -336,35 +465,6 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
                     ),
                   ),
                 ),
-          ] else ...[
-            // แสดงข้อความเมื่อไม่มีเนื้อหา
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.article_outlined,
-                    size: 48,
-                    color: Colors.grey[400],
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'ບໍ່ມີເນື້ອຫາລາຍລະອຽດ',
-                    style: GoogleFonts.notoSansLao(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
 
           // แสดงรูปภาพที่ฝังในเนื้อหา
@@ -478,8 +578,8 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
 
           SizedBox(height: 32),
 
-          // Author/Section signature
-          if (widget.topic.user != null) ...[
+          // Signature section (if needed)
+          if (_news!.sectionTitle?.isNotEmpty == true) ...[
             Container(
               width: double.infinity,
               child: Column(
@@ -495,7 +595,7 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    widget.topic.user.name,
+                    _news!.sectionTitle ?? '',
                     style: GoogleFonts.notoSansLao(
                       fontSize: 14,
                       color: Colors.grey[700],
@@ -505,6 +605,50 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNewsMetaInfo() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue[200]!, width: 1),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.calendar_today, size: 16, color: Color(0xFF07325D)),
+              SizedBox(width: 8),
+              Text(
+                'ວັນທີ: ${_formatDate(_news!.date.toString())}',
+                style: GoogleFonts.notoSansLao(
+                  fontSize: 14,
+                  color: Color(0xFF07325D),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Icon(Icons.visibility, size: 16, color: Colors.grey[600]),
+              SizedBox(width: 8),
+              Text(
+                '${_news!.visits} ຄົນເບິ່ງ',
+                style: GoogleFonts.notoSansLao(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -555,59 +699,5 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
         ],
       ),
     );
-  }
-
-  // Helper method สำหรับแยก HTML content และรูปภาพ
-  Map<String, dynamic> _parseHtmlContent(String htmlString) {
-    if (htmlString.isEmpty) return {'text': '', 'images': []};
-
-    // หา URLs ของรูปภาพใน HTML
-    final RegExp imgRegExp = RegExp(
-      r'<img[^>]+src="([^"]*)"[^>]*>',
-      caseSensitive: false,
-    );
-    final Iterable<RegExpMatch> imgMatches = imgRegExp.allMatches(htmlString);
-
-    List<String> imageUrls = [];
-    for (final RegExpMatch match in imgMatches) {
-      final String? imageUrl = match.group(1);
-      if (imageUrl != null && imageUrl.isNotEmpty) {
-        imageUrls.add(imageUrl);
-      }
-    }
-
-    // ลบ HTML tags ทั้งหมด
-    String cleanText = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
-
-    // แปลง HTML entities
-    cleanText = cleanText
-        .replaceAll('&nbsp;', ' ')
-        .replaceAll('&amp;', '&')
-        .replaceAll('&lt;', '<')
-        .replaceAll('&gt;', '>')
-        .replaceAll('&quot;', '"')
-        .replaceAll('&#x27;', "'")
-        .replaceAll('&#x2F;', '/')
-        .replaceAll('&hellip;', '...')
-        .replaceAll('&mdash;', '—')
-        .replaceAll('&ndash;', '–');
-
-    // ทำความสะอาด whitespace
-    cleanText = cleanText.replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    return {'text': cleanText, 'images': imageUrls};
-  }
-
-  String _formatDate(String? dateString) {
-    if (dateString == null || dateString.isEmpty) {
-      return DateFormat('dd/MM/yyyy').format(DateTime.now());
-    }
-
-    try {
-      final date = DateTime.parse(dateString);
-      return DateFormat('dd/MM/yyyy').format(date);
-    } catch (e) {
-      return DateFormat('dd/MM/yyyy').format(DateTime.now());
-    }
   }
 }

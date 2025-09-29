@@ -1,18 +1,23 @@
-// pages/news_list_page.dart - Refactored with separated widgets
+// pages/news_list_page.dart - Updated with ModernDrawerWidget
+// ignore_for_file: unused_field
+
 import 'dart:ui';
-import 'package:BIBOL/screens/News/all_news_details.dart';
-import 'package:BIBOL/screens/all_widgets/news_widget/news_category_filter_widget.dart';
-import 'package:BIBOL/screens/all_widgets/news_widget/news_empty_state_widget.dart';
-import 'package:BIBOL/screens/all_widgets/news_widget/news_list_card_widget.dart';
-import 'package:BIBOL/screens/all_widgets/news_widget/news_loading_card_widget.dart';
-import 'package:BIBOL/screens/all_widgets/news_widget/news_search_header_widget.dart';
+import 'package:BIBOL/screens/news/all_news_details.dart';
+import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
+import 'package:BIBOL/widgets/news_widget/news_category_filter_widget.dart';
+import 'package:BIBOL/widgets/news_widget/news_empty_state_widget.dart';
+import 'package:BIBOL/widgets/news_widget/news_list_card_widget.dart';
+import 'package:BIBOL/widgets/news_widget/news_loading_card_widget.dart';
+
+import 'package:BIBOL/widgets/news_widget/news_search_header_widget.dart';
+
+import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:BIBOL/services/news/news_service.dart';
 import 'package:BIBOL/models/news/news_response.dart';
 import 'package:BIBOL/models/topic/topic_model.dart';
 import 'package:BIBOL/models/topic/joined_category_model.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:BIBOL/widgets/custom_bottom_nav.dart';
 import 'package:BIBOL/services/token/token_service.dart';
 
 const Color kPrimaryColor = Color(0xFF07325D);
@@ -376,12 +381,108 @@ class _NewsListPageState extends State<NewsListPage>
     );
   }
 
+  Future<void> _handleLogout() async {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF07325D),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              'ອອກຈາກລະບົບ',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            content: Text(
+              'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'ຍົກເລີກ',
+                  style: GoogleFonts.notoSansLao(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await TokenService.clearAll();
+                  await _checkLoginStatus();
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                'ອອກຈາກລະບົບສຳເລັດ',
+                                style: GoogleFonts.notoSansLao(fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        margin: EdgeInsets.all(_basePadding),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: Text(
+                  'ອອກຈາກລະບົບ',
+                  style: GoogleFonts.notoSansLao(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _handleLogin() {
+    Navigator.pushNamed(context, '/login');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Color(0xFFF8FAFF),
-      drawer: _buildModernDrawer(),
+      drawer: ModernDrawerWidget(
+        isLoggedIn: _isLoggedIn,
+        userInfo: _userInfo,
+        screenWidth: _screenWidth,
+        screenHeight: _screenHeight,
+        onLogoutPressed: _handleLogout,
+        onLoginPressed: _handleLogin,
+        currentRoute: '/news', // เพิ่มบรรทัดนี้
+      ),
       floatingActionButton: ScaleTransition(
         scale: _fabAnimationController,
         child: FloatingActionButton.extended(
@@ -419,9 +520,7 @@ class _NewsListPageState extends State<NewsListPage>
           SliverToBoxAdapter(
             child: NewsSearchHeaderWidget(
               onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              onNotificationPressed: () {
-                // TODO: Handle notifications
-              },
+              onNotificationPressed: () {},
               searchController: _searchController,
               onSearchChanged: (value) {
                 setState(() => _searchQuery = value);
@@ -455,46 +554,6 @@ class _NewsListPageState extends State<NewsListPage>
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
-      ),
-    );
-  }
-
-  Widget _buildModernDrawer() {
-    // Drawer ที่มีอยู่แล้ว - ไม่แยกเพื่อความซับซ้อน
-    return Drawer(
-      backgroundColor: Colors.transparent,
-      width:
-          MediaQuery.of(context).size.width * (_screenWidth < 320 ? 0.85 : 0.8),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Drawer header and menu content here (keeping existing code)
-              Container(
-                padding: EdgeInsets.all(_basePadding),
-                child: Column(
-                  children: [
-                    Text(
-                      'ເมນູ',
-                      style: GoogleFonts.notoSansLao(
-                        color: Colors.white,
-                        fontSize: _bodyFontSize,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

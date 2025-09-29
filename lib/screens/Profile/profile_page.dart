@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:BIBOL/config/api_config.dart';
+import 'package:BIBOL/config/bibol_api.dart';
 import 'package:BIBOL/services/token/token_service.dart';
+import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import '../../widgets/custom_bottom_nav.dart';
 
 class ProfilePage extends StatefulWidget {
   @override

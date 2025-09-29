@@ -36,6 +36,7 @@ class NewsResponse {
             (json as List).map((item) => NewsModel.fromJson(item)).toList();
       }
     } catch (e) {
+      // ignore: avoid_print
       print('❌ Error parsing news data: $e');
     }
 

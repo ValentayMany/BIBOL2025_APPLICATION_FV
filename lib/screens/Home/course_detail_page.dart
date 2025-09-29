@@ -1,9 +1,9 @@
 // lib/screens/Course/course_detail_page.dart
-import 'package:BIBOL/screens/all_widgets/course_widgets/course_detail_app_bar_widget.dart';
-import 'package:BIBOL/screens/all_widgets/course_widgets/course_details_section_widget.dart';
-import 'package:BIBOL/screens/all_widgets/course_widgets/course_overview_card_widget.dart';
-import 'package:BIBOL/screens/all_widgets/course_widgets/enrollment_fab_widget.dart';
 
+import 'package:BIBOL/widgets/course_widgets/course_detail_app_bar_widget.dart';
+import 'package:BIBOL/widgets/course_widgets/course_details_section_widget.dart';
+import 'package:BIBOL/widgets/course_widgets/course_overview_card_widget.dart';
+import 'package:BIBOL/widgets/course_widgets/enrollment_fab_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:BIBOL/models/course/course_model.dart';

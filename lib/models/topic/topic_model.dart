@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:BIBOL/models/topic/joined_category_model.dart'
     show JoinedCategory;
 import 'package:BIBOL/models/user/user_model.dart' show User;

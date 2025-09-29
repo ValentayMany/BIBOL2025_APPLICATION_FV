@@ -1,25 +1,28 @@
 // pages/Home_page.dart - Fixed with proper imports and corrections
+// ignore_for_file: unused_field, use_key_in_widget_constructors, avoid_print, sized_box_for_whitespace
+
 import 'package:BIBOL/models/course/course_model.dart' show CourseModel;
 import 'package:BIBOL/models/news/news_response.dart' show NewsResponse;
 import 'package:BIBOL/models/topic/topic_model.dart' show Topic;
-import 'package:BIBOL/screens/News/news_detail_in_home.dart';
-import 'package:BIBOL/screens/all_widgets/home_widgets/course_card_widget.dart';
-import 'package:BIBOL/screens/all_widgets/home_widgets/header_widget.dart';
-import 'package:BIBOL/screens/all_widgets/home_widgets/modern_drawer_widget.dart';
-import 'package:BIBOL/screens/all_widgets/home_widgets/news_card_widget.dart';
-import 'package:BIBOL/screens/all_widgets/home_widgets/quick_action_widget.dart';
-import 'package:BIBOL/screens/all_widgets/home_widgets/search_widget.dart';
-import 'package:BIBOL/screens/all_widgets/home_widgets/section_header_widget.dart';
+
+import 'package:BIBOL/screens/home/news_detail_in_home.dart';
+
 import 'package:BIBOL/services/course/course_Service.dart';
 import 'package:BIBOL/services/news/news_service.dart' show NewsService;
-import 'package:BIBOL/widgets/custom_bottom_nav.dart';
+import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
 import 'package:BIBOL/services/token/token_service.dart';
-import 'package:BIBOL/widgets/banner/banner_slider_widget.dart';
+import 'package:BIBOL/widgets/home_widgets/course_card_widget.dart';
+import 'package:BIBOL/widgets/home_widgets/header_widget.dart';
+import 'package:BIBOL/widgets/home_widgets/improved_stats_card_widget.dart';
+import 'package:BIBOL/widgets/home_widgets/news_card_widget.dart';
+import 'package:BIBOL/widgets/home_widgets/quick_action_widget.dart';
+import 'package:BIBOL/widgets/home_widgets/search_widget.dart';
+import 'package:BIBOL/widgets/home_widgets/section_header_widget.dart';
+import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import '../../services/auth/auth_service.dart';
-import 'package:BIBOL/screens/all_widgets/home_widgets/improved_stats_card_widget.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -69,7 +72,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           details.exception.toString().contains('images.unsplash.com') ||
           details.exception.toString().contains('404') ||
           details.exception.toString().contains('NetworkImageLoadException')) {
-        print('🖼️ Image loading error (ignored): ${details.exception}');
         return;
       }
       FlutterError.presentError(details);
@@ -337,6 +339,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         screenHeight: _screenHeight,
         onLogoutPressed: _handleLogout,
         onLoginPressed: _handleLogin,
+        currentRoute: '/home', // เพิ่มบรรทัดนี้
       ),
       extendBodyBehindAppBar: true,
       body:

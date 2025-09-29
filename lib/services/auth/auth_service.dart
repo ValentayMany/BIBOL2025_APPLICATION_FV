@@ -1,7 +1,7 @@
 // services/auth_service.dart - Updated
 import 'dart:convert';
 import 'dart:io';
-import 'package:BIBOL/config/all_configs.dart' as StudentsApiConfig;
+import 'package:BIBOL/config/bibol_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 

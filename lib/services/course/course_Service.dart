@@ -1,6 +1,7 @@
-import 'dart:convert';
+// ignore_for_file: file_names
 
-import 'package:BIBOL/config/course/course_api_config.dart';
+import 'dart:convert';
+import 'package:BIBOL/config/bibol_api.dart';
 import 'package:BIBOL/models/course/course_response.dart';
 import 'package:http/http.dart' as http;
 

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:BIBOL/config/news/news_api_config.dart';
+import 'package:BIBOL/config/bibol_api.dart';
 import 'package:BIBOL/models/news/news_response.dart' show NewsResponse;
 import 'package:BIBOL/models/topic/topic_model.dart' show Topic;
 import 'package:BIBOL/models/website/website_info_model.dart'

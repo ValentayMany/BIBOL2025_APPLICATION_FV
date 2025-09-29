@@ -1,5 +1,7 @@
+// ignore_for_file: use_key_in_widget_constructors
+
+import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
 import 'package:flutter/material.dart';
-import '../../widgets/custom_bottom_nav.dart';
 
 class AboutPage extends StatefulWidget {
   @override
@@ -342,6 +344,7 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
+  // ignore: unused_element
   Widget _buildLoadingWidget() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -376,6 +379,7 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
+  // ignore: unused_element
   Widget _buildErrorWidget(String error) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),

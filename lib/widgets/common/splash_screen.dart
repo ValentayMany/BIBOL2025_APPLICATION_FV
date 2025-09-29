@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:BIBOL/screens/home/home_page.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -193,7 +195,6 @@ class _SplashScreenState extends State<SplashScreen>
     final isVerySmallScreen = screenSize.height < 600;
     final isTablet = screenSize.shortestSide >= 600;
     final isLandscape = screenSize.width > screenSize.height;
-    // ignore: unused_local_variable
     final textScaleFactor = mediaQuery.textScaleFactor;
 
     // Dynamic scaling based on screen type

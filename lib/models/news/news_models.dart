@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:BIBOL/models/topic/topic_model.dart' show Topic;
 
 class NewsModel {
