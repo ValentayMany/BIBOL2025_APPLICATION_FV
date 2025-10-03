@@ -289,6 +289,7 @@ class _ProfilePageState extends State<ProfilePage>
         currentIndex: _currentIndex,
         onTap: _onNavTap,
       ),
+      floatingActionButton: _buildFloatingActionButton(),
     );
   }
 
@@ -623,6 +624,229 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             SizedBox(height: 20),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton() {
+    final double fabWidth = 56;
+    final double fabHeight = 56;
+
+    return Container(
+      width: fabWidth,
+      height: fabHeight,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF07325D).withOpacity(0.35),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: FloatingActionButton(
+        onPressed: _showActionsBottomSheet,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: const Icon(Icons.more_vert, color: Colors.white),
+      ),
+    );
+  }
+
+  void _showActionsBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.55,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.white, Color(0xFFF7F9FE)],
+            ),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 46,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      _isLoggedIn ? 'ຈັດການໂປຣໄຟລ໌' : 'ບັນຊີຂອງທ່ານ',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF07325D),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                    child: Column(
+                      children: [
+                        if (_isLoggedIn) ...[
+                          _buildActionTile(
+                            icon: Icons.edit_rounded,
+                            color: Colors.blue,
+                            title: 'ແກ້ໄຂຂໍ້ມູນສ່ວນຕົວ',
+                            subtitle: 'ອັບເດດຂໍ້ມູນຂອງທ່ານ',
+                            onTap: () {
+                              Navigator.pop(context);
+                              _handleEditProfile();
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          _buildActionTile(
+                            icon: Icons.lock_rounded,
+                            color: Colors.orange,
+                            title: 'ປ່ຽນລະຫັດຜ່ານ',
+                            subtitle: 'ອັບເດດລະຫັດຜ່ານຂອງທ່ານ',
+                            onTap: () {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'ຟັງຊັ່ນນີ້ກຳລັງພັດທະນາ',
+                                    style: GoogleFonts.notoSansLao(),
+                                  ),
+                                  backgroundColor: Colors.blue.shade600,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          _buildActionTile(
+                            icon: Icons.logout_rounded,
+                            color: Colors.red,
+                            title: 'ອອກຈາກລະບົບ',
+                            subtitle: 'ອອກຈາກບັນຊີຂອງທ່ານ',
+                            onTap: () {
+                              Navigator.pop(context);
+                              _handleLogout();
+                            },
+                          ),
+                        ] else ...[
+                          _buildActionTile(
+                            icon: Icons.login_rounded,
+                            color: const Color(0xFF07325D),
+                            title: 'ເຂົ້າສູ່ລະບົບ',
+                            subtitle: 'ເພື່ອເຂົ້າເຖິງໂປຣໄຟລ໌ຂອງທ່ານ',
+                            onTap: () {
+                              Navigator.pop(context);
+                              _handleLogin();
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildActionTile({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF07325D),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.grey.shade400,
+                size: 16,
+              ),
+            ],
+          ),
         ),
       ),
     );
