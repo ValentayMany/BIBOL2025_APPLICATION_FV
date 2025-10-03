@@ -1,5 +1,4 @@
-// widgets/home_widgets/header_widget.dart - แก้ไขให้ใช้ SharedHeaderButton
-import 'dart:ui';
+// widgets/home_widgets/header_widget.dart
 import 'package:BIBOL/widgets/shared/shared_header_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -80,7 +79,7 @@ class HeaderWidget extends StatelessWidget {
           padding: EdgeInsets.all(_basePadding),
           child: Column(
             children: [
-              // Header Row - ใช้ SharedHeaderButton
+              // Header Row - ไม่มีปุ่มรีเฟรชแล้ว
               Row(
                 children: [
                   SharedHeaderButton(

@@ -1,10 +1,10 @@
-import 'dart:convert';
-import 'package:BIBOL/config/bibol_api.dart';
 import 'package:BIBOL/services/token/token_service.dart';
 import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
+import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
+import 'package:BIBOL/widgets/shared/shared_header_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -12,30 +12,27 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   int _currentIndex = 4;
   late AnimationController _animationController;
-  late AnimationController _cardAnimationController;
   late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _cardSlideAnimation;
 
   Map<String, dynamic>? userInfo;
   bool _isLoggedIn = false;
+  bool _isLoading = true;
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _setupAnimations();
+    _loadUserProfile();
+  }
 
-    // Main animation controller
+  void _setupAnimations() {
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-
-    // Card animation controller
-    _cardAnimationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
@@ -45,94 +42,65 @@ class _ProfilePageState extends State<ProfilePage>
       curve: Curves.easeInOut,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
-    );
-
-    _cardSlideAnimation = Tween<double>(begin: 50, end: 0).animate(
-      CurvedAnimation(
-        parent: _cardAnimationController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
-
     _animationController.forward();
-    _loadUserProfile();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkLoginAndLoadProfile();
+    }
   }
 
   void _checkLoginAndLoadProfile() async {
+    setState(() => _isLoading = true);
+
     final user = await TokenService.getUserInfo();
-    if (user != null && user["id"] != null) {
-      _fetchUserProfile(user["id"]);
-    } else {
+    final isLoggedIn = await TokenService.isLoggedIn();
+
+    if (mounted) {
       setState(() {
-        _isLoggedIn = false;
-        userInfo = null;
+        if (user != null && user["id"] != null && isLoggedIn) {
+          userInfo = user;
+          _isLoggedIn = true;
+        } else {
+          userInfo = null;
+          _isLoggedIn = false;
+        }
+        _isLoading = false;
       });
     }
   }
 
   void _loadUserProfile() async {
     final user = await TokenService.getUserInfo();
-    if (user != null && user["id"] != null) {
-      _fetchUserProfile(user["id"]);
-      // Start card animations after profile loads
-      Future.delayed(Duration(milliseconds: 400), () {
-        _cardAnimationController.forward();
-      });
-    }
-  }
+    final isLoggedIn = await TokenService.isLoggedIn();
 
-  Future<void> _fetchUserProfile(int id) async {
-    try {
-      final token = await TokenService.getToken();
-
-      final response = await http.get(
-        Uri.parse("${ApiConfig.baseUrl}/profile/$id"),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          userInfo = data['data'];
+    if (mounted) {
+      setState(() {
+        if (user != null && user["id"] != null && isLoggedIn) {
+          userInfo = user;
           _isLoggedIn = true;
-        });
-      } else {
-        setState(() {
-          _isLoggedIn = false;
+        } else {
           userInfo = null;
-        });
-        print("Error: ${response.statusCode} - ${response.body}");
-      }
-    } catch (e) {
-      print("Error fetching profile: $e");
+          _isLoggedIn = false;
+        }
+        _isLoading = false;
+      });
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _animationController.dispose();
-    _cardAnimationController.dispose();
     super.dispose();
   }
 
   void _onNavTap(int index) {
     if (_currentIndex == index) return;
-    setState(() {
-      _currentIndex = index;
-    });
+    setState(() => _currentIndex = index);
+
     switch (index) {
       case 0:
         Navigator.pushReplacementNamed(context, '/home');
@@ -176,12 +144,14 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                 ),
                 SizedBox(width: 12),
-                Text(
-                  'ອອກຈາກລະບົບ',
-                  style: GoogleFonts.notoSansLao(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                    fontSize: 20,
+                Expanded(
+                  child: Text(
+                    'ອອກຈາກລະບົບ',
+                    style: GoogleFonts.notoSansLao(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ],
@@ -197,12 +167,6 @@ class _ProfilePageState extends State<ProfilePage>
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
                 child: Text(
                   'ຍົກເລີກ',
                   style: GoogleFonts.notoSansLao(
@@ -214,43 +178,54 @@ class _ProfilePageState extends State<ProfilePage>
               ElevatedButton(
                 onPressed: () async {
                   Navigator.pop(context);
+                  setState(() => _isLoading = true);
+
                   await TokenService.clearAll();
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/',
-                    (route) => false,
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          Icon(Icons.check_circle_outline, color: Colors.white),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'ອອກຈາກລະບົບສຳເລັດແລ້ວ',
-                              style: GoogleFonts.notoSansLao(),
+                  await Future.delayed(const Duration(milliseconds: 100));
+
+                  if (mounted) {
+                    setState(() {
+                      _isLoggedIn = false;
+                      userInfo = null;
+                      _isLoading = false;
+                    });
+
+                    _animationController.reset();
+                    _animationController.forward();
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle_outline,
+                              color: Colors.white,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'ອອກຈາກລະບົບສຳເລັດແລ້ວ',
+                                style: GoogleFonts.notoSansLao(),
+                              ),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: Colors.green.shade600,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        margin: EdgeInsets.all(16),
                       ),
-                      backgroundColor: Colors.green.shade600,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: EdgeInsets.all(16),
-                    ),
-                  );
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade600,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  elevation: 0,
                 ),
                 child: Text(
                   'ອອກຈາກລະບົບ',
@@ -262,27 +237,54 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
+  Future<void> _handleLogin() async {
+    final result = await Navigator.pushNamed(context, '/login');
+    if (result == true) {
+      _checkLoginAndLoadProfile();
+    }
+  }
+
+  void _handleEditProfile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'ຟັງຊັ່ນແກ້ໄຂຂໍ້ມູນກຳລັງພັດທະນາ',
+          style: GoogleFonts.notoSansLao(),
+        ),
+        backgroundColor: Colors.blue.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  double get _screenWidth => MediaQuery.of(context).size.width;
+  double get _screenHeight => MediaQuery.of(context).size.height;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-              Color(0xFF6B73FF),
-              Color(0xFF000DFF),
-            ],
-            stops: [0.0, 0.3, 0.7, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: _isLoggedIn ? _buildProfileContent() : _buildLoginPrompt(),
-        ),
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Color(0xFF07325D),
+        statusBarIconBrightness: Brightness.light,
       ),
+    );
+
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xFFF8FAFF),
+      drawer: ModernDrawerWidget(
+        key: ValueKey('drawer_$_isLoggedIn'),
+        isLoggedIn: _isLoggedIn,
+        userInfo: userInfo,
+        screenWidth: _screenWidth,
+        screenHeight: _screenHeight,
+        onLogoutPressed: _handleLogout,
+        onLoginPressed: _handleLogin,
+        currentRoute: '/profile',
+      ),
+      body: _isLoading ? _buildLoadingScreen() : _buildBody(),
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
@@ -290,603 +292,170 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  Widget _buildLoginPrompt() {
-    return Center(
-      child: SingleChildScrollView(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Container(
-                padding: EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.2),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 20,
-                      offset: Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Animated Icon
-                    TweenAnimationBuilder(
-                      duration: Duration(milliseconds: 1000),
-                      tween: Tween<double>(begin: 0, end: 1),
-                      builder: (context, double value, child) {
-                        return Transform.scale(
-                          scale: value,
-                          child: Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.3),
-                                  Colors.white.withOpacity(0.1),
-                                ],
-                              ),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
-                                width: 2,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.person_outline_rounded,
-                              size: 64,
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    Text(
-                      'ຍິນດີຕ້ອນຮັບ',
-                      style: GoogleFonts.notoSansLao(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        height: 1.2,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    Text(
-                      'ເຂົ້າສູ່ລະບົບເພື່ອເຂົ້າເຖິງໂປຣໄຟລຂອງທ່ານ',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.notoSansLao(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.8),
-                        height: 1.6,
-                      ),
-                    ),
-
-                    const SizedBox(height: 48),
-
-                    // Login Button
-                    Container(
-                      width: double.infinity,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.white, Colors.white.withOpacity(0.9)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          final result = await Navigator.pushNamed(
-                            context,
-                            '/login',
-                          );
-                          if (result == true) {
-                            _checkLoginAndLoadProfile();
-                          }
-                        },
-                        icon: Icon(
-                          Icons.login_rounded,
-                          color: Color(0xFF667eea),
-                        ),
-                        label: Text(
-                          'ເຂົ້າສູ່ລະບົບ',
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF667eea),
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Color(0xFF667eea),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Back Button
-                    Container(
-                      width: double.infinity,
-                      height: 48,
-                      child: TextButton.icon(
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/home');
-                        },
-                        icon: Icon(
-                          Icons.home_rounded,
-                          color: Colors.white.withOpacity(0.8),
-                          size: 20,
-                        ),
-                        label: Text(
-                          'ກັບໄປໜ້າຫຼັກ',
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.8),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileContent() {
-    return CustomScrollView(
-      slivers: [
-        // Custom App Bar
-        SliverAppBar(
-          expandedHeight: 120,
-          floating: false,
-          pinned: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          flexibleSpace: FlexibleSpaceBar(
-            titlePadding: EdgeInsets.only(left: 20, bottom: 16),
-            title: Text(
-              'ໂປຣໄຟລ',
-              style: GoogleFonts.notoSansLao(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          actions: [
-            Container(
-              margin: EdgeInsets.only(right: 20, bottom: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.settings_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        // Profile Content
-        SliverToBoxAdapter(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: Column(
-                children: [
-                  SizedBox(height: 20),
-                  _buildProfileHeader(),
-                  SizedBox(height: 24),
-                  _buildProfileStats(),
-                  SizedBox(height: 24),
-                  _buildQuickActions(),
-                  SizedBox(height: 24),
-                  _buildProfileMenu(),
-                  SizedBox(height: 100),
-                ],
-              ),
-            ),
-          ),
+  Widget _buildBody() {
+    return Column(
+      children: [
+        _buildHeader(),
+        Expanded(
+          child: _isLoggedIn ? _buildProfileContent() : _buildLoginPrompt(),
         ),
       ],
     );
   }
 
-  Widget _buildProfileHeader() {
-    return AnimatedBuilder(
-      animation: _cardSlideAnimation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _cardSlideAnimation.value),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.25),
-                  Colors.white.withOpacity(0.1),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // Profile Image
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withOpacity(0.3),
-                        Colors.white.withOpacity(0.1),
-                      ],
-                    ),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                      width: 3,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 15,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.transparent,
-                    child: Icon(
-                      Icons.person_rounded,
-                      size: 50,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Name
-                Text(
-                  "${userInfo?['first_name'] ?? ''} ${userInfo?['last_name'] ?? ''}",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.notoSansLao(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Info Cards
-                if (userInfo?['student_id'] != null) ...[
-                  _buildInfoCard(
-                    icon: Icons.badge_rounded,
-                    label: 'ລະຫັດນັກສຶກສາ',
-                    value: userInfo!['student_id'],
-                    color: Colors.blue.shade300,
-                  ),
-                  SizedBox(height: 12),
-                ],
-
-                if (userInfo?['phone'] != null)
-                  _buildInfoCard(
-                    icon: Icons.phone_rounded,
-                    label: 'ເບີໂທ',
-                    value: userInfo!['phone'],
-                    color: Colors.green.shade300,
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
+  Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: GoogleFonts.notoSansLao(
-                  fontSize: 12,
-                  color: Colors.white.withOpacity(0.7),
-                ),
-              ),
-              Text(
-                value,
-                style: GoogleFonts.notoSansLao(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileStats() {
-    return AnimatedBuilder(
-      animation: _cardSlideAnimation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _cardSlideAnimation.value * 0.8),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    icon: Icons.school_rounded,
-                    title: 'ປີການສຶກສາ',
-                    value: '0.0.0.0',
-                    color: Colors.orange.shade300,
-                    gradient: [Colors.orange.shade200, Colors.orange.shade400],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildStatCard(
-                    icon: Icons.class_rounded,
-                    title: 'ຊັ້ນຮຽນ',
-                    value: userInfo?['class'] ?? '0.0.0.0',
-                    color: Colors.green.shade300,
-                    gradient: [Colors.green.shade200, Colors.green.shade400],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-    required List<Color> gradient,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withOpacity(0.25),
-            Colors.white.withOpacity(0.1),
-          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
         ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: Offset(0, 8),
-          ),
-        ],
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
       ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: gradient),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(icon, color: Colors.white, size: 28),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: GoogleFonts.notoSansLao(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.notoSansLao(
-              fontSize: 12,
-              color: Colors.white.withOpacity(0.8),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions() {
-    return AnimatedBuilder(
-      animation: _cardSlideAnimation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _cardSlideAnimation.value * 0.6),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withOpacity(0.15),
-                  Colors.white.withOpacity(0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildQuickActionItem(
-                  icon: Icons.edit_rounded,
-                  label: 'ແກ້ໄຂ',
-                  color: Colors.blue.shade300,
-                  onTap: () {},
-                ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: Colors.white.withOpacity(0.2),
-                ),
-                _buildQuickActionItem(
-                  icon: Icons.share_rounded,
-                  label: 'ແບ່ງປັນ',
-                  color: Colors.purple.shade300,
-                  onTap: () {},
-                ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: Colors.white.withOpacity(0.2),
-                ),
-                _buildQuickActionItem(
-                  icon: Icons.download_rounded,
-                  label: 'ດາວໂຫລດ',
-                  color: Colors.green.shade300,
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildQuickActionItem({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 24),
-            SizedBox(height: 8),
+            // Top Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SharedHeaderButton(
+                    icon: Icons.menu_rounded,
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                    screenWidth: _screenWidth,
+                  ),
+                  if (_isLoggedIn)
+                    SharedHeaderButton(
+                      icon: Icons.edit_rounded,
+                      onPressed: _handleEditProfile,
+                      screenWidth: _screenWidth,
+                    )
+                  else
+                    const SizedBox(width: 56),
+                ],
+              ),
+            ),
+
+            // Profile Avatar & Info
+            Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 15,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        _isLoggedIn
+                            ? Icons.person_rounded
+                            : Icons.person_outline_rounded,
+                        size: 50,
+                        color: const Color(0xFF07325D),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (_isLoggedIn && userInfo != null) ...[
+                    if (userInfo?['admission_no'] != null)
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('🎓', style: TextStyle(fontSize: 16)),
+                            SizedBox(width: 6),
+                            Text(
+                              userInfo!['admission_no'].toString(),
+                              style: GoogleFonts.notoSansLao(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ] else ...[
+                    Text(
+                      'ສະຖາບັນການທະນາຄານ',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'ໂປຣໄຟລ໌ນັກສຶກສາ',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 15,
+                        color: Colors.white.withOpacity(0.85),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingScreen() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              strokeWidth: 3,
+            ),
+            SizedBox(height: 24),
             Text(
-              label,
+              'ກຳລັງໂຫຼດ...',
               style: GoogleFonts.notoSansLao(
-                fontSize: 12,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white,
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -896,66 +465,260 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  Widget _buildProfileMenu() {
-    return AnimatedBuilder(
-      animation: _cardSlideAnimation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _cardSlideAnimation.value * 0.4),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withOpacity(0.15),
-                  Colors.white.withOpacity(0.05),
+  Widget _buildLoginPrompt() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            SizedBox(height: 40),
+            Container(
+              padding: EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: Offset(0, 10),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.lock_outline_rounded,
+                      size: 48,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'ກະລຸນາເຂົ້າສູ່ລະບົບ',
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF07325D),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'ເຂົ້າສູ່ລະບົບເພື່ອເຂົ້າເຖິງໂປຣໄຟລ໌ຂອງທ່ານ',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 15,
+                      color: Colors.grey.shade600,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton.icon(
+                      onPressed: _handleLogin,
+                      icon: Icon(Icons.login_rounded, size: 22),
+                      label: Text(
+                        'ເຂົ້າສູ່ລະບົບ',
+                        style: GoogleFonts.notoSansLao(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF07325D),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileContent() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildInfoCard(
+              icon: Icons.badge_rounded,
+              iconColor: Colors.blue,
+              title: 'ລະຫັດນັກຮຽນ',
+              value: userInfo?['admission_no']?.toString() ?? 'N/A',
+            ),
+            SizedBox(height: 12),
+            _buildInfoCard(
+              icon: Icons.email_rounded,
+              iconColor: Colors.green,
+              title: 'ອີເມວ',
+              value: userInfo?['email']?.toString() ?? 'N/A',
+            ),
+            if (userInfo?['roll_no'] != null) ...[
+              SizedBox(height: 12),
+              _buildInfoCard(
+                icon: Icons.numbers_rounded,
+                iconColor: Colors.orange,
+                title: 'Roll No',
+                value: userInfo!['roll_no'].toString(),
+              ),
+            ],
+            SizedBox(height: 24),
+            _buildActionCard(
+              icon: Icons.edit_rounded,
+              iconColor: Colors.blue,
+              title: 'ແກ້ໄຂຂໍ້ມູນສ່ວນຕົວ',
+              subtitle: 'ອັບເດດຂໍ້ມູນຂອງທ່ານ',
+              onTap: _handleEditProfile,
+            ),
+            SizedBox(height: 12),
+            _buildActionCard(
+              icon: Icons.lock_rounded,
+              iconColor: Colors.orange,
+              title: 'ປ່ຽນລະຫັດຜ່ານ',
+              subtitle: 'ອັບເດດລະຫັດຜ່ານຂອງທ່ານ',
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'ຟັງຊັ່ນນີ້ກຳລັງພັດທະນາ',
+                      style: GoogleFonts.notoSansLao(),
+                    ),
+                    backgroundColor: Colors.blue.shade600,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 12),
+            _buildActionCard(
+              icon: Icons.logout_rounded,
+              iconColor: Colors.red,
+              title: 'ອອກຈາກລະບົບ',
+              subtitle: 'ອອກຈາກບັນຊີຂອງທ່ານ',
+              onTap: _handleLogout,
+            ),
+            SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String value,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+          SizedBox(width: 16),
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildMenuItem(
-                  icon: Icons.logout_rounded,
-                  title: 'ອອກຈາກລະບົບ',
-                  subtitle: 'ອອກຈາກບັນຊີຂອງທ່ານຢ່າງປອດໄພ',
-                  onTap: _handleLogout,
-                  color: Colors.red.shade400,
+                Text(
+                  title,
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  value,
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF07325D),
+                  ),
                 ),
               ],
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
-  Widget _buildMenuItem({
+  Widget _buildActionCard({
     required IconData icon,
+    required Color iconColor,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
-    required Color color,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
         child: Row(
           children: [
             Container(
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withOpacity(0.3), width: 1),
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: iconColor, size: 24),
             ),
             SizedBox(width: 16),
             Expanded(
@@ -966,8 +729,8 @@ class _ProfilePageState extends State<ProfilePage>
                     title,
                     style: GoogleFonts.notoSansLao(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF07325D),
                     ),
                   ),
                   SizedBox(height: 4),
@@ -975,8 +738,7 @@ class _ProfilePageState extends State<ProfilePage>
                     subtitle,
                     style: GoogleFonts.notoSansLao(
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.7),
-                      height: 1.3,
+                      color: Colors.grey.shade600,
                     ),
                   ),
                 ],
@@ -984,7 +746,7 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.grey.shade400,
               size: 16,
             ),
           ],

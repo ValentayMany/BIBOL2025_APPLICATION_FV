@@ -1,11 +1,13 @@
-// widgets/news_widgets/news_search_header_widget.dart
-import 'dart:ui';
+// widgets/news_widget/news_search_header_widget.dart
+// ignore_for_file: library_private_types_in_public_api
 
+import 'dart:async';
+import 'dart:ui';
 import 'package:BIBOL/widgets/shared/shared_header_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class NewsSearchHeaderWidget extends StatelessWidget {
+class NewsSearchHeaderWidget extends StatefulWidget {
   final VoidCallback onMenuPressed;
   final VoidCallback? onNotificationPressed;
   final TextEditingController searchController;
@@ -23,6 +25,11 @@ class NewsSearchHeaderWidget extends StatelessWidget {
     this.hasNotification = true,
   }) : super(key: key);
 
+  @override
+  _NewsSearchHeaderWidgetState createState() => _NewsSearchHeaderWidgetState();
+}
+
+class _NewsSearchHeaderWidgetState extends State<NewsSearchHeaderWidget> {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -67,14 +74,14 @@ class NewsSearchHeaderWidget extends StatelessWidget {
                 children: [
                   SharedHeaderButton(
                     icon: Icons.menu_rounded,
-                    onPressed: onMenuPressed,
+                    onPressed: widget.onMenuPressed,
                     screenWidth: screenWidth,
                   ),
                   Spacer(),
                   SharedHeaderButton(
                     icon: Icons.notifications_outlined,
-                    onPressed: onNotificationPressed ?? () {},
-                    hasNotification: hasNotification,
+                    onPressed: widget.onNotificationPressed ?? () {},
+                    hasNotification: widget.hasNotification,
                     screenWidth: screenWidth,
                   ),
                 ],
@@ -126,19 +133,20 @@ class NewsSearchHeaderWidget extends StatelessWidget {
                                 color: Colors.white,
                                 letterSpacing: 1.2,
                               ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                          Text(
-                            'ສະຖາບັນການທະນາຄານ',
-                            style: GoogleFonts.notoSansLao(
-                              fontSize: subtitleFontSize,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white.withOpacity(0.9),
-                              letterSpacing: 0.5,
+                          FittedBox(
+                            child: Text(
+                              'ສະຖາບັນການທະນາຄານ',
+                              style: GoogleFonts.notoSansLao(
+                                fontSize: subtitleFontSize,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white.withOpacity(0.9),
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
                           ),
                         ],
                       ),
@@ -162,52 +170,6 @@ class NewsSearchHeaderWidget extends StatelessWidget {
       ),
     );
   }
-
-  // Widget _buildHeaderButton({
-  //   required IconData icon,
-  //   required VoidCallback onPressed,
-  //   bool hasNotification = false,
-  //   required double screenWidth,
-  // }) {
-  //   final buttonSize = screenWidth < 320 ? 40.0 : 44.0;
-  //   final iconSize = _getIconSize(screenWidth);
-
-  //   return Container(
-  //     width: buttonSize,
-  //     height: buttonSize,
-  //     decoration: BoxDecoration(
-  //       color: Colors.white.withOpacity(0.2),
-  //       borderRadius: BorderRadius.circular(16),
-  //       border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
-  //     ),
-  //     child: Stack(
-  //       children: [
-  //         IconButton(
-  //           icon: Icon(icon, color: Colors.white, size: iconSize),
-  //           onPressed: onPressed,
-  //           constraints: BoxConstraints(
-  //             minWidth: buttonSize,
-  //             minHeight: buttonSize,
-  //           ),
-  //           padding: EdgeInsets.zero,
-  //         ),
-  //         if (hasNotification)
-  //           Positioned(
-  //             top: 8,
-  //             right: 8,
-  //             child: Container(
-  //               width: 8,
-  //               height: 8,
-  //               decoration: BoxDecoration(
-  //                 color: Colors.red,
-  //                 shape: BoxShape.circle,
-  //               ),
-  //             ),
-  //           ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildSearchSection(
     double screenWidth,
@@ -247,9 +209,10 @@ class NewsSearchHeaderWidget extends StatelessWidget {
               ),
             ),
             child: TextField(
-              controller: searchController,
-              onChanged: onSearchChanged,
+              controller: widget.searchController,
+              onChanged: widget.onSearchChanged,
               style: GoogleFonts.notoSansLao(fontSize: bodyFontSize),
+              textAlignVertical: TextAlignVertical.center,
               decoration: InputDecoration(
                 hintText:
                     isVerySmallScreen
@@ -271,7 +234,7 @@ class NewsSearchHeaderWidget extends StatelessWidget {
                   ),
                 ),
                 suffixIcon:
-                    searchQuery.isNotEmpty
+                    widget.searchQuery.isNotEmpty
                         ? Container(
                           padding: EdgeInsets.all(8),
                           child: IconButton(
@@ -288,8 +251,8 @@ class NewsSearchHeaderWidget extends StatelessWidget {
                               ),
                             ),
                             onPressed: () {
-                              searchController.clear();
-                              onSearchChanged('');
+                              widget.searchController.clear();
+                              widget.onSearchChanged('');
                             },
                           ),
                         )
@@ -297,9 +260,9 @@ class NewsSearchHeaderWidget extends StatelessWidget {
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: basePadding,
-                  vertical: basePadding * 0.8,
+                  vertical: basePadding * 0.9,
                 ),
-                isDense: true,
+                isDense: false,
               ),
             ),
           ),

@@ -280,28 +280,40 @@ class _NewsListPageState extends State<NewsListPage>
     setState(() => _isLoading = true);
 
     try {
-      final response = await NewsService.searchNews(
-        query.trim(),
-        limit: 50,
-        page: 1,
-      );
+      final response = await NewsService.getNews(limit: 100, page: 1);
 
       if (response.success) {
-        final searchTopics = <Topic>[];
+        final allTopics = <Topic>[];
         for (final newsModel in response.data) {
-          searchTopics.addAll(newsModel.topics);
+          allTopics.addAll(newsModel.topics);
         }
 
+        final searchQuery = query.toLowerCase();
+        final searchResults =
+            allTopics.where((topic) {
+              final titleMatch = topic.title.toLowerCase().contains(
+                searchQuery,
+              );
+              final detailsMatch = topic.details.toLowerCase().contains(
+                searchQuery,
+              );
+              return titleMatch || detailsMatch;
+            }).toList();
+
         setState(() {
-          _allTopics = searchTopics;
+          _allTopics = searchResults;
           _isLoading = false;
           _hasMoreData = false;
           _selectedCategoryId = 'all';
           _updateAvailableCategories();
         });
+
+        if (searchResults.isEmpty) {
+          _showMessage('ບໍ່ພົບຂ່າວທີ່ຄົ້ນຫາ');
+        }
       } else {
         setState(() => _isLoading = false);
-        _showMessage('ບໍ່ພົບຜົນການຄົ້ນຫາ');
+        _showMessage('ບໍ່ສາມາດໂຫຼດຂ່າວໄດ້');
       }
     } catch (e) {
       setState(() => _isLoading = false);

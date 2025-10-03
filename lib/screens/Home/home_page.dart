@@ -1,4 +1,4 @@
-// pages/Home_page.dart - Fixed with proper imports and corrections
+// pages/Home_page.dart - Fixed login state management
 // ignore_for_file: unused_field, use_key_in_widget_constructors, avoid_print, sized_box_for_whitespace
 
 import 'package:BIBOL/models/course/course_model.dart' show CourseModel;
@@ -22,7 +22,7 @@ import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
-import '../../services/auth/auth_service.dart';
+import '../../services/auth/students_auth_service.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -51,6 +51,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool _isNewsLoading = true;
   String? _newsErrorMessage;
 
+  // Refresh state
+  bool _isRefreshing = false;
+
   // Search controller
   final TextEditingController _searchController = TextEditingController();
 
@@ -76,6 +79,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
       FlutterError.presentError(details);
     };
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkLoginStatus();
   }
 
   Future<void> _initializeComponents() async {
@@ -267,9 +276,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 onPressed: () async {
                   Navigator.pop(context);
                   await TokenService.clearAll();
-                  await _checkLoginStatus();
 
                   if (mounted) {
+                    // อัปเดตสถานะก่อน
+                    await _checkLoginStatus();
+
+                    // รอให้ state อัปเดต
+                    await Future.delayed(const Duration(milliseconds: 100));
+
+                    // บังคับ rebuild
+                    setState(() {});
+
+                    // Reset animations
+                    _fadeController.reset();
+                    _slideController.reset();
+                    _fadeController.forward();
+                    _slideController.forward();
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Row(
@@ -313,9 +336,129 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<void> _handleLogin() async {
+    // ปิด drawer ถ้าเปิดอยู่
+    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+      Navigator.pop(context);
+    }
+
     final result = await Navigator.pushNamed(context, '/login');
-    if (result == true) {
+    if (result == true && mounted) {
+      // Login สำเร็จ - เช็คสถานะก่อน
       await _checkLoginStatus();
+
+      // รอให้ state อัปเดต
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      if (mounted) {
+        // บังคับ rebuild ทั้งหน้า
+        setState(() {});
+
+        // Reset animations
+        _fadeController.reset();
+        _slideController.reset();
+        _fadeController.forward();
+        _slideController.forward();
+
+        // แสดง snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    'ເຂົ້າສູ່ລະບົບສຳເລັດ!',
+                    style: GoogleFonts.notoSansLao(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: EdgeInsets.all(_basePadding),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleRefresh() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+      _isCoursesLoading = true;
+      _isNewsLoading = true;
+      _errorMessage = null;
+      _newsErrorMessage = null;
+    });
+
+    try {
+      await _checkLoginStatus();
+      await Future.wait([_fetchCourses(), _fetchLatestNews()]);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    'ໂຫຼດຂໍ້ມູນສຳເລັດ',
+                    style: GoogleFonts.notoSansLao(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: EdgeInsets.all(_basePadding),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    'ໂຫຼດຂໍ້ມູນບໍ່ສຳເລັດ',
+                    style: GoogleFonts.notoSansLao(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            margin: EdgeInsets.all(_basePadding),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -333,13 +476,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8FAFF),
       drawer: ModernDrawerWidget(
+        key: ValueKey('drawer_$_isLoggedIn'), // เพิ่ม key เพื่อบังคับ rebuild
         isLoggedIn: _isLoggedIn,
         userInfo: _userInfo,
         screenWidth: _screenWidth,
         screenHeight: _screenHeight,
         onLogoutPressed: _handleLogout,
         onLoginPressed: _handleLogin,
-        currentRoute: '/home', // เพิ่มบรรทัดนี้
+        currentRoute: '/home',
       ),
       extendBodyBehindAppBar: true,
       body:
@@ -354,6 +498,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     slivers: [
                       SliverToBoxAdapter(
                         child: HeaderWidget(
+                          key: ValueKey(
+                            'header_$_isLoggedIn',
+                          ), // เพิ่ม key เพื่อบังคับ rebuild
                           onMenuPressed:
                               () => _scaffoldKey.currentState?.openDrawer(),
                           onLogoutPressed: _isLoggedIn ? _handleLogout : null,
@@ -599,72 +746,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       width: fabSize,
       height: fabSize,
       child: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            backgroundColor: Colors.transparent,
-            isScrollControlled: true,
-            builder:
-                (context) => Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  padding: EdgeInsets.all(_basePadding),
-                  child: SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        ListTile(
-                          leading: Icon(
-                            Icons.search,
-                            color: const Color(0xFF07325D),
-                            size: _isExtraSmallScreen ? 20.0 : 24.0,
-                          ),
-                          title: Text(
-                            'ຄົ້ນຫາ',
-                            style: GoogleFonts.notoSansLao(fontSize: 14),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                        ListTile(
-                          leading: Icon(
-                            Icons.refresh,
-                            color: const Color(0xFF07325D),
-                            size: _isExtraSmallScreen ? 20.0 : 24.0,
-                          ),
-                          title: Text(
-                            'ໂຫຼດຂໍ້ມູນໃໝ່',
-                            style: GoogleFonts.notoSansLao(fontSize: 14),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            _fetchCourses();
-                            _fetchLatestNews();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-          );
-        },
+        onPressed: _isLoading ? null : _handleRefresh,
         backgroundColor: const Color(0xFF07325D),
-        child: Icon(Icons.add, color: Colors.white, size: iconSize),
+        child: Icon(Icons.refresh, color: Colors.white, size: iconSize),
       ),
     );
   }

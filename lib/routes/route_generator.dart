@@ -35,8 +35,8 @@ class RouteGenerator {
       case AppRoutes.login:
         return MaterialPageRoute(builder: (context) => LoginPage());
 
-      case AppRoutes.register:
-        return MaterialPageRoute(builder: (context) => RegisterPage());
+      // case AppRoutes.register:
+      //   return MaterialPageRoute(builder: (context) => RegisterPage());
 
       case AppRoutes.home:
         return MaterialPageRoute(builder: (context) => HomePage());
@@ -85,7 +85,7 @@ class RouteGenerator {
     return {
       AppRoutes.splash: (context) => const SplashScreen(),
       AppRoutes.login: (context) => LoginPage(),
-      AppRoutes.register: (context) => RegisterPage(),
+      // AppRoutes.register: (context) => RegisterPage(),
       AppRoutes.home: (context) => HomePage(),
       AppRoutes.news: (context) => NewsListPage(),
       AppRoutes.gallery: (context) => GalleryPage(),

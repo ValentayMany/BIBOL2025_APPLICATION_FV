@@ -219,18 +219,17 @@ class NewsService {
         );
       }
 
-      final uri = Uri.parse(NewsApiConfig.newsSearchUrl).replace(
-        queryParameters: {
-          'search': keyword.trim(),
-          if (limit != null) 'limit': limit.toString(),
-          if (page != null) 'page': page.toString(),
-        },
+      // ใช้ getNewsUrl แทน newsSearchUrl
+      final url = NewsApiConfig.getNewsUrl(
+        page: page ?? 1,
+        count: limit ?? 50,
+        search: keyword.trim(),
       );
 
-      print('🔍 Searching news with URL: $uri');
+      print('🔍 Searching news with URL: $url');
 
       final response = await http
-          .get(uri, headers: _getHeaders())
+          .get(Uri.parse(url), headers: _getHeaders())
           .timeout(_defaultTimeout);
 
       print('📡 Search API Response Status: ${response.statusCode}');

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../services/auth/auth_service.dart';
-import '../../services/token/token_service.dart';
+import 'package:BIBOL/services/auth/students_auth_service.dart';
+import 'package:BIBOL/services/token/token_service.dart';
 import 'dart:ui';
 
 class LoginPage extends StatefulWidget {
@@ -12,117 +12,120 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
-  final codeController = TextEditingController();
-  final passwordController = TextEditingController();
+  final _admissionNoController = TextEditingController();
+  final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  String message = "";
   bool _isLoading = false;
-  bool _obscurePassword = true;
+  bool _obscureEmail = false;
 
   late AnimationController _animationController;
   late Animation<double> _animation;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
 
-  void login() async {
-    if (!_formKey.currentState!.validate()) return;
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
 
-    setState(() {
-      _isLoading = true;
-      message = "";
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 600),
+    );
+    _shakeAnimation = Tween(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _shakeController, curve: Curves.elasticIn),
+    );
+
+    _shakeController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _shakeController.reset();
+      }
     });
 
-    try {
-      final res = await AuthService.loginStudent(
-        studentId: codeController.text.trim(),
-        password: passwordController.text,
-      );
-
-      final success = res["success"] == true;
-      final token = res["data"]?["token"];
-      final user = res["data"]?["student"];
-
-      setState(() {
-        _isLoading = false;
-        message = res["message"] ?? "";
-      });
-
-      if (success && token != null) {
-        print("✅ Login Success: $token");
-        print("👤 User Data: $user");
-
-        await TokenService.saveToken(token);
-        if (user != null) {
-          await TokenService.saveUserInfo(user);
-        }
-
-        _showSuccessSnackBar();
-
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        if (context.mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
-        }
-      } else {
-        print("❌ Login Failed: $res");
-        _shakeController.forward();
-        _showErrorSnackBar();
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        message = "Connection error. Please try again.";
-      });
-      _shakeController.forward();
-      _showErrorSnackBar();
-    }
+    _animationController.forward();
   }
 
-  void _handleLogout() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(
-              'ອອກຈາກລະບົບ',
-              style: GoogleFonts.notoSansLao(fontWeight: FontWeight.bold),
-            ),
-            content: Text(
-              'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
-              style: GoogleFonts.notoSansLao(),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('ຍົກເລີກ', style: GoogleFonts.notoSansLao()),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await TokenService.clearToken();
-                  await TokenService.clearUserInfo();
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/login',
-                    (route) => false,
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('ອອກຈາກລະບົບສຳເລັດ'),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: Text(
-                  'ອອກຈາກລະບົບ',
-                  style: GoogleFonts.notoSansLao(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-    );
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _shakeController.dispose();
+    _admissionNoController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final authService = StudentAuthService();
+
+      debugPrint('🔐 Starting login process...');
+      debugPrint('📧 Email: ${_emailController.text.trim()}');
+      debugPrint('🎫 Admission No: ${_admissionNoController.text.trim()}');
+
+      final response = await authService.login(
+        admissionNo: _admissionNoController.text.trim(),
+        email: _emailController.text.trim(),
+      );
+
+      if (response != null && response.success && response.data != null) {
+        debugPrint('✅ Login API successful!');
+
+        // บันทึก Token
+        if (response.token != null && response.token!.isNotEmpty) {
+          await TokenService.saveToken(response.token!);
+          debugPrint('✅ Token saved: ${response.token}');
+        } else {
+          debugPrint('⚠️ No token in response');
+        }
+
+        // บันทึกข้อมูล Student
+        final studentData = response.data!.toJson();
+        await TokenService.saveUserInfo(studentData);
+        debugPrint('✅ User info saved');
+
+        // ตรวจสอบว่าบันทึกสำเร็จไหม
+        final isLoggedIn = await TokenService.isLoggedIn();
+        debugPrint('🔍 Verify login status: $isLoggedIn');
+
+        if (!mounted) return;
+
+        if (isLoggedIn) {
+          _showSuccessSnackBar();
+
+          await Future.delayed(Duration(milliseconds: 500));
+
+          if (mounted) {
+            Navigator.pop(context, true);
+          }
+        } else {
+          throw Exception('Failed to verify login status');
+        }
+      } else {
+        _shakeController.forward();
+        _showErrorSnackBar(response?.message ?? 'ເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ');
+      }
+    } catch (e) {
+      debugPrint('❌ Login error: $e');
+      _shakeController.forward();
+      if (mounted) {
+        _showErrorSnackBar('ເກີດຂໍ້ຜິດພາດ: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   void _showSuccessSnackBar() {
@@ -132,7 +135,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           children: [
             Icon(Icons.check_circle, color: Colors.white),
             SizedBox(width: 10),
-            Text("ເຂົ້າສູ່ລະບົບສຳເລັດ!"),
+            Text("ເຂົ້າສູ່ລະບົບສຳເລັດ!", style: GoogleFonts.notoSansLao()),
           ],
         ),
         backgroundColor: Colors.green,
@@ -142,20 +145,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  void _showErrorSnackBar() {
+  void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             Icon(Icons.error_outline, color: Colors.white),
             SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message.isNotEmpty
-                    ? message
-                    : "ເຂົ້າສູ່ລະບົບລົ້ມເຫຼວ. ກະລຸນາກວດສອບຂໍ້ມູນການເຂົ້າສູ່ລະບົບ.",
-              ),
-            ),
+            Expanded(child: Text(message, style: GoogleFonts.notoSansLao())),
           ],
         ),
         backgroundColor: Colors.red,
@@ -200,44 +197,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             ],
           ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 2),
-    );
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    );
-
-    _shakeController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 600),
-    );
-    _shakeAnimation = Tween(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _shakeController, curve: Curves.elasticIn),
-    );
-
-    _shakeController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _shakeController.reset();
-      }
-    });
-
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _shakeController.dispose();
-    codeController.dispose();
-    passwordController.dispose();
-    super.dispose();
   }
 
   @override
@@ -296,7 +255,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               },
             ),
           ),
-          // Main Content - ปรับปรุง layout และ spacing
+          // Main Content
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -305,8 +264,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     horizontal:
                         constraints.maxWidth > 600
                             ? (constraints.maxWidth - 600) / 2
-                            : 20.0, // ลดจาก 32 เหลือ 20
-                    vertical: 10.0, // ลดจาก default
+                            : 20.0,
+                    vertical: 10.0,
                   ),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -330,62 +289,48 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  // Logo with Hero Animation - ลดขนาด
+                                  // Logo with Hero Animation
                                   Hero(
                                     tag: 'app_logo',
                                     child: Image.asset(
                                       'assets/images/LOGO.png',
-                                      height: 100, // ลดจาก 120 เหลือ 100
+                                      height: 100,
                                     ),
                                   ),
-                                  const SizedBox(
-                                    height: 30,
-                                  ), // ลดจาก 40 เหลือ 30
+                                  const SizedBox(height: 30),
                                   Text(
                                     'ສະຖາບັນການທະນາຄານ',
                                     style: GoogleFonts.notoSansLao(
-                                      fontSize: 26, // ลดจาก 28 เหลือ 26
+                                      fontSize: 26,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
                                   ),
-                                  const SizedBox(height: 8), // ลดจาก 10 เหลือ 8
+                                  const SizedBox(height: 8),
                                   Text(
                                     'ເຂົ້າສູ່ລະບົບ',
                                     style: GoogleFonts.notoSansLao(
-                                      fontSize: 15, // ลดจาก 16 เหลือ 15
+                                      fontSize: 15,
                                       color: Colors.white70,
                                     ),
                                   ),
-                                  const SizedBox(
-                                    height: 30,
-                                  ), // ลดจาก 40 เหลือ 30
+                                  const SizedBox(height: 30),
                                   _buildGlassmorphicContainer(
                                     child: Column(
                                       children: [
-                                        _buildCodeTF(),
-                                        const SizedBox(
-                                          height: 16,
-                                        ), // ลดจาก 20 เหลือ 16
-                                        _buildPasswordTF(),
-                                        const SizedBox(
-                                          height: 8,
-                                        ), // ลดจาก 10 เหลือ 8
+                                        _buildAdmissionNoField(),
+                                        const SizedBox(height: 16),
+                                        _buildEmailField(),
+                                        const SizedBox(height: 8),
                                         _buildForgotPasswordBtn(),
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(
-                                    height: 24,
-                                  ), // ลดจาก 30 เหลือ 24
+                                  const SizedBox(height: 24),
                                   _buildLoginBtn(),
-                                  const SizedBox(
-                                    height: 16,
-                                  ), // ลดจาก 20 เหลือ 16
-                                  _buildSignupBtn(),
-                                  const SizedBox(
-                                    height: 16,
-                                  ), // ลดจาก 20 เหลือ 16
+                                  const SizedBox(height: 16),
+                                  _buildBackBtn(),
+                                  const SizedBox(height: 16),
                                   _buildVersionInfo(),
                                 ],
                               ),
@@ -435,7 +380,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          padding: const EdgeInsets.all(18), // ลดจาก 20 เหลือ 18
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
@@ -447,27 +392,27 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCodeTF() {
+  Widget _buildAdmissionNoField() {
     return TextFormField(
-      controller: codeController,
+      controller: _admissionNoController,
       style: const TextStyle(color: Colors.white),
       textInputAction: TextInputAction.next,
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
-          return 'ປ້ອນລະຫັດນັກສຶກສາ';
+          return 'ກະລຸນາປ້ອນລະຫັດນັກຮຽນ';
         }
         return null;
       },
       decoration: InputDecoration(
-        labelText: 'ລະຫັດນັກສຶກສາ',
+        labelText: 'ລະຫັດນັກຮຽນ (Admission No)',
         labelStyle: GoogleFonts.notoSansLao(
           color: Colors.white70,
-          fontSize: 13, // ลดขนาดฟอนต์
+          fontSize: 13,
         ),
         prefixIcon: const Icon(
           FontAwesomeIcons.user,
           color: Colors.white70,
-          size: 18, // ลดขนาด icon
+          size: 18,
         ),
         filled: true,
         fillColor: Colors.white.withOpacity(0.2),
@@ -485,53 +430,42 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         ),
         errorStyle: GoogleFonts.notoSansLao(
           color: Colors.red[300],
-          fontSize: 11, // ลดขนาดฟอนต์ error
+          fontSize: 11,
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14, // ลดจาก 16
+          horizontal: 14,
           vertical: 14,
         ),
       ),
     );
   }
 
-  Widget _buildPasswordTF() {
+  Widget _buildEmailField() {
     return TextFormField(
-      controller: passwordController,
-      obscureText: _obscurePassword,
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
       style: const TextStyle(color: Colors.white),
       textInputAction: TextInputAction.done,
-      onFieldSubmitted: (_) => login(),
+      onFieldSubmitted: (_) => _handleLogin(),
       validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'ປ້ອນລະຫັດຜ່ານ';
+        if (value == null || value.trim().isEmpty) {
+          return 'ກະລຸນາປ້ອນອີເມວ';
         }
-        if (value.length < 6) {
-          return 'ລະຫັດຜ່ານຕ້ອງມີຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ';
+        if (!value.contains('@')) {
+          return 'ອີເມວບໍ່ຖືກຕ້ອງ';
         }
         return null;
       },
       decoration: InputDecoration(
-        labelText: 'ລະຫັດຜ່ານ',
+        labelText: 'ອີເມວ (Email)',
         labelStyle: GoogleFonts.notoSansLao(
           color: Colors.white70,
-          fontSize: 13, // ลดขนาดฟอนต์
+          fontSize: 13,
         ),
         prefixIcon: const Icon(
-          Icons.lock,
+          Icons.email_outlined,
           color: Colors.white70,
-          size: 18, // ลดขนาด icon
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility : Icons.visibility_off,
-            color: Colors.white70,
-          ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
+          size: 18,
         ),
         filled: true,
         fillColor: Colors.white.withOpacity(0.2),
@@ -549,10 +483,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         ),
         errorStyle: GoogleFonts.notoSansLao(
           color: Colors.red[300],
-          fontSize: 11, // ลดขนาดฟอนต์ error
+          fontSize: 11,
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14, // ลดจาก 16
+          horizontal: 14,
           vertical: 14,
         ),
       ),
@@ -565,14 +499,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       child: TextButton(
         onPressed: _showForgotPasswordDialog,
         style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 4), // ลด padding
+          padding: const EdgeInsets.symmetric(vertical: 4),
         ),
         child: Text(
           'ລືມລະຫັດ?',
-          style: GoogleFonts.notoSansLao(
-            color: Colors.white70,
-            fontSize: 13, // ลดจาก 14 เหลือ 13
-          ),
+          style: GoogleFonts.notoSansLao(color: Colors.white70, fontSize: 13),
         ),
       ),
     );
@@ -581,9 +512,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Widget _buildLoginBtn() {
     return SizedBox(
       width: double.infinity,
-      height: 48, // ลดจาก 50 เหลือ 48
+      height: 48,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : login,
+        onPressed: _isLoading ? null : _handleLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
@@ -607,7 +538,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                 : Text(
                   'ເຂົ້າສູ່ລະບົບ',
                   style: GoogleFonts.notoSansLao(
-                    fontSize: 17, // ลดจาก 18 เหลือ 17
+                    fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF0D47A1),
                   ),
@@ -616,32 +547,20 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSignupBtn() {
-    return TextButton(
-      onPressed: () => Navigator.pushNamed(context, "/register"),
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 8), // ลด padding
-      ),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: 'ບໍ່ມີບັນຊີ? ',
-              style: GoogleFonts.notoSansLao(
-                color: Colors.white70,
-                fontSize: 15, // ลดจาก 16 เหลือ 15
-              ),
-            ),
-            TextSpan(
-              text: 'ລົງທະບຽນ',
-              style: GoogleFonts.notoSansLao(
-                color: Colors.white,
-                fontSize: 15, // ลดจาก 16 เหลือ 15
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+  Widget _buildBackBtn() {
+    return TextButton.icon(
+      onPressed: () => Navigator.pop(context),
+      icon: Icon(Icons.arrow_back_rounded, color: Colors.white70, size: 20),
+      label: Text(
+        'ກັບຄືນ',
+        style: GoogleFonts.notoSansLao(
+          color: Colors.white70,
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
         ),
+      ),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 8),
       ),
     );
   }
@@ -649,10 +568,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Widget _buildVersionInfo() {
     return Text(
       'Version 1.0.0',
-      style: GoogleFonts.notoSansLao(
-        color: Colors.white54,
-        fontSize: 11, // ลดจาก 12 เหลือ 11
-      ),
+      style: GoogleFonts.notoSansLao(color: Colors.white54, fontSize: 11),
     );
   }
 }

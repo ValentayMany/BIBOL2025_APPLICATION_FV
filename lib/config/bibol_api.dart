@@ -79,8 +79,21 @@ class NewsApiConfig {
   static String get baseUrl => baseNewsApi;
 
   // News URLs
-  static String getNewsUrl({int page = 1, int count = 10, String lang = 'ar'}) {
-    return '$baseNewsApi/topics/$defaultTopicId/page/$page/count/$count/$lang';
+  static String getNewsUrl({
+    int page = 1,
+    int count = 10,
+    String lang = 'ar',
+    String? search, // เพิ่ม parameter search
+  }) {
+    String url =
+        '$baseNewsApi/topics/$defaultTopicId/page/$page/count/$count/$lang';
+
+    // เพิ่ม search query ถ้ามี
+    if (search != null && search.isNotEmpty) {
+      url += '?search=$search';
+    }
+
+    return url;
   }
 
   // Get news by ID
@@ -201,16 +214,19 @@ class StudentsApiConfig {
   // Private constructor
   StudentsApiConfig._();
 
-  static const String baseUrl = 'https://web2025.bibol.edu.la/api/v1';
+  static const String baseUrl = 'http://localhost:8000/api';
 
-  // Students endpoints (เพิ่มตามต้องการ)
+  // Students endpoints
   static String getStudentsUrl() => '$baseUrl/students';
+  static String getStudentLoginUrl() => '$baseUrl/students/login';
+  static String getStudentByIdUrl(int id) => '$baseUrl/students/$id';
 
   // Debug helper
   static void printConfig() {
     debugPrint("=== 🎓 Students API Configuration ===");
     debugPrint("Base URL: $baseUrl");
     debugPrint("Students URL: ${getStudentsUrl()}");
+    debugPrint("Login URL: ${getStudentLoginUrl()}");
     debugPrint("======================================");
   }
 }
