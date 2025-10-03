@@ -1,12 +1,10 @@
-// pages/Home_page.dart - Fixed login state management
+// pages/Home_page.dart - Modern Redesign
 // ignore_for_file: unused_field, use_key_in_widget_constructors, avoid_print, sized_box_for_whitespace
 
 import 'package:BIBOL/models/course/course_model.dart' show CourseModel;
 import 'package:BIBOL/models/news/news_response.dart' show NewsResponse;
 import 'package:BIBOL/models/topic/topic_model.dart' show Topic;
-
 import 'package:BIBOL/screens/home/news_detail_in_home.dart';
-
 import 'package:BIBOL/services/course/course_Service.dart';
 import 'package:BIBOL/services/news/news_service.dart' show NewsService;
 import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
@@ -174,11 +172,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (mounted) {
         setState(() {
           if (response.success && response.data.isNotEmpty) {
-            _latestNews =
-                response.data
-                    .expand((newsModel) => newsModel.topics)
-                    .take(4)
-                    .toList();
+            _latestNews = response.data
+                .expand((newsModel) => newsModel.topics)
+                .take(4)
+                .toList();
           }
           _isNewsLoading = false;
         });
@@ -240,144 +237,151 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Future<void> _handleLogout() async {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: const Color(0xFF07325D),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.logout, color: Colors.red.shade600, size: 24),
             ),
-            title: Text(
+            SizedBox(width: 12),
+            Text(
               'ອອກຈາກລະບົບ',
               style: GoogleFonts.notoSansLao(
-                color: Colors.white,
+                color: const Color(0xFF07325D),
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
             ),
-            content: Text(
-              'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
+          ],
+        ),
+        content: Text(
+          'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
+          style: GoogleFonts.notoSansLao(
+            color: Colors.grey[700],
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ຍົກເລີກ',
               style: GoogleFonts.notoSansLao(
-                color: Colors.white70,
+                color: Colors.grey[600],
                 fontSize: 14,
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'ຍົກເລີກ',
-                  style: GoogleFonts.notoSansLao(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await TokenService.clearAll();
-
-                  if (mounted) {
-                    // อัปเดตสถานะก่อน
-                    await _checkLoginStatus();
-
-                    // รอให้ state อัปเดต
-                    await Future.delayed(const Duration(milliseconds: 100));
-
-                    // บังคับ rebuild
-                    setState(() {});
-
-                    // Reset animations
-                    _fadeController.reset();
-                    _slideController.reset();
-                    _fadeController.forward();
-                    _slideController.forward();
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            const Icon(
-                              Icons.check_circle,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Text(
-                                'ອອກຈາກລະບົບສຳເລັດ',
-                                style: GoogleFonts.notoSansLao(fontSize: 12),
-                              ),
-                            ),
-                          ],
-                        ),
-                        backgroundColor: Colors.green,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        margin: EdgeInsets.all(_basePadding),
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: Text(
-                  'ອອກຈາກລະບົບ',
-                  style: GoogleFonts.notoSansLao(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
           ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await TokenService.clearAll();
+
+              if (mounted) {
+                await _checkLoginStatus();
+                await Future.delayed(const Duration(milliseconds: 100));
+                setState(() {});
+
+                _fadeController.reset();
+                _slideController.reset();
+                _fadeController.forward();
+                _slideController.forward();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                        SizedBox(width: 12),
+                        Flexible(
+                          child: Text(
+                            'ອອກຈາກລະບົບສຳເລັດ',
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.green.shade600,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: EdgeInsets.all(_basePadding),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade600,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'ອອກຈາກລະບົບ',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Future<void> _handleLogin() async {
-    // ปิด drawer ถ้าเปิดอยู่
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       Navigator.pop(context);
     }
 
     final result = await Navigator.pushNamed(context, '/login');
     if (result == true && mounted) {
-      // Login สำเร็จ - เช็คสถานะก่อน
       await _checkLoginStatus();
-
-      // รอให้ state อัปเดต
       await Future.delayed(const Duration(milliseconds: 150));
 
       if (mounted) {
-        // บังคับ rebuild ทั้งหน้า
         setState(() {});
 
-        // Reset animations
         _fadeController.reset();
         _slideController.reset();
         _fadeController.forward();
         _slideController.forward();
 
-        // แสดง snackbar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                SizedBox(width: 12),
                 Flexible(
                   child: Text(
                     'ເຂົ້າສູ່ລະບົບສຳເລັດ!',
-                    style: GoogleFonts.notoSansLao(fontSize: 12),
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.green.shade600,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             margin: EdgeInsets.all(_basePadding),
             duration: const Duration(seconds: 2),
@@ -407,20 +411,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                SizedBox(width: 12),
                 Flexible(
                   child: Text(
                     'ໂຫຼດຂໍ້ມູນສຳເລັດ',
-                    style: GoogleFonts.notoSansLao(fontSize: 12),
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.green.shade600,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             margin: EdgeInsets.all(_basePadding),
             duration: const Duration(seconds: 2),
@@ -433,20 +440,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.error_outline, color: Colors.white, size: 20),
-                const SizedBox(width: 10),
+                Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+                SizedBox(width: 12),
                 Flexible(
                   child: Text(
                     'ໂຫຼດຂໍ້ມູນບໍ່ສຳເລັດ',
-                    style: GoogleFonts.notoSansLao(fontSize: 12),
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.red.shade600,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             margin: EdgeInsets.all(_basePadding),
             duration: const Duration(seconds: 2),
@@ -476,7 +486,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8FAFF),
       drawer: ModernDrawerWidget(
-        key: ValueKey('drawer_$_isLoggedIn'), // เพิ่ม key เพื่อบังคับ rebuild
+        key: ValueKey('drawer_$_isLoggedIn'),
         isLoggedIn: _isLoggedIn,
         userInfo: _userInfo,
         screenWidth: _screenWidth,
@@ -486,53 +496,50 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         currentRoute: '/home',
       ),
       extendBodyBehindAppBar: true,
-      body:
-          _isLoading
-              ? _buildLoadingScreen()
-              : SafeArea(
-                top: false,
-                child: Container(
-                  color: const Color(0xFFF8FAFF),
-                  child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: HeaderWidget(
-                          key: ValueKey(
-                            'header_$_isLoggedIn',
-                          ), // เพิ่ม key เพื่อบังคับ rebuild
-                          onMenuPressed:
-                              () => _scaffoldKey.currentState?.openDrawer(),
-                          onLogoutPressed: _isLoggedIn ? _handleLogout : null,
-                          onLoginPressed: !_isLoggedIn ? _handleLogin : null,
-                          isLoggedIn: _isLoggedIn,
-                          userInfo: _userInfo,
-                          screenWidth: _screenWidth,
-                        ),
+      body: _isLoading
+          ? _buildLoadingScreen()
+          : SafeArea(
+              top: false,
+              child: Container(
+                color: const Color(0xFFF8FAFF),
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: HeaderWidget(
+                        key: ValueKey('header_$_isLoggedIn'),
+                        onMenuPressed: () =>
+                            _scaffoldKey.currentState?.openDrawer(),
+                        onLogoutPressed: _isLoggedIn ? _handleLogout : null,
+                        onLoginPressed: !_isLoggedIn ? _handleLogin : null,
+                        isLoggedIn: _isLoggedIn,
+                        userInfo: _userInfo,
+                        screenWidth: _screenWidth,
                       ),
-                      SliverToBoxAdapter(
-                        child: Column(
-                          children: [
-                            SearchWidget(
-                              controller: _searchController,
-                              onChanged: (value) => setState(() {}),
-                              screenWidth: _screenWidth,
-                            ),
-                            ImprovedStatsCardWidget(
-                              coursesCount: _courses.length,
-                              newsCount: _latestNews.length,
-                            ),
-                            _buildCoursesSection(),
-                            _buildNewsSection(),
-                            QuickActionWidget(screenWidth: _screenWidth),
-                            const SizedBox(height: 100),
-                          ],
-                        ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Column(
+                        children: [
+                          SearchWidget(
+                            controller: _searchController,
+                            onChanged: (value) => setState(() {}),
+                            screenWidth: _screenWidth,
+                          ),
+                          ImprovedStatsCardWidget(
+                            coursesCount: _courses.length,
+                            newsCount: _latestNews.length,
+                          ),
+                          _buildCoursesSection(),
+                          _buildNewsSection(),
+                          QuickActionWidget(screenWidth: _screenWidth),
+                          const SizedBox(height: 100),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
@@ -556,56 +563,81 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           const SizedBox(height: 16),
           _isCoursesLoading
               ? Container(
-                height:
-                    _isExtraSmallScreen
-                        ? 140.0
-                        : _isSmallScreen
-                        ? 160.0
-                        : 180.0,
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF07325D),
+                  height: _isExtraSmallScreen
+                      ? 140.0
+                      : _isSmallScreen
+                          ? 160.0
+                          : 180.0,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0xFF07325D).withOpacity(0.1),
+                            blurRadius: 15,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xFF07325D),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              )
+                )
               : Container(
-                height:
-                    _isExtraSmallScreen
-                        ? 140.0
-                        : _isSmallScreen
-                        ? 160.0
-                        : 180.0,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: _basePadding),
-                  itemCount: _courses.length,
-                  itemBuilder: (context, index) {
-                    final cardWidth =
-                        _isExtraSmallScreen
-                            ? 200.0
-                            : _isSmallScreen
-                            ? 220.0
-                            : 260.0;
-                    return Container(
-                      width: cardWidth,
-                      margin: const EdgeInsets.only(right: 16),
-                      child: CourseCardWidget(
-                        course: _courses[index],
-                        screenWidth: _screenWidth,
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/course-detail',
-                            arguments: _courses[index],
+                  height: _isExtraSmallScreen
+                      ? 140.0
+                      : _isSmallScreen
+                          ? 160.0
+                          : 180.0,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: _basePadding),
+                    physics: BouncingScrollPhysics(),
+                    itemCount: _courses.length,
+                    itemBuilder: (context, index) {
+                      final cardWidth = _isExtraSmallScreen
+                          ? 200.0
+                          : _isSmallScreen
+                              ? 220.0
+                              : 260.0;
+                      return TweenAnimationBuilder<double>(
+                        duration: Duration(milliseconds: 400 + (index * 50)),
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        builder: (context, value, child) {
+                          return Transform.scale(
+                            scale: 0.8 + (0.2 * value),
+                            child: Opacity(
+                              opacity: value,
+                              child: Container(
+                                width: cardWidth,
+                                margin: const EdgeInsets.only(right: 16),
+                                child: CourseCardWidget(
+                                  course: _courses[index],
+                                  screenWidth: _screenWidth,
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/course-detail',
+                                      arguments: _courses[index],
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
                           );
                         },
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
         ],
       ),
     );
@@ -626,152 +658,264 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           const SizedBox(height: 20),
           _isNewsLoading
               ? Container(
-                height: 200,
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF07325D),
-                    ),
-                  ),
-                ),
-              )
-              : _latestNews.isEmpty
-              ? Container(
-                height: 200,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.article_outlined,
-                        size: _isExtraSmallScreen ? 40.0 : 60.0,
-                        color: Colors.grey[400],
+                  height: 200,
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0xFF07325D).withOpacity(0.1),
+                            blurRadius: 15,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'ບໍ່ມີຂ່າວສານໃໝ່',
-                        style: GoogleFonts.notoSansLao(
-                          color: Colors.grey[600],
-                          fontSize: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xFF07325D),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              )
-              : Column(
-                children: [
-                  if (_latestNews.isNotEmpty)
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: _basePadding),
-                      child: NewsCardWidget(
-                        news: _latestNews.first,
-                        screenWidth: _screenWidth,
-                        isFeatured: true,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => NewsDetailPage(
-                                    newsId: _latestNews.first.id.toString(),
-                                  ),
-                            ),
-                          );
-                        },
-                      ),
                     ),
-                  if (_latestNews.length > 1) ...[
-                    const SizedBox(height: 20),
-                    Container(
-                      height:
-                          _isExtraSmallScreen
-                              ? 180.0
-                              : _isSmallScreen
-                              ? 200.0
-                              : 220.0,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: _basePadding),
-                        itemCount: _latestNews.length - 1,
-                        itemBuilder: (context, index) {
-                          final cardWidth = _isExtraSmallScreen ? 200.0 : 250.0;
-                          return Container(
-                            width: cardWidth,
-                            margin: const EdgeInsets.only(right: 16),
-                            child: NewsCardWidget(
-                              news: _latestNews[index + 1],
-                              screenWidth: _screenWidth,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => NewsDetailPage(
-                                          newsId:
-                                              _latestNews[index + 1].id
+                  ),
+                )
+              : _latestNews.isEmpty
+                  ? Container(
+                      height: 200,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(
+                                  _isExtraSmallScreen ? 16.0 : 20.0),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF07325D).withOpacity(0.1),
+                                    Color(0xFF0A4A85).withOpacity(0.05),
+                                  ],
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.article_outlined,
+                                size: _isExtraSmallScreen ? 40.0 : 48.0,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'ບໍ່ມີຂ່າວສານໃໝ່',
+                              style: GoogleFonts.notoSansLao(
+                                color: Colors.grey[600],
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : Column(
+                      children: [
+                        if (_latestNews.isNotEmpty)
+                          TweenAnimationBuilder<double>(
+                            duration: Duration(milliseconds: 400),
+                            tween: Tween(begin: 0.0, end: 1.0),
+                            builder: (context, value, child) {
+                              return Transform.scale(
+                                scale: 0.9 + (0.1 * value),
+                                child: Opacity(
+                                  opacity: value,
+                                  child: Container(
+                                    margin: EdgeInsets.symmetric(
+                                        horizontal: _basePadding),
+                                    child: NewsCardWidget(
+                                      news: _latestNews.first,
+                                      screenWidth: _screenWidth,
+                                      isFeatured: true,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                NewsDetailPage(
+                                              newsId: _latestNews.first.id
                                                   .toString(),
-                                        ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
+                                ),
+                              );
+                            },
+                          ),
+                        if (_latestNews.length > 1) ...[
+                          const SizedBox(height: 20),
+                          Container(
+                            height: _isExtraSmallScreen
+                                ? 180.0
+                                : _isSmallScreen
+                                    ? 200.0
+                                    : 220.0,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding:
+                                  EdgeInsets.symmetric(horizontal: _basePadding),
+                              physics: BouncingScrollPhysics(),
+                              itemCount: _latestNews.length - 1,
+                              itemBuilder: (context, index) {
+                                final cardWidth =
+                                    _isExtraSmallScreen ? 200.0 : 250.0;
+                                return TweenAnimationBuilder<double>(
+                                  duration: Duration(
+                                      milliseconds: 500 + (index * 50)),
+                                  tween: Tween(begin: 0.0, end: 1.0),
+                                  builder: (context, value, child) {
+                                    return Transform.scale(
+                                      scale: 0.8 + (0.2 * value),
+                                      child: Opacity(
+                                        opacity: value,
+                                        child: Container(
+                                          width: cardWidth,
+                                          margin:
+                                              const EdgeInsets.only(right: 16),
+                                          child: NewsCardWidget(
+                                            news: _latestNews[index + 1],
+                                            screenWidth: _screenWidth,
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      NewsDetailPage(
+                                                    newsId: _latestNews[
+                                                            index + 1]
+                                                        .id
+                                                        .toString(),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 );
                               },
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
-                ],
-              ),
         ],
       ),
     );
   }
 
   Widget _buildFloatingActionButton() {
-    final fabSize =
-        _isExtraSmallScreen
-            ? 48.0
-            : _isSmallScreen
-            ? 52.0
-            : 56.0;
-    final iconSize =
-        _isExtraSmallScreen
-            ? 20.0
-            : _isSmallScreen
-            ? 22.0
-            : 24.0;
+    final fabSize = _isExtraSmallScreen
+        ? 56.0
+        : _isSmallScreen
+            ? 58.0
+            : 60.0;
+    final iconSize = _isExtraSmallScreen
+        ? 24.0
+        : _isSmallScreen
+            ? 26.0
+            : 28.0;
 
-    return SizedBox(
-      width: fabSize,
-      height: fabSize,
-      child: FloatingActionButton(
-        onPressed: _isLoading ? null : _handleRefresh,
-        backgroundColor: const Color(0xFF07325D),
-        child: Icon(Icons.refresh, color: Colors.white, size: iconSize),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(fabSize / 2),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF07325D).withOpacity(0.3),
+            blurRadius: 15,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: SizedBox(
+        width: fabSize,
+        height: fabSize,
+        child: FloatingActionButton(
+          onPressed: _isLoading ? null : _handleRefresh,
+          backgroundColor: const Color(0xFF07325D),
+          elevation: 0,
+          child: Icon(Icons.refresh_rounded, color: Colors.white, size: iconSize),
+        ),
       ),
     );
   }
 
   Widget _buildLoadingScreen() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07325D)),
-            strokeWidth: 3,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'ກຳລັງໂຫຼດ...',
-            style: GoogleFonts.notoSansLao(
-              color: const Color(0xFF07325D),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFF8FAFF),
+            Colors.white,
+          ],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF07325D).withOpacity(0.3),
+                    blurRadius: 25,
+                    offset: Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 4,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 32),
+            Text(
+              'ກຳລັງໂຫຼດ...',
+              style: GoogleFonts.notoSansLao(
+                color: const Color(0xFF07325D),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'ກະລຸນາລໍຖ້າສັກຄູ່',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.grey[500],
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
