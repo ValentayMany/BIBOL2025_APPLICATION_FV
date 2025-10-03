@@ -163,8 +163,7 @@ class _AboutPageState extends State<AboutPage>
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.grey[50],
-      appBar: _buildAppBar(),
+      backgroundColor: const Color(0xFFF8FAFF),
       drawer: ModernDrawerWidget(
         isLoggedIn: _isLoggedIn,
         userInfo: _userInfo,
@@ -185,7 +184,7 @@ class _AboutPageState extends State<AboutPage>
               _buildMainImage(),
               SizedBox(height: 8),
               _buildContentSections(),
-              SizedBox(height: 20),
+              SizedBox(height: 100),
             ],
           ),
         ),
@@ -197,111 +196,187 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Color(0xFF07325D),
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.3),
-      centerTitle: true,
-      title: Text(
-        'ກ່ຽວກັບສະຖາບັນການທະນາຄານ',
-        style: GoogleFonts.notoSansLao(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-        ),
-      ),
-      iconTheme: IconThemeData(color: Colors.white),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.only()),
-    );
-  }
-
   Widget _buildHeader() {
+    // Responsive values
+    double basePadding = _screenWidth < 320
+        ? 8.0
+        : _screenWidth < 360
+            ? 12.0
+            : _screenWidth < 400
+                ? 16.0
+                : _screenWidth < 480
+                    ? 18.0
+                    : 20.0;
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF07325D), Color(0xFF0A4B7A)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
+          bottomLeft: Radius.circular(basePadding * 2),
+          bottomRight: Radius.circular(basePadding * 2),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: Offset(0, 5),
+            color: Color(0xFF07325D).withOpacity(0.3),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
         ],
       ),
-      padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-      child: Column(
-        children: [_buildLogo(), SizedBox(height: 20), _buildTitle()],
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(basePadding),
+          child: Column(
+            children: [
+              // Header Row with Menu Button
+              Row(
+                children: [
+                  Container(
+                    width: _screenWidth < 320 ? 40 : 48,
+                    height: _screenWidth < 320 ? 40 : 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.menu_rounded,
+                        color: Colors.white,
+                        size: _screenWidth < 320 ? 20 : 24,
+                      ),
+                      onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                    ),
+                  ),
+                  Spacer(),
+                ],
+              ),
+              
+              SizedBox(height: basePadding),
+              
+              // Logo and Title
+              TweenAnimationBuilder<double>(
+                duration: Duration(milliseconds: 800),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.scale(
+                    scale: 0.8 + (0.2 * value),
+                    child: Opacity(
+                      opacity: value,
+                      child: Column(
+                        children: [
+                          _buildLogo(),
+                          SizedBox(height: 20),
+                          _buildTitle(),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildLogo() {
+    double logoSize = _screenWidth < 320
+        ? 50.0
+        : _screenWidth < 360
+            ? 60.0
+            : _screenWidth < 400
+                ? 70.0
+                : _screenWidth < 480
+                    ? 80.0
+                    : 90.0;
+
     return Container(
-      width: 100,
-      height: 100,
+      width: logoSize,
+      height: logoSize,
       decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.yellow[700]!, width: 3),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: Offset(0, 4),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
         ],
-        color: Colors.white.withOpacity(0.1),
       ),
-      child: Center(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: Image.asset(
-            'assets/images/LOGO.png',
-            width: 70,
-            height: 70,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return Icon(
-                Icons.account_balance,
-                size: 50,
-                color: Colors.yellow[700],
-              );
-            },
-          ),
+      child: Padding(
+        padding: EdgeInsets.all(logoSize * 0.15),
+        child: Image.asset(
+          'assets/images/LOGO.png',
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(
+              Icons.account_balance,
+              size: logoSize * 0.5,
+              color: Colors.white.withOpacity(0.8),
+            );
+          },
         ),
       ),
     );
   }
 
   Widget _buildTitle() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-      ),
-      child: Text(
-        'ປະຫວັດຄວາມເປັນມາຂອງ\nສະຖາບັນການທະນາຄານ',
-        textAlign: TextAlign.center,
-        style: GoogleFonts.notoSansLao(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          height: 1.4,
-          letterSpacing: 0.5,
+    double titleFontSize = _screenWidth < 320
+        ? 16.0
+        : _screenWidth < 360
+            ? 18.0
+            : _screenWidth < 400
+                ? 20.0
+                : _screenWidth < 480
+                    ? 22.0
+                    : 24.0;
+
+    return Column(
+      children: [
+        Text(
+          'ກ່ຽວກັບ',
+          style: GoogleFonts.notoSansLao(
+            fontSize: titleFontSize,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+          textAlign: TextAlign.center,
         ),
-      ),
+        SizedBox(height: 4),
+        Text(
+          'ສະຖາບັນການທະນາຄານ',
+          style: GoogleFonts.notoSansLao(
+            fontSize: _screenWidth < 320
+                ? 10.0
+                : _screenWidth < 360
+                    ? 11.0
+                    : _screenWidth < 400
+                        ? 12.0
+                        : _screenWidth < 480
+                            ? 13.0
+                            : 14.0,
+            fontWeight: FontWeight.w500,
+            color: Colors.white.withOpacity(0.9),
+            letterSpacing: 0.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
