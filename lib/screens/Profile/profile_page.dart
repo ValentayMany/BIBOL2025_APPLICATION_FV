@@ -376,6 +376,25 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                   const SizedBox(height: 16),
                   if (_isLoggedIn && userInfo != null) ...[
+                    // ชื่อ-นามสกุล
+                    Container(
+                      constraints: BoxConstraints(maxWidth: _screenWidth * 0.85),
+                      child: Text(
+                        "${userInfo!['first_name'] ?? ''} ${userInfo!['last_name'] ?? ''}"
+                            .trim(),
+                        style: GoogleFonts.notoSansLao(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1.3,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // รหัสนักศึกษา
                     if (userInfo?['admission_no'] != null)
                       Container(
                         padding: EdgeInsets.symmetric(
@@ -562,6 +581,20 @@ class _ProfilePageState extends State<ProfilePage>
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            // ชื่อ-นามสกุล Card
+            _buildInfoCard(
+              icon: Icons.person_rounded,
+              iconColor: Colors.purple,
+              title: 'ຊື່-ນາມສະກຸນ',
+              value:
+                  "${userInfo?['first_name'] ?? ''} ${userInfo?['last_name'] ?? ''}"
+                      .trim()
+                      .isNotEmpty
+                      ? "${userInfo?['first_name'] ?? ''} ${userInfo?['last_name'] ?? ''}"
+                          .trim()
+                      : 'N/A',
+            ),
+            SizedBox(height: 12),
             _buildInfoCard(
               icon: Icons.badge_rounded,
               iconColor: Colors.blue,
