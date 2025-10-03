@@ -1,4 +1,4 @@
-// widgets/home_widgets/news_card_widget.dart
+// widgets/home_widgets/news_card_widget.dart - Premium Design
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:BIBOL/models/topic/topic_model.dart';
@@ -34,11 +34,11 @@ class NewsCardWidget extends StatelessWidget {
   double get _smallPadding => _basePadding * 0.75;
 
   double get _bodyFontSize {
-    if (_isExtraSmallScreen) return 12.0;
-    if (_isSmallScreen) return 13.0;
-    if (_isMediumScreen) return 14.0;
-    if (_isTablet) return 16.0;
-    return 15.0;
+    if (_isExtraSmallScreen) return 13.0;
+    if (_isSmallScreen) return 14.0;
+    if (_isMediumScreen) return 15.0;
+    if (_isTablet) return 17.0;
+    return 16.0;
   }
 
   double get _captionFontSize {
@@ -77,39 +77,45 @@ class NewsCardWidget extends StatelessWidget {
   }
 
   Widget _buildFeaturedNewsCard() {
-    final cardHeight =
-        _isExtraSmallScreen
-            ? 160.0
-            : _isSmallScreen
+    final cardHeight = _isExtraSmallScreen
+        ? 160.0
+        : _isSmallScreen
             ? 180.0
             : _isMediumScreen
-            ? 200.0
-            : _isTablet
-            ? 280.0
-            : 250.0;
+                ? 200.0
+                : _isTablet
+                    ? 280.0
+                    : 250.0;
 
     return Container(
       height: cardHeight,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFFAFBFF)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Color(0xFF10B981).withOpacity(0.2),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Color(0xFF10B981).withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           onTap: onTap,
-          child:
-              _isExtraSmallScreen || _isSmallScreen
-                  ? _buildVerticalLayout(cardHeight)
-                  : _buildHorizontalLayout(cardHeight),
+          child: _isExtraSmallScreen || _isSmallScreen
+              ? _buildVerticalLayout(cardHeight)
+              : _buildHorizontalLayout(cardHeight),
         ),
       ),
     );
@@ -118,71 +124,139 @@ class NewsCardWidget extends StatelessWidget {
   Widget _buildVerticalLayout(double cardHeight) {
     return Column(
       children: [
-        Container(
-          height: cardHeight * 0.5,
-          width: double.infinity,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
+        Stack(
+          children: [
+            Container(
+              height: cardHeight * 0.5,
+              width: double.infinity,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+                child: _buildNewsImage(news.photoFile),
+              ),
             ),
-            child: _buildNewsImage(news.photoFile),
-          ),
+            Positioned(
+              top: 10,
+              left: 10,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0xFF10B981).withOpacity(0.4),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.fiber_new_rounded, color: Colors.white, size: 14),
+                    SizedBox(width: 4),
+                    Text(
+                      'ໃໝ່',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: _captionFontSize * 0.9,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.all(_smallPadding),
+            padding: EdgeInsets.all(_basePadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _stripHtmlTags(news.title),
-                  style: GoogleFonts.notoSansLao(
-                    fontSize: _bodyFontSize * 0.9,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                    height: 1.3,
+                Expanded(
+                  child: Text(
+                    _stripHtmlTags(news.title),
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: _bodyFontSize,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF07325D),
+                      height: 1.3,
+                      letterSpacing: 0.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const Spacer(),
+                SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.visibility,
-                          size: _captionFontSize,
-                          color: Colors.grey[500],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${news.visits}',
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: _captionFontSize * 0.8,
-                            color: Colors.grey[500],
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.visibility_rounded,
+                            size: _captionFontSize,
+                            color: Colors.grey[600],
                           ),
-                        ),
-                      ],
+                          SizedBox(width: 4),
+                          Text(
+                            '${news.visits}',
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: _captionFontSize * 0.9,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF07325D),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'ອ່ານ',
-                        style: GoogleFonts.notoSansLao(
-                          fontSize: _captionFontSize * 0.8,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
                         ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0xFF07325D).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: _captionFontSize,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'ອ່ານ',
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: _captionFontSize,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -198,67 +272,93 @@ class NewsCardWidget extends StatelessWidget {
   Widget _buildHorizontalLayout(double cardHeight) {
     return Row(
       children: [
-        Container(
-          width:
-              _isMediumScreen
-                  ? 120.0
+        Stack(
+          children: [
+            Container(
+              width: _isMediumScreen
+                  ? 140.0
                   : _isTablet
-                  ? 160.0
-                  : 140.0,
-          height: cardHeight,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              bottomLeft: Radius.circular(20),
+                      ? 180.0
+                      : 160.0,
+              height: cardHeight,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  bottomLeft: Radius.circular(24),
+                ),
+                child: _buildNewsImage(news.photoFile),
+              ),
             ),
-            child: _buildNewsImage(news.photoFile),
-          ),
+            Positioned(
+              top: 12,
+              left: 12,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0xFF10B981).withOpacity(0.4),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.fiber_new_rounded, color: Colors.white, size: 14),
+                    SizedBox(width: 4),
+                    Text(
+                      'ໃໝ່',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: _captionFontSize * 0.9,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.all(_basePadding),
+            padding: EdgeInsets.all(_basePadding * 1.2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF07325D).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'ຂ່າວໃໝ່',
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: _captionFontSize,
-                            color: const Color(0xFF07325D),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.visibility,
-                          size: _captionFontSize,
-                          color: Colors.grey[500],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${news.visits}',
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: _captionFontSize * 0.8,
-                            color: Colors.grey[500],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.visibility_rounded,
+                            size: _captionFontSize,
+                            color: Colors.grey[600],
                           ),
-                        ),
-                      ],
+                          SizedBox(width: 4),
+                          Text(
+                            '${news.visits}',
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: _captionFontSize * 0.9,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -267,9 +367,10 @@ class NewsCardWidget extends StatelessWidget {
                   _stripHtmlTags(news.title),
                   style: GoogleFonts.notoSansLao(
                     fontSize: _bodyFontSize * 1.2,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF07325D),
                     height: 1.3,
+                    letterSpacing: 0.3,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -279,34 +380,56 @@ class NewsCardWidget extends StatelessWidget {
                   child: Text(
                     _stripHtmlTags(news.details),
                     style: GoogleFonts.notoSansLao(
-                      fontSize: _bodyFontSize,
+                      fontSize: _bodyFontSize * 0.9,
                       color: Colors.grey[600],
-                      height: 1.4,
+                      height: 1.5,
+                      fontWeight: FontWeight.w500,
                     ),
-                    maxLines: _isMediumScreen ? 2 : 4,
+                    maxLines: _isMediumScreen ? 2 : 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     const Spacer(),
                     Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: _smallPadding,
-                        vertical: _smallPadding * 0.5,
+                        horizontal: _basePadding,
+                        vertical: _smallPadding * 0.6,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF07325D),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Text(
-                        'ອ່ານເພີ່ມ',
-                        style: GoogleFonts.notoSansLao(
-                          fontSize: _captionFontSize,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
                         ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0xFF07325D).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: _captionFontSize * 1.1,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'ອ່ານເພີ່ມ',
+                            style: GoogleFonts.notoSansLao(
+                              fontSize: _captionFontSize,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -320,74 +443,91 @@ class NewsCardWidget extends StatelessWidget {
   }
 
   Widget _buildCompactNewsCard() {
-    final cardHeight =
-        _isExtraSmallScreen
-            ? 180.0
-            : _isSmallScreen
+    final cardHeight = _isExtraSmallScreen
+        ? 180.0
+        : _isSmallScreen
             ? 200.0
             : 220.0;
 
     return Container(
       height: cardHeight,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFFAFBFF)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Color(0xFF07325D).withOpacity(0.1),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Color(0xFF07325D).withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                height: cardHeight * 0.4,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                  child: _buildNewsImage(
-                    news.photoFile,
-                    height: cardHeight * 0.4,
-                  ),
+                height: cardHeight * 0.45,
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                      child: _buildNewsImage(
+                        news.photoFile,
+                        height: cardHeight * 0.45,
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.3),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(
-                    _isExtraSmallScreen ? 8.0 : _smallPadding,
-                  ),
+                  padding: EdgeInsets.all(_isExtraSmallScreen ? 10.0 : _basePadding),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _stripHtmlTags(news.title),
-                        style: GoogleFonts.notoSansLao(
-                          fontSize: _bodyFontSize * 0.9,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
-                          height: 1.3,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
                       Expanded(
                         child: Text(
-                          _stripHtmlTags(news.details),
+                          _stripHtmlTags(news.title),
                           style: GoogleFonts.notoSansLao(
-                            fontSize: _captionFontSize,
-                            color: Colors.grey[600],
+                            fontSize: _bodyFontSize,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF07325D),
                             height: 1.3,
+                            letterSpacing: 0.3,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -396,24 +536,46 @@ class NewsCardWidget extends StatelessWidget {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(
-                            Icons.visibility,
-                            size: _captionFontSize,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${news.visits}',
-                            style: GoogleFonts.notoSansLao(
-                              fontSize: _captionFontSize * 0.8,
-                              color: Colors.grey[400],
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.visibility_rounded,
+                                  size: _captionFontSize,
+                                  color: Colors.grey[600],
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  '${news.visits}',
+                                  style: GoogleFonts.notoSansLao(
+                                    fontSize: _captionFontSize * 0.9,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const Spacer(),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: _captionFontSize,
-                            color: const Color(0xFF07325D),
+                          Container(
+                            padding: EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.arrow_forward_rounded,
+                              size: _captionFontSize * 1.1,
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -439,26 +601,32 @@ class NewsCardWidget extends StatelessWidget {
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF07325D).withOpacity(0.7),
-                  const Color(0xFF0A4A73).withOpacity(0.7),
-                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF07325D),
+                  Color(0xFF0A4A85),
+                ],
               ),
             ),
-            child: Icon(
-              Icons.article,
-              size: height != null ? height * 0.3 : 60.0,
-              color: Colors.white,
+            child: Center(
+              child: Icon(
+                Icons.article_rounded,
+                size: height != null ? height * 0.3 : 60.0,
+                color: Colors.white.withOpacity(0.7),
+              ),
             ),
           );
         },
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           return Container(
-            decoration: BoxDecoration(color: Colors.grey[200]),
-            child: const Center(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.grey[200]!, Colors.grey[100]!],
+              ),
+            ),
+            child: Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07325D)),
                 strokeWidth: 2,
@@ -472,18 +640,20 @@ class NewsCardWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            const Color(0xFF07325D).withOpacity(0.7),
-            const Color(0xFF0A4A73).withOpacity(0.7),
-          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF07325D),
+            Color(0xFF0A4A85),
+          ],
         ),
       ),
-      child: Icon(
-        Icons.article,
-        size: height != null ? height * 0.3 : 60.0,
-        color: Colors.white,
+      child: Center(
+        child: Icon(
+          Icons.article_rounded,
+          size: height != null ? height * 0.3 : 60.0,
+          color: Colors.white.withOpacity(0.7),
+        ),
       ),
     );
   }
