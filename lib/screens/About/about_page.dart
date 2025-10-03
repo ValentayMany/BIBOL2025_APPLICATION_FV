@@ -3,6 +3,7 @@
 import 'package:BIBOL/services/token/token_service.dart';
 import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
 import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
+import 'package:BIBOL/widgets/shared/shared_header_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -232,28 +233,13 @@ class _AboutPageState extends State<AboutPage>
           padding: EdgeInsets.all(basePadding),
           child: Column(
             children: [
-              // Header Row with Menu Button
+              // Header Row with Menu Button - ใช้ SharedHeaderButton
               Row(
                 children: [
-                  Container(
-                    width: _screenWidth < 320 ? 40 : 48,
-                    height: _screenWidth < 320 ? 40 : 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.menu_rounded,
-                        color: Colors.white,
-                        size: _screenWidth < 320 ? 20 : 24,
-                      ),
-                      onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                    ),
+                  SharedHeaderButton(
+                    icon: Icons.menu_rounded,
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                    screenWidth: _screenWidth,
                   ),
                   Spacer(),
                 ],
