@@ -1,7 +1,10 @@
 // ignore_for_file: use_key_in_widget_constructors
 
+import 'package:BIBOL/services/token/token_service.dart';
 import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
+import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AboutPage extends StatefulWidget {
   @override
@@ -13,6 +16,11 @@ class _AboutPageState extends State<AboutPage>
   int _currentIndex = 3;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  
+  // เพิ่ม state สำหรับ login
+  bool _isLoggedIn = false;
+  Map<String, dynamic>? _userInfo;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -25,12 +33,30 @@ class _AboutPageState extends State<AboutPage>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+    _checkLoginStatus();  // เพิ่มการเช็ค login
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  // เพิ่ม method สำหรับเช็ค login
+  Future<void> _checkLoginStatus() async {
+    try {
+      final isLoggedIn = await TokenService.isLoggedIn();
+      final userInfo = await TokenService.getUserInfo();
+
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = isLoggedIn;
+          _userInfo = userInfo;
+        });
+      }
+    } catch (e) {
+      print('Error checking login status: $e');
+    }
   }
 
   void _onNavTap(int index) {
@@ -57,12 +83,97 @@ class _AboutPageState extends State<AboutPage>
     }
   }
 
+  // เพิ่ม method สำหรับ logout
+  Future<void> _handleLogout() async {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF07325D),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              'ອອກຈາກລະບົບ',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            content: Text(
+              'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'ຍົກເລີກ',
+                  style: GoogleFonts.notoSansLao(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await TokenService.clearAll();
+                  await _checkLoginStatus();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'ອອກຈາກລະບົບສຳເລັດ',
+                          style: GoogleFonts.notoSansLao(fontSize: 14),
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: Text(
+                  'ອອກຈາກລະບົບ',
+                  style: GoogleFonts.notoSansLao(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  // เพิ่ม method สำหรับ login
+  Future<void> _handleLogin() async {
+    final result = await Navigator.pushNamed(context, '/login');
+    if (result == true) await _checkLoginStatus();
+  }
+
+  double get _screenWidth => MediaQuery.of(context).size.width;
+  double get _screenHeight => MediaQuery.of(context).size.height;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.grey[50],
       appBar: _buildAppBar(),
-      drawer: _buildDrawer(),
+      drawer: ModernDrawerWidget(
+        isLoggedIn: _isLoggedIn,
+        userInfo: _userInfo,
+        screenWidth: _screenWidth,
+        screenHeight: _screenHeight,
+        onLogoutPressed: _handleLogout,
+        onLoginPressed: _handleLogin,
+        currentRoute: '/about',
+      ),
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SingleChildScrollView(
@@ -94,7 +205,7 @@ class _AboutPageState extends State<AboutPage>
       centerTitle: true,
       title: Text(
         'ກ່ຽວກັບສະຖາບັນການທະນາຄານ',
-        style: TextStyle(
+        style: GoogleFonts.notoSansLao(
           color: Colors.white,
           fontSize: 20,
           fontWeight: FontWeight.w600,
@@ -103,94 +214,6 @@ class _AboutPageState extends State<AboutPage>
       ),
       iconTheme: IconThemeData(color: Colors.white),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.only()),
-    );
-  }
-
-  Widget _buildDrawer() {
-    return Drawer(
-      backgroundColor: Colors.white,
-      child: Column(
-        children: [
-          _buildDrawerHeader(),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              children: [
-                _buildDrawerItem(Icons.home, 'ໜ້າຫຼັກ', '/home'),
-                _buildDrawerItem(Icons.article_outlined, 'ຂ່າວສານ', '/news'),
-                _buildDrawerItem(
-                  Icons.photo_library_outlined,
-                  'ຄັງຮູບ',
-                  '/gallery',
-                ),
-                _buildDrawerItem(Icons.person_outline, 'ໂປຣໄຟລ', '/profile'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerHeader() {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF07325D), Color(0xFF0A4B7A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.account_balance, size: 40, color: Colors.white),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'ເມນູ',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(IconData icon, String title, String route) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Container(
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Color(0xFF07325D).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: Color(0xFF07325D), size: 20),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        onTap: () {
-          Navigator.pushReplacementNamed(context, route);
-        },
-      ),
     );
   }
 
@@ -271,7 +294,7 @@ class _AboutPageState extends State<AboutPage>
       child: Text(
         'ປະຫວັດຄວາມເປັນມາຂອງ\nສະຖາບັນການທະນາຄານ',
         textAlign: TextAlign.center,
-        style: TextStyle(
+        style: GoogleFonts.notoSansLao(
           color: Colors.white,
           fontSize: 20,
           fontWeight: FontWeight.w600,
@@ -321,7 +344,10 @@ class _AboutPageState extends State<AboutPage>
                       SizedBox(height: 8),
                       Text(
                         'ບໍ່ສາມາດໂຫຼດຮູບໄດ້',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                        style: GoogleFonts.notoSansLao(
+                          color: Colors.grey[500],
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
@@ -371,7 +397,10 @@ class _AboutPageState extends State<AboutPage>
             SizedBox(height: 12),
             Text(
               'ກໍາລັງໂຫຼດ...',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: GoogleFonts.notoSansLao(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
             ),
           ],
         ),
@@ -396,7 +425,10 @@ class _AboutPageState extends State<AboutPage>
           Expanded(
             child: Text(
               'ເກີດຂໍ້ຜິດພາດ: $error',
-              style: TextStyle(color: Colors.red[700], fontSize: 14),
+              style: GoogleFonts.notoSansLao(
+                color: Colors.red[700],
+                fontSize: 14,
+              ),
             ),
           ),
         ],
@@ -419,7 +451,10 @@ class _AboutPageState extends State<AboutPage>
           SizedBox(width: 12),
           Text(
             'ບໍ່ມີຂໍ້ມູນ',
-            style: TextStyle(color: Colors.amber[800], fontSize: 14),
+            style: GoogleFonts.notoSansLao(
+              color: Colors.amber[800],
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -478,7 +513,7 @@ class _AboutPageState extends State<AboutPage>
           Expanded(
             child: Text(
               title,
-              style: TextStyle(
+              style: GoogleFonts.notoSansLao(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -511,7 +546,7 @@ class _AboutPageState extends State<AboutPage>
         ),
         child: Text(
           content,
-          style: TextStyle(
+          style: GoogleFonts.notoSansLao(
             fontSize: 15,
             color: Colors.black87,
             height: 1.6,
@@ -548,7 +583,7 @@ class _AboutPageState extends State<AboutPage>
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
+              style: GoogleFonts.notoSansLao(
                 fontSize: 15,
                 color: Colors.black87,
                 height: 1.5,
