@@ -1,4 +1,4 @@
-// widgets/home_widgets/modern_drawer_widget.dart
+// widgets/shared/modern_drawer_widget.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -74,9 +74,13 @@ class ModernDrawerWidget extends StatelessWidget {
       child: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF07325D),
+              Color(0xFF0A4A85),
+              Color(0xFF0D5299),
+            ],
           ),
         ),
         child: SafeArea(
@@ -95,11 +99,11 @@ class ModernDrawerWidget extends StatelessWidget {
   Widget _buildDrawerHeader(BuildContext context) {
     final avatarSize =
         _isExtraSmallScreen
-            ? 45.0
+            ? 50.0
             : _isShortScreen
-            ? 55.0
+            ? 60.0
             : _isTablet
-            ? 85.0
+            ? 90.0
             : 75.0;
     final maxTextWidth =
         screenWidth *
@@ -110,88 +114,160 @@ class ModernDrawerWidget extends StatelessWidget {
             : 0.6);
 
     return Container(
-      padding: EdgeInsets.all(_basePadding),
+      width: double.infinity,
+      padding: EdgeInsets.all(_basePadding * 1.5),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withOpacity(0.1),
+            Colors.transparent,
+          ],
+        ),
+      ),
       child: Column(
         children: [
+          // Avatar with border
           Container(
-            width: avatarSize,
-            height: avatarSize,
+            padding: EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.white,
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 2,
+              ),
             ),
-            child: Icon(
-              isLoggedIn
-                  ? Icons.account_circle_rounded
-                  : Icons.menu_book_rounded,
-              color: const Color(0xFF07325D),
-              size: avatarSize * 0.6,
-            ),
-          ),
-          SizedBox(height: _smallPadding),
-          FittedBox(
-            child: Text(
-              'ສະບາຍດີ!',
-              style: GoogleFonts.notoSansLao(
+            child: Container(
+              width: avatarSize,
+              height: avatarSize,
+              decoration: BoxDecoration(
                 color: Colors.white,
-                fontSize: _titleFontSize,
-                fontWeight: FontWeight.w800,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Icon(
+                isLoggedIn
+                    ? Icons.account_circle_rounded
+                    : Icons.menu_book_rounded,
+                color: const Color(0xFF07325D),
+                size: avatarSize * 0.6,
               ),
             ),
           ),
+          SizedBox(height: _basePadding),
+          
+          // Greeting with icon
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'ສະບາຍດີ',
+                style: GoogleFonts.notoSansLao(
+                  color: Colors.white,
+                  fontSize: _titleFontSize,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                '👋',
+                style: TextStyle(fontSize: _titleFontSize * 0.9),
+              ),
+            ],
+          ),
+          
+          SizedBox(height: _smallPadding),
+          
           if (isLoggedIn && userInfo != null) ...[
-            const SizedBox(height: 8),
+            // User info card
             Container(
               constraints: BoxConstraints(maxWidth: maxTextWidth),
+              padding: EdgeInsets.symmetric(
+                horizontal: _basePadding,
+                vertical: _smallPadding,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
               child: Column(
                 children: [
+                  // Name
                   Text(
                     "${userInfo!['first_name'] ?? ''} ${userInfo!['last_name'] ?? ''}"
                         .trim(),
                     style: GoogleFonts.notoSansLao(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white,
                       fontSize: _bodyFontSize,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  // Student ID
                   if (userInfo!['student_id'] != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'ລະຫັດ: ${userInfo!['student_id']}',
-                      style: GoogleFonts.notoSansLao(
-                        color: Colors.white.withOpacity(0.6),
-                        fontSize: _captionFontSize,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.badge_outlined,
+                          color: Colors.white.withOpacity(0.7),
+                          size: _captionFontSize + 2,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${userInfo!['student_id']}',
+                          style: GoogleFonts.notoSansLao(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: _captionFontSize,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ],
               ),
             ),
-          ] else
+          ] else ...[
             Container(
               constraints: BoxConstraints(maxWidth: maxTextWidth),
-              child: Text(
-                'ຍິນດີຕ້ອນຮັບ',
-                style: GoogleFonts.notoSansLao(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: _bodyFontSize,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                children: [
+                  Text(
+                    'ສະຖາບັນການທະນາຄານ',
+                    style: GoogleFonts.notoSansLao(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: _bodyFontSize,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'ຍິນດີຕ້ອນຮັບທຸກທ່ານ',
+                    style: GoogleFonts.notoSansLao(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: _captionFontSize,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
+          ],
         ],
       ),
     );
@@ -199,10 +275,28 @@ class ModernDrawerWidget extends StatelessWidget {
 
   Widget _buildDrawerMenu(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: _smallPadding),
+      margin: EdgeInsets.symmetric(horizontal: _basePadding),
       child: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Menu section
+            Padding(
+              padding: EdgeInsets.only(
+                left: _smallPadding,
+                bottom: _smallPadding,
+                top: _smallPadding,
+              ),
+              child: Text(
+                'ເມນູຫຼັກ',
+                style: GoogleFonts.notoSansLao(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: _captionFontSize,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
             _buildDrawerItem(
               icon: Icons.home_rounded,
               title: 'ໜ້າຫຼັກ',
@@ -259,9 +353,37 @@ class ModernDrawerWidget extends StatelessWidget {
                   }
                 },
               ),
+            
+            // Divider with gradient
             Container(
-              margin: EdgeInsets.symmetric(vertical: _smallPadding),
-              child: Divider(color: Colors.white.withOpacity(0.3)),
+              margin: EdgeInsets.symmetric(vertical: _basePadding),
+              height: 1,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    Colors.white.withOpacity(0.3),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+            
+            // Other section
+            Padding(
+              padding: EdgeInsets.only(
+                left: _smallPadding,
+                bottom: _smallPadding,
+              ),
+              child: Text(
+                'ອື່ນໆ',
+                style: GoogleFonts.notoSansLao(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: _captionFontSize,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                ),
+              ),
             ),
             _buildDrawerItem(
               icon: Icons.settings_rounded,
@@ -290,48 +412,71 @@ class ModernDrawerWidget extends StatelessWidget {
   }) {
     final itemHeight =
         _isExtraSmallScreen
-            ? 44.0
-            : _isSmallScreen
             ? 48.0
-            : 52.0;
+            : _isSmallScreen
+            ? 52.0
+            : 56.0;
     final iconSize =
         _isExtraSmallScreen
-            ? 16.0
-            : _isSmallScreen
             ? 18.0
-            : 20.0;
+            : _isSmallScreen
+            ? 20.0
+            : 22.0;
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: _isExtraSmallScreen ? 3 : 5),
+      margin: EdgeInsets.symmetric(vertical: _isExtraSmallScreen ? 4 : 6),
       constraints: BoxConstraints(minHeight: itemHeight),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
+          splashColor: Colors.white.withOpacity(0.1),
+          highlightColor: Colors.white.withOpacity(0.05),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
             padding: EdgeInsets.symmetric(
-              horizontal: _smallPadding,
-              vertical: _smallPadding * 0.8,
+              horizontal: _basePadding,
+              vertical: _smallPadding,
             ),
             decoration: BoxDecoration(
-              color:
-                  isSelected
-                      ? Colors.white.withOpacity(0.2)
-                      : Colors.transparent,
-              borderRadius: BorderRadius.circular(20),
+              gradient: isSelected
+                  ? LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Colors.white.withOpacity(0.25),
+                        Colors.white.withOpacity(0.1),
+                      ],
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color:
-                    isSelected
-                        ? Colors.white.withOpacity(0.3)
-                        : Colors.transparent,
+                color: isSelected
+                    ? Colors.white.withOpacity(0.4)
+                    : Colors.transparent,
+                width: 1.5,
               ),
             ),
             child: Row(
               children: [
-                Icon(icon, color: Colors.white, size: iconSize),
-                SizedBox(width: _smallPadding),
+                // Icon with background
+                Container(
+                  padding: EdgeInsets.all(_isExtraSmallScreen ? 6 : 8),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Colors.white.withOpacity(0.2)
+                        : Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: iconSize,
+                  ),
+                ),
+                SizedBox(width: _basePadding),
                 Expanded(
                   child: Text(
                     title,
@@ -344,17 +489,12 @@ class ModernDrawerWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (isSelected) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
+                if (isSelected)
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.white,
+                    size: iconSize,
                   ),
-                ],
               ],
             ),
           ),
@@ -366,68 +506,116 @@ class ModernDrawerWidget extends StatelessWidget {
   Widget _buildDrawerFooter(BuildContext context) {
     final buttonHeight =
         _isExtraSmallScreen
-            ? 40.0
-            : _isSmallScreen
             ? 44.0
-            : 48.0;
+            : _isSmallScreen
+            ? 48.0
+            : 52.0;
 
     return Container(
-      padding: EdgeInsets.all(_basePadding),
-      child: Container(
-        width: double.infinity,
-        constraints: BoxConstraints(maxWidth: 280, minHeight: buttonHeight),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap:
-                isLoggedIn
+      padding: EdgeInsets.all(_basePadding * 1.2),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black.withOpacity(0.1),
+          ],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // App version or info
+          Padding(
+            padding: EdgeInsets.only(bottom: _smallPadding),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.account_balance,
+                  color: Colors.white.withOpacity(0.5),
+                  size: 14,
+                ),
+                SizedBox(width: 6),
+                Text(
+                  'Banking Institute',
+                  style: GoogleFonts.notoSansLao(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: _captionFontSize - 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Login/Logout button
+          Container(
+            width: double.infinity,
+            constraints: BoxConstraints(maxWidth: 300, minHeight: buttonHeight),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: isLoggedIn
                     ? onLogoutPressed
                     : () {
-                      Navigator.pop(context);
-                      onLoginPressed?.call();
-                    },
-            borderRadius: BorderRadius.circular(25),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: _smallPadding,
-                vertical: _smallPadding * 0.7,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
-                    color: Colors.white,
-                    size:
-                        _isExtraSmallScreen
-                            ? 14.0
-                            : _isSmallScreen
-                            ? 16.0
-                            : 18.0,
+                        Navigator.pop(context);
+                        onLoginPressed?.call();
+                      },
+                borderRadius: BorderRadius.circular(28),
+                splashColor: Colors.white.withOpacity(0.1),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _basePadding,
+                    vertical: _smallPadding,
                   ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: FittedBox(
-                      child: Text(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withOpacity(0.25),
+                        Colors.white.withOpacity(0.15),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isLoggedIn
+                              ? Icons.logout_rounded
+                              : Icons.login_rounded,
+                          color: Colors.white,
+                          size: _isExtraSmallScreen ? 16.0 : 18.0,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
                         isLoggedIn ? 'ອອກຈາກລະບົບ' : 'ເຂົ້າສູ່ລະບົບ',
                         style: GoogleFonts.notoSansLao(
                           color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: _captionFontSize,
+                          fontWeight: FontWeight.w700,
+                          fontSize: _bodyFontSize,
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
