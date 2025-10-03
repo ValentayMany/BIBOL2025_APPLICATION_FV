@@ -1,4 +1,4 @@
-// widgets/home_widgets/improved_stats_card_widget.dart
+// widgets/home_widgets/improved_stats_card_widget.dart - Premium Design
 // ignore_for_file: unused_local_variable
 
 import 'package:flutter/material.dart';
@@ -37,7 +37,7 @@ class ImprovedStatsCardWidget extends StatelessWidget {
     final basePadding = _getBasePadding(screenWidth);
     final titleFontSize = _getTitleFontSize(screenWidth);
     final captionFontSize = _getCaptionFontSize(screenWidth);
-    final cardPadding = basePadding * 0.75;
+    final cardPadding = basePadding * 0.9;
     final iconSize = _getIconSize(screenWidth);
 
     // Layout decision
@@ -47,10 +47,9 @@ class ImprovedStatsCardWidget extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Constrain content width for larger screens
-        final maxWidth =
-            isTablet
-                ? 600.0
-                : isDesktop
+        final maxWidth = isTablet
+            ? 600.0
+            : isDesktop
                 ? 800.0
                 : double.infinity;
 
@@ -61,20 +60,19 @@ class ImprovedStatsCardWidget extends StatelessWidget {
               horizontal: basePadding,
               vertical: basePadding * 0.5,
             ),
-            child:
-                useVerticalLayout
-                    ? _buildVerticalLayout(
-                      cardPadding: cardPadding,
-                      titleFontSize: titleFontSize,
-                      captionFontSize: captionFontSize,
-                      iconSize: iconSize,
-                    )
-                    : _buildHorizontalLayout(
-                      cardPadding: cardPadding,
-                      titleFontSize: titleFontSize,
-                      captionFontSize: captionFontSize,
-                      iconSize: iconSize,
-                    ),
+            child: useVerticalLayout
+                ? _buildVerticalLayout(
+                    cardPadding: cardPadding,
+                    titleFontSize: titleFontSize,
+                    captionFontSize: captionFontSize,
+                    iconSize: iconSize,
+                  )
+                : _buildHorizontalLayout(
+                    cardPadding: cardPadding,
+                    titleFontSize: titleFontSize,
+                    captionFontSize: captionFontSize,
+                    iconSize: iconSize,
+                  ),
           ),
         );
       },
@@ -92,42 +90,78 @@ class ImprovedStatsCardWidget extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: _buildStatCard(
-                icon: FontAwesomeIcons.graduationCap,
-                title: 'ຫຼັກສູດ',
-                value: '$coursesCount',
-                color: const Color(0xFF07325D),
-                cardPadding: cardPadding,
-                titleFontSize: titleFontSize,
-                captionFontSize: captionFontSize,
-                iconSize: iconSize,
+              child: TweenAnimationBuilder<double>(
+                duration: Duration(milliseconds: 400),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.scale(
+                    scale: 0.8 + (0.2 * value),
+                    child: Opacity(
+                      opacity: value,
+                      child: _buildStatCard(
+                        icon: FontAwesomeIcons.graduationCap,
+                        title: 'ຫຼັກສູດ',
+                        value: '$coursesCount',
+                        gradientColors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                        cardPadding: cardPadding,
+                        titleFontSize: titleFontSize,
+                        captionFontSize: captionFontSize,
+                        iconSize: iconSize,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
-              child: _buildStatCard(
-                icon: Icons.article,
-                title: 'ຂ່າວສານ',
-                value: '$newsCount+',
-                color: const Color(0xFF2E7D32),
-                cardPadding: cardPadding,
-                titleFontSize: titleFontSize,
-                captionFontSize: captionFontSize,
-                iconSize: iconSize,
+              child: TweenAnimationBuilder<double>(
+                duration: Duration(milliseconds: 450),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.scale(
+                    scale: 0.8 + (0.2 * value),
+                    child: Opacity(
+                      opacity: value,
+                      child: _buildStatCard(
+                        icon: Icons.newspaper_rounded,
+                        title: 'ຂ່າວສານ',
+                        value: '$newsCount+',
+                        gradientColors: [Color(0xFF10B981), Color(0xFF059669)],
+                        cardPadding: cardPadding,
+                        titleFontSize: titleFontSize,
+                        captionFontSize: captionFontSize,
+                        iconSize: iconSize,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        _buildStatCard(
-          icon: Icons.people,
-          title: 'ນັກຮຽນ',
-          value: '1000+',
-          color: const Color(0xFFE65100),
-          cardPadding: cardPadding,
-          titleFontSize: titleFontSize,
-          captionFontSize: captionFontSize,
-          iconSize: iconSize,
+        const SizedBox(height: 14),
+        TweenAnimationBuilder<double>(
+          duration: Duration(milliseconds: 500),
+          tween: Tween(begin: 0.0, end: 1.0),
+          builder: (context, value, child) {
+            return Transform.scale(
+              scale: 0.8 + (0.2 * value),
+              child: Opacity(
+                opacity: value,
+                child: _buildStatCard(
+                  icon: Icons.people_rounded,
+                  title: 'ນັກຮຽນ',
+                  value: '1000+',
+                  gradientColors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                  cardPadding: cardPadding,
+                  titleFontSize: titleFontSize,
+                  captionFontSize: captionFontSize,
+                  iconSize: iconSize,
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -142,41 +176,77 @@ class ImprovedStatsCardWidget extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _buildStatCard(
-            icon: FontAwesomeIcons.graduationCap,
-            title: 'ຫຼັກສູດ',
-            value: '$coursesCount',
-            color: const Color(0xFF07325D),
-            cardPadding: cardPadding,
-            titleFontSize: titleFontSize,
-            captionFontSize: captionFontSize,
-            iconSize: iconSize,
+          child: TweenAnimationBuilder<double>(
+            duration: Duration(milliseconds: 400),
+            tween: Tween(begin: 0.0, end: 1.0),
+            builder: (context, value, child) {
+              return Transform.scale(
+                scale: 0.8 + (0.2 * value),
+                child: Opacity(
+                  opacity: value,
+                  child: _buildStatCard(
+                    icon: FontAwesomeIcons.graduationCap,
+                    title: 'ຫຼັກສູດ',
+                    value: '$coursesCount',
+                    gradientColors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                    cardPadding: cardPadding,
+                    titleFontSize: titleFontSize,
+                    captionFontSize: captionFontSize,
+                    iconSize: iconSize,
+                  ),
+                ),
+              );
+            },
           ),
         ),
-        const SizedBox(width: 15),
+        const SizedBox(width: 16),
         Expanded(
-          child: _buildStatCard(
-            icon: Icons.article,
-            title: 'ຂ່າວສານ',
-            value: '$newsCount+',
-            color: const Color(0xFF2E7D32),
-            cardPadding: cardPadding,
-            titleFontSize: titleFontSize,
-            captionFontSize: captionFontSize,
-            iconSize: iconSize,
+          child: TweenAnimationBuilder<double>(
+            duration: Duration(milliseconds: 450),
+            tween: Tween(begin: 0.0, end: 1.0),
+            builder: (context, value, child) {
+              return Transform.scale(
+                scale: 0.8 + (0.2 * value),
+                child: Opacity(
+                  opacity: value,
+                  child: _buildStatCard(
+                    icon: Icons.newspaper_rounded,
+                    title: 'ຂ່າວສານ',
+                    value: '$newsCount+',
+                    gradientColors: [Color(0xFF10B981), Color(0xFF059669)],
+                    cardPadding: cardPadding,
+                    titleFontSize: titleFontSize,
+                    captionFontSize: captionFontSize,
+                    iconSize: iconSize,
+                  ),
+                ),
+              );
+            },
           ),
         ),
-        const SizedBox(width: 15),
+        const SizedBox(width: 16),
         Expanded(
-          child: _buildStatCard(
-            icon: Icons.people,
-            title: 'ນັກຮຽນ',
-            value: '1000+',
-            color: const Color(0xFFE65100),
-            cardPadding: cardPadding,
-            titleFontSize: titleFontSize,
-            captionFontSize: captionFontSize,
-            iconSize: iconSize,
+          child: TweenAnimationBuilder<double>(
+            duration: Duration(milliseconds: 500),
+            tween: Tween(begin: 0.0, end: 1.0),
+            builder: (context, value, child) {
+              return Transform.scale(
+                scale: 0.8 + (0.2 * value),
+                child: Opacity(
+                  opacity: value,
+                  child: _buildStatCard(
+                    icon: Icons.people_rounded,
+                    title: 'ນັກຮຽນ',
+                    value: '1000+',
+                    gradientColors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                    cardPadding: cardPadding,
+                    titleFontSize: titleFontSize,
+                    captionFontSize: captionFontSize,
+                    iconSize: iconSize,
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -187,22 +257,30 @@ class ImprovedStatsCardWidget extends StatelessWidget {
     required IconData icon,
     required String title,
     required String value,
-    required Color color,
+    required List<Color> gradientColors,
     required double cardPadding,
     required double titleFontSize,
     required double captionFontSize,
     required double iconSize,
   }) {
     return Container(
-      padding: EdgeInsets.all(cardPadding),
+      padding: EdgeInsets.all(cardPadding * 1.2),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFFAFBFF)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: gradientColors.first.withOpacity(0.1),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: gradientColors.first.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -210,31 +288,44 @@ class ImprovedStatsCardWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: EdgeInsets.all(cardPadding * 0.8),
+            padding: EdgeInsets.all(cardPadding),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: gradientColors,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: gradientColors.first.withOpacity(0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
-            child: Icon(icon, size: iconSize, color: color),
+            child: Icon(icon, size: iconSize * 1.3, color: Colors.white),
           ),
-          SizedBox(height: cardPadding * 0.8),
+          SizedBox(height: cardPadding),
           FittedBox(
             child: Text(
               value,
               style: GoogleFonts.notoSansLao(
-                fontSize: titleFontSize * 0.8,
-                fontWeight: FontWeight.bold,
-                color: color,
+                fontSize: titleFontSize * 0.9,
+                fontWeight: FontWeight.w900,
+                color: gradientColors.first,
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           FittedBox(
             child: Text(
               title,
               style: GoogleFonts.notoSansLao(
                 fontSize: captionFontSize,
+                fontWeight: FontWeight.w600,
                 color: Colors.grey[600],
+                letterSpacing: 0.5,
               ),
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
@@ -255,29 +346,29 @@ class ImprovedStatsCardWidget extends StatelessWidget {
   }
 
   double _getTitleFontSize(double screenWidth) {
+    if (screenWidth < 320) return 16.0;
+    if (screenWidth < 375) return 18.0;
+    if (screenWidth < 414) return 20.0;
+    if (screenWidth < 600) return 22.0;
+    if (screenWidth < 900) return 26.0;
+    return 30.0; // Desktop
+  }
+
+  double _getCaptionFontSize(double screenWidth) {
+    if (screenWidth < 320) return 10.0;
+    if (screenWidth < 375) return 11.0;
+    if (screenWidth < 414) return 12.0;
+    if (screenWidth < 600) return 13.0;
+    if (screenWidth < 900) return 14.0;
+    return 15.0; // Desktop
+  }
+
+  double _getIconSize(double screenWidth) {
     if (screenWidth < 320) return 14.0;
     if (screenWidth < 375) return 16.0;
     if (screenWidth < 414) return 18.0;
     if (screenWidth < 600) return 20.0;
     if (screenWidth < 900) return 24.0;
     return 28.0; // Desktop
-  }
-
-  double _getCaptionFontSize(double screenWidth) {
-    if (screenWidth < 320) return 9.0;
-    if (screenWidth < 375) return 10.0;
-    if (screenWidth < 414) return 11.0;
-    if (screenWidth < 600) return 12.0;
-    if (screenWidth < 900) return 13.0;
-    return 14.0; // Desktop
-  }
-
-  double _getIconSize(double screenWidth) {
-    if (screenWidth < 320) return 12.0;
-    if (screenWidth < 375) return 14.0;
-    if (screenWidth < 414) return 16.0;
-    if (screenWidth < 600) return 18.0;
-    if (screenWidth < 900) return 22.0;
-    return 26.0; // Desktop
   }
 }

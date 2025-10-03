@@ -1,7 +1,11 @@
 // ignore_for_file: use_key_in_widget_constructors
 
+import 'package:BIBOL/services/token/token_service.dart';
 import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
+import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
+import 'package:BIBOL/widgets/shared/shared_header_button.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AboutPage extends StatefulWidget {
   @override
@@ -13,6 +17,11 @@ class _AboutPageState extends State<AboutPage>
   int _currentIndex = 3;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  
+  // เพิ่ม state สำหรับ login
+  bool _isLoggedIn = false;
+  Map<String, dynamic>? _userInfo;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -25,12 +34,30 @@ class _AboutPageState extends State<AboutPage>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+    _checkLoginStatus();  // เพิ่มการเช็ค login
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  // เพิ่ม method สำหรับเช็ค login
+  Future<void> _checkLoginStatus() async {
+    try {
+      final isLoggedIn = await TokenService.isLoggedIn();
+      final userInfo = await TokenService.getUserInfo();
+
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = isLoggedIn;
+          _userInfo = userInfo;
+        });
+      }
+    } catch (e) {
+      print('Error checking login status: $e');
+    }
   }
 
   void _onNavTap(int index) {
@@ -57,12 +84,96 @@ class _AboutPageState extends State<AboutPage>
     }
   }
 
+  // เพิ่ม method สำหรับ logout
+  Future<void> _handleLogout() async {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: const Color(0xFF07325D),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text(
+              'ອອກຈາກລະບົບ',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            content: Text(
+              'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'ຍົກເລີກ',
+                  style: GoogleFonts.notoSansLao(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await TokenService.clearAll();
+                  await _checkLoginStatus();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'ອອກຈາກລະບົບສຳເລັດ',
+                          style: GoogleFonts.notoSansLao(fontSize: 14),
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: Text(
+                  'ອອກຈາກລະບົບ',
+                  style: GoogleFonts.notoSansLao(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  // เพิ่ม method สำหรับ login
+  Future<void> _handleLogin() async {
+    final result = await Navigator.pushNamed(context, '/login');
+    if (result == true) await _checkLoginStatus();
+  }
+
+  double get _screenWidth => MediaQuery.of(context).size.width;
+  double get _screenHeight => MediaQuery.of(context).size.height;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: _buildAppBar(),
-      drawer: _buildDrawer(),
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xFFF8FAFF),
+      drawer: ModernDrawerWidget(
+        isLoggedIn: _isLoggedIn,
+        userInfo: _userInfo,
+        screenWidth: _screenWidth,
+        screenHeight: _screenHeight,
+        onLogoutPressed: _handleLogout,
+        onLoginPressed: _handleLogin,
+        currentRoute: '/about',
+      ),
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SingleChildScrollView(
@@ -74,7 +185,7 @@ class _AboutPageState extends State<AboutPage>
               _buildMainImage(),
               SizedBox(height: 8),
               _buildContentSections(),
-              SizedBox(height: 20),
+              SizedBox(height: 100),
             ],
           ),
         ),
@@ -86,199 +197,172 @@ class _AboutPageState extends State<AboutPage>
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(
-      backgroundColor: Color(0xFF07325D),
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.3),
-      centerTitle: true,
-      title: Text(
-        'ກ່ຽວກັບສະຖາບັນການທະນາຄານ',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-        ),
-      ),
-      iconTheme: IconThemeData(color: Colors.white),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.only()),
-    );
-  }
+  Widget _buildHeader() {
+    // Responsive values
+    double basePadding = _screenWidth < 320
+        ? 8.0
+        : _screenWidth < 360
+            ? 12.0
+            : _screenWidth < 400
+                ? 16.0
+                : _screenWidth < 480
+                    ? 18.0
+                    : 20.0;
 
-  Widget _buildDrawer() {
-    return Drawer(
-      backgroundColor: Colors.white,
-      child: Column(
-        children: [
-          _buildDrawerHeader(),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              children: [
-                _buildDrawerItem(Icons.home, 'ໜ້າຫຼັກ', '/home'),
-                _buildDrawerItem(Icons.article_outlined, 'ຂ່າວສານ', '/news'),
-                _buildDrawerItem(
-                  Icons.photo_library_outlined,
-                  'ຄັງຮູບ',
-                  '/gallery',
-                ),
-                _buildDrawerItem(Icons.person_outline, 'ໂປຣໄຟລ', '/profile'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerHeader() {
     return Container(
-      height: 180,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF07325D), Color(0xFF0A4B7A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.account_balance, size: 40, color: Colors.white),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'ເມນູ',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(IconData icon, String title, String route) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Container(
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Color(0xFF07325D).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: Color(0xFF07325D), size: 20),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        onTap: () {
-          Navigator.pushReplacementNamed(context, route);
-        },
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF07325D), Color(0xFF0A4B7A)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
+          bottomLeft: Radius.circular(basePadding * 2),
+          bottomRight: Radius.circular(basePadding * 2),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 10,
-            offset: Offset(0, 5),
+            color: Color(0xFF07325D).withOpacity(0.3),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
         ],
       ),
-      padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-      child: Column(
-        children: [_buildLogo(), SizedBox(height: 20), _buildTitle()],
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(basePadding),
+          child: Column(
+            children: [
+              // Header Row with Menu Button - ใช้ SharedHeaderButton
+              Row(
+                children: [
+                  SharedHeaderButton(
+                    icon: Icons.menu_rounded,
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                    screenWidth: _screenWidth,
+                  ),
+                  Spacer(),
+                ],
+              ),
+              
+              SizedBox(height: basePadding),
+              
+              // Logo and Title
+              TweenAnimationBuilder<double>(
+                duration: Duration(milliseconds: 800),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.scale(
+                    scale: 0.8 + (0.2 * value),
+                    child: Opacity(
+                      opacity: value,
+                      child: Column(
+                        children: [
+                          _buildLogo(),
+                          SizedBox(height: 20),
+                          _buildTitle(),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildLogo() {
+    double logoSize = _screenWidth < 320
+        ? 50.0
+        : _screenWidth < 360
+            ? 60.0
+            : _screenWidth < 400
+                ? 70.0
+                : _screenWidth < 480
+                    ? 80.0
+                    : 90.0;
+
     return Container(
-      width: 100,
-      height: 100,
+      width: logoSize,
+      height: logoSize,
       decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.yellow[700]!, width: 3),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.3),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: Offset(0, 4),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
         ],
-        color: Colors.white.withOpacity(0.1),
       ),
-      child: Center(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50),
-          child: Image.asset(
-            'assets/images/LOGO.png',
-            width: 70,
-            height: 70,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return Icon(
-                Icons.account_balance,
-                size: 50,
-                color: Colors.yellow[700],
-              );
-            },
-          ),
+      child: Padding(
+        padding: EdgeInsets.all(logoSize * 0.15),
+        child: Image.asset(
+          'assets/images/LOGO.png',
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(
+              Icons.account_balance,
+              size: logoSize * 0.5,
+              color: Colors.white.withOpacity(0.8),
+            );
+          },
         ),
       ),
     );
   }
 
   Widget _buildTitle() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-      ),
-      child: Text(
-        'ປະຫວັດຄວາມເປັນມາຂອງ\nສະຖາບັນການທະນາຄານ',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          height: 1.4,
-          letterSpacing: 0.5,
+    double titleFontSize = _screenWidth < 320
+        ? 16.0
+        : _screenWidth < 360
+            ? 18.0
+            : _screenWidth < 400
+                ? 20.0
+                : _screenWidth < 480
+                    ? 22.0
+                    : 24.0;
+
+    return Column(
+      children: [
+        Text(
+          'ກ່ຽວກັບ',
+          style: GoogleFonts.notoSansLao(
+            fontSize: titleFontSize,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.2,
+          ),
+          textAlign: TextAlign.center,
         ),
-      ),
+        SizedBox(height: 4),
+        Text(
+          'ສະຖາບັນການທະນາຄານ',
+          style: GoogleFonts.notoSansLao(
+            fontSize: _screenWidth < 320
+                ? 10.0
+                : _screenWidth < 360
+                    ? 11.0
+                    : _screenWidth < 400
+                        ? 12.0
+                        : _screenWidth < 480
+                            ? 13.0
+                            : 14.0,
+            fontWeight: FontWeight.w500,
+            color: Colors.white.withOpacity(0.9),
+            letterSpacing: 0.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
@@ -321,7 +405,10 @@ class _AboutPageState extends State<AboutPage>
                       SizedBox(height: 8),
                       Text(
                         'ບໍ່ສາມາດໂຫຼດຮູບໄດ້',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                        style: GoogleFonts.notoSansLao(
+                          color: Colors.grey[500],
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
@@ -371,7 +458,10 @@ class _AboutPageState extends State<AboutPage>
             SizedBox(height: 12),
             Text(
               'ກໍາລັງໂຫຼດ...',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: GoogleFonts.notoSansLao(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
             ),
           ],
         ),
@@ -396,7 +486,10 @@ class _AboutPageState extends State<AboutPage>
           Expanded(
             child: Text(
               'ເກີດຂໍ້ຜິດພາດ: $error',
-              style: TextStyle(color: Colors.red[700], fontSize: 14),
+              style: GoogleFonts.notoSansLao(
+                color: Colors.red[700],
+                fontSize: 14,
+              ),
             ),
           ),
         ],
@@ -419,7 +512,10 @@ class _AboutPageState extends State<AboutPage>
           SizedBox(width: 12),
           Text(
             'ບໍ່ມີຂໍ້ມູນ',
-            style: TextStyle(color: Colors.amber[800], fontSize: 14),
+            style: GoogleFonts.notoSansLao(
+              color: Colors.amber[800],
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -478,7 +574,7 @@ class _AboutPageState extends State<AboutPage>
           Expanded(
             child: Text(
               title,
-              style: TextStyle(
+              style: GoogleFonts.notoSansLao(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -511,7 +607,7 @@ class _AboutPageState extends State<AboutPage>
         ),
         child: Text(
           content,
-          style: TextStyle(
+          style: GoogleFonts.notoSansLao(
             fontSize: 15,
             color: Colors.black87,
             height: 1.6,
@@ -548,7 +644,7 @@ class _AboutPageState extends State<AboutPage>
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
+              style: GoogleFonts.notoSansLao(
                 fontSize: 15,
                 color: Colors.black87,
                 height: 1.5,

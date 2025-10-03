@@ -1,4 +1,4 @@
-// pages/news_list_page.dart - Updated with ModernDrawerWidget
+// pages/news_list_page.dart - Modern Redesign
 // ignore_for_file: unused_field
 
 import 'dart:ui';
@@ -8,9 +8,7 @@ import 'package:BIBOL/widgets/news_widget/news_category_filter_widget.dart';
 import 'package:BIBOL/widgets/news_widget/news_empty_state_widget.dart';
 import 'package:BIBOL/widgets/news_widget/news_list_card_widget.dart';
 import 'package:BIBOL/widgets/news_widget/news_loading_card_widget.dart';
-
 import 'package:BIBOL/widgets/news_widget/news_search_header_widget.dart';
-
 import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:BIBOL/services/news/news_service.dart';
@@ -27,7 +25,7 @@ class NewsListPage extends StatefulWidget {
   final String? categoryTitle;
 
   const NewsListPage({Key? key, this.categoryId, this.categoryTitle})
-    : super(key: key);
+      : super(key: key);
 
   @override
   State<NewsListPage> createState() => _NewsListPageState();
@@ -184,9 +182,8 @@ class _NewsListPageState extends State<NewsListPage>
     }
 
     setState(() {
-      _availableCategories =
-          uniqueCategories.values.toList()
-            ..sort((a, b) => a.title.compareTo(b.title));
+      _availableCategories = uniqueCategories.values.toList()
+        ..sort((a, b) => a.title.compareTo(b.title));
     });
   }
 
@@ -197,14 +194,13 @@ class _NewsListPageState extends State<NewsListPage>
 
     final selectedCategory = _availableCategories.firstWhere(
       (cat) => cat.id.toString() == _selectedCategoryId,
-      orElse:
-          () => JoinedCategory(
-            id: 0,
-            title: '',
-            icon: null,
-            photo: null,
-            href: '',
-          ),
+      orElse: () => JoinedCategory(
+        id: 0,
+        title: '',
+        icon: null,
+        photo: null,
+        href: '',
+      ),
     );
 
     if (selectedCategory.title.isEmpty) return _allTopics;
@@ -289,16 +285,15 @@ class _NewsListPageState extends State<NewsListPage>
         }
 
         final searchQuery = query.toLowerCase();
-        final searchResults =
-            allTopics.where((topic) {
-              final titleMatch = topic.title.toLowerCase().contains(
-                searchQuery,
-              );
-              final detailsMatch = topic.details.toLowerCase().contains(
-                searchQuery,
-              );
-              return titleMatch || detailsMatch;
-            }).toList();
+        final searchResults = allTopics.where((topic) {
+          final titleMatch = topic.title.toLowerCase().contains(
+            searchQuery,
+          );
+          final detailsMatch = topic.details.toLowerCase().contains(
+            searchQuery,
+          );
+          return titleMatch || detailsMatch;
+        }).toList();
 
         setState(() {
           _allTopics = searchResults;
@@ -328,18 +323,18 @@ class _NewsListPageState extends State<NewsListPage>
         content: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(_basePadding * 0.75),
+              padding: EdgeInsets.all(_basePadding * 0.5),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.error_outline,
+                Icons.error_outline_rounded,
                 color: Colors.white,
                 size: _iconSize,
               ),
             ),
-            SizedBox(width: 16),
+            SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
@@ -355,9 +350,9 @@ class _NewsListPageState extends State<NewsListPage>
         backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.all(_basePadding),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 12,
-        duration: Duration(seconds: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 8,
+        duration: Duration(seconds: 3),
       ),
     );
   }
@@ -374,21 +369,20 @@ class _NewsListPageState extends State<NewsListPage>
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder:
-            (context, animation, secondaryAnimation) =>
-                TopicDetailPage(topic: topic),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            TopicDetailPage(topic: topic),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(
               begin: const Offset(1.0, 0.0),
               end: Offset.zero,
             ).animate(
-              CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
             ),
             child: FadeTransition(opacity: animation, child: child),
           );
         },
-        transitionDuration: Duration(milliseconds: 500),
+        transitionDuration: Duration(milliseconds: 400),
       ),
     );
   }
@@ -396,84 +390,97 @@ class _NewsListPageState extends State<NewsListPage>
   Future<void> _handleLogout() async {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: const Color(0xFF07325D),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.logout, color: Colors.red.shade600, size: 24),
             ),
-            title: Text(
+            SizedBox(width: 12),
+            Text(
               'ອອກຈາກລະບົບ',
               style: GoogleFonts.notoSansLao(
-                color: Colors.white,
+                color: const Color(0xFF07325D),
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
             ),
-            content: Text(
-              'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
+          ],
+        ),
+        content: Text(
+          'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
+          style: GoogleFonts.notoSansLao(
+            color: Colors.grey[700],
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ຍົກເລີກ',
               style: GoogleFonts.notoSansLao(
-                color: Colors.white70,
+                color: Colors.grey[600],
                 fontSize: 14,
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'ຍົກເລີກ',
-                  style: GoogleFonts.notoSansLao(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await TokenService.clearAll();
-                  await _checkLoginStatus();
-
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            const Icon(
-                              Icons.check_circle,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Text(
-                                'ອອກຈາກລະບົບສຳເລັດ',
-                                style: GoogleFonts.notoSansLao(fontSize: 12),
-                              ),
-                            ),
-                          ],
-                        ),
-                        backgroundColor: Colors.green,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        margin: EdgeInsets.all(_basePadding),
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: Text(
-                  'ອອກຈາກລະບົບ',
-                  style: GoogleFonts.notoSansLao(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
           ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await TokenService.clearAll();
+              await _checkLoginStatus();
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.white, size: 20),
+                        SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            'ອອກຈາກລະບົບສຳເລັດ',
+                            style: GoogleFonts.notoSansLao(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: EdgeInsets.all(_basePadding),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'ອອກຈາກລະບົບ',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.white,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -493,35 +500,47 @@ class _NewsListPageState extends State<NewsListPage>
         screenHeight: _screenHeight,
         onLogoutPressed: _handleLogout,
         onLoginPressed: _handleLogin,
-        currentRoute: '/news', // เพิ่มบรรทัดนี้
+        currentRoute: '/news',
       ),
       floatingActionButton: ScaleTransition(
         scale: _fabAnimationController,
-        child: FloatingActionButton.extended(
-          onPressed: () {
-            _scrollController.animateTo(
-              0,
-              duration: Duration(milliseconds: 500),
-              curve: Curves.easeOutCubic,
-            );
-          },
-          backgroundColor: Color(0xFF07325D),
-          icon: Icon(
-            Icons.keyboard_arrow_up_rounded,
-            color: Colors.white,
-            size: _iconSize,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0xFF07325D).withOpacity(0.3),
+                blurRadius: 15,
+                offset: Offset(0, 8),
+              ),
+            ],
           ),
-          label: Text(
-            'ກັບຂື້ນ',
-            style: GoogleFonts.notoSansLao(
+          child: FloatingActionButton.extended(
+            onPressed: () {
+              _scrollController.animateTo(
+                0,
+                duration: Duration(milliseconds: 600),
+                curve: Curves.easeOutCubic,
+              );
+            },
+            backgroundColor: Color(0xFF07325D),
+            icon: Icon(
+              Icons.arrow_upward_rounded,
               color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: _bodyFontSize * 0.9,
+              size: _iconSize,
             ),
-          ),
-          elevation: 8,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
+            label: Text(
+              'ກັບຂື້ນ',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: _bodyFontSize,
+              ),
+            ),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
           ),
         ),
       ),
@@ -558,6 +577,9 @@ class _NewsListPageState extends State<NewsListPage>
                 },
               ),
             ),
+          // Modern Stats Card
+          if (!_isLoading && _allTopics.isNotEmpty)
+            SliverToBoxAdapter(child: _buildModernStatsCard()),
           _isLoading && _allTopics.isEmpty
               ? SliverFillRemaining(child: _buildLoadingState())
               : _buildNewsGrid(),
@@ -570,6 +592,141 @@ class _NewsListPageState extends State<NewsListPage>
     );
   }
 
+  Widget _buildModernStatsCard() {
+    final displayTopics = _filteredTopics;
+    
+    return Container(
+      margin: EdgeInsets.fromLTRB(_basePadding, _basePadding, _basePadding, 0),
+      padding: EdgeInsets.all(_basePadding),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFF8FAFF)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Color(0xFF07325D).withOpacity(0.1),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF07325D).withOpacity(0.08),
+            blurRadius: 15,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(_basePadding * 0.7),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF3B82F6).withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.newspaper_rounded,
+              color: Colors.white,
+              size: _iconSize * 1.2,
+            ),
+          ),
+          SizedBox(width: _basePadding),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ຂ່າວທັງໝົດ',
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: _bodyFontSize * 0.85,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '${displayTopics.length}',
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: _bodyFontSize * 1.8,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF07325D),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_selectedCategoryId != 'all')
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: _basePadding * 0.8,
+                vertical: _basePadding * 0.4,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF07325D).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.filter_alt_rounded,
+                    color: Colors.white,
+                    size: _iconSize * 0.7,
+                  ),
+                  SizedBox(width: 6),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: _screenWidth * 0.2),
+                    child: Text(
+                      _availableCategories
+                          .firstWhere(
+                            (cat) => cat.id.toString() == _selectedCategoryId,
+                            orElse: () => JoinedCategory(
+                              id: 0,
+                              title: '',
+                              icon: null,
+                              photo: null,
+                              href: '',
+                            ),
+                          )
+                          .title,
+                      style: GoogleFonts.notoSansLao(
+                        color: Colors.white,
+                        fontSize: _bodyFontSize * 0.7,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLoadingState() {
     return Container(
       child: Center(
@@ -577,22 +734,24 @@ class _NewsListPageState extends State<NewsListPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(_basePadding * 1.5),
+              padding: EdgeInsets.all(_basePadding * 2),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
                     color: Color(0xFF07325D).withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: Offset(0, 10),
+                    blurRadius: 25,
+                    offset: Offset(0, 12),
                   ),
                 ],
               ),
               child: CircularProgressIndicator(
-                strokeWidth: _screenWidth < 320 ? 3 : 4,
+                strokeWidth: 4,
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             ),
@@ -600,17 +759,17 @@ class _NewsListPageState extends State<NewsListPage>
             Text(
               'ກຳລັງໂຫຼດຂ່າວ...',
               style: GoogleFonts.notoSansLao(
-                color: Colors.grey[600],
-                fontSize: _bodyFontSize,
-                fontWeight: FontWeight.w600,
+                color: Color(0xFF07325D),
+                fontSize: _bodyFontSize * 1.1,
+                fontWeight: FontWeight.w700,
               ),
             ),
             SizedBox(height: 8),
             Text(
               'ກະລຸນາລໍຖ້າສັກຄູ່',
               style: GoogleFonts.notoSansLao(
-                color: Colors.grey[400],
-                fontSize: _bodyFontSize * 0.9,
+                color: Colors.grey[500],
+                fontSize: _bodyFontSize * 0.95,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -626,20 +785,18 @@ class _NewsListPageState extends State<NewsListPage>
       return SliverFillRemaining(
         child: NewsEmptyStateWidget(
           isFiltered: _selectedCategoryId != 'all',
-          selectedCategoryName:
-              _availableCategories
-                  .firstWhere(
-                    (cat) => cat.id.toString() == _selectedCategoryId,
-                    orElse:
-                        () => JoinedCategory(
-                          id: 0,
-                          title: '',
-                          icon: null,
-                          photo: null,
-                          href: '',
-                        ),
-                  )
-                  .title,
+          selectedCategoryName: _availableCategories
+              .firstWhere(
+                (cat) => cat.id.toString() == _selectedCategoryId,
+                orElse: () => JoinedCategory(
+                  id: 0,
+                  title: '',
+                  icon: null,
+                  photo: null,
+                  href: '',
+                ),
+              )
+              .title,
           searchQuery: _searchQuery,
           onClearFilter: () {
             if (_selectedCategoryId != 'all') {
@@ -665,160 +822,73 @@ class _NewsListPageState extends State<NewsListPage>
     return SliverToBoxAdapter(
       child: Container(
         padding: EdgeInsets.all(_basePadding),
-        child: Column(
-          children: [
-            // Stats container
-            Container(
-              margin: EdgeInsets.only(bottom: 20),
-              padding: EdgeInsets.symmetric(
-                horizontal: _basePadding,
-                vertical: _basePadding * 0.75,
-              ),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF07325D).withOpacity(0.1),
-                    Color(0xFF0A4A85).withOpacity(0.1),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Color(0xFF07325D).withOpacity(0.1)),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.article_rounded,
-                        color: Color(0xFF07325D),
-                        size: _iconSize,
-                      ),
-                      SizedBox(width: 12),
-                      Flexible(
-                        child: Text(
-                          'ພົບ ${displayTopics.length} ຂ່າວ',
-                          style: GoogleFonts.notoSansLao(
-                            fontSize: _bodyFontSize,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey[700],
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (_selectedCategoryId != 'all') ...[
-                    SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'ໝວດ: ${_availableCategories.firstWhere((cat) => cat.id.toString() == _selectedCategoryId, orElse: () => JoinedCategory(id: 0, title: '', icon: null, photo: null, href: '')).title}',
-                        style: GoogleFonts.notoSansLao(
-                          color: Colors.white,
-                          fontSize: _bodyFontSize * 0.8,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            // Grid
-            LayoutBuilder(
-              builder: (context, constraints) {
-                int crossAxisCount;
-                double childAspectRatio;
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            int crossAxisCount;
+            double childAspectRatio;
 
-                // Grid calculations
-                if (constraints.maxWidth > 1200) {
-                  crossAxisCount = 4;
-                  childAspectRatio = 0.85;
-                } else if (constraints.maxWidth > 900) {
-                  crossAxisCount = 3;
-                  childAspectRatio = 0.8;
-                } else if (constraints.maxWidth > 600) {
-                  crossAxisCount = 3;
-                  childAspectRatio = 0.75;
-                } else if (constraints.maxWidth > 480) {
-                  crossAxisCount = 2;
-                  childAspectRatio = 0.9;
-                } else if (constraints.maxWidth > 400) {
-                  crossAxisCount = 2;
-                  childAspectRatio = 0.85;
-                } else if (constraints.maxWidth > 360) {
-                  crossAxisCount = 2;
-                  childAspectRatio = 0.8;
-                } else if (constraints.maxWidth > 320) {
-                  crossAxisCount = 1;
-                  childAspectRatio = 1.4;
-                } else {
-                  crossAxisCount = 1;
-                  childAspectRatio = 1.3;
+            // Grid calculations
+            if (constraints.maxWidth > 1200) {
+              crossAxisCount = 4;
+              childAspectRatio = 0.85;
+            } else if (constraints.maxWidth > 900) {
+              crossAxisCount = 3;
+              childAspectRatio = 0.8;
+            } else if (constraints.maxWidth > 600) {
+              crossAxisCount = 3;
+              childAspectRatio = 0.75;
+            } else if (constraints.maxWidth > 480) {
+              crossAxisCount = 2;
+              childAspectRatio = 0.9;
+            } else if (constraints.maxWidth > 400) {
+              crossAxisCount = 2;
+              childAspectRatio = 0.85;
+            } else if (constraints.maxWidth > 360) {
+              crossAxisCount = 2;
+              childAspectRatio = 0.8;
+            } else if (constraints.maxWidth > 320) {
+              crossAxisCount = 1;
+              childAspectRatio = 1.4;
+            } else {
+              crossAxisCount = 1;
+              childAspectRatio = 1.3;
+            }
+
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: childAspectRatio,
+                crossAxisSpacing: _basePadding * 0.75,
+                mainAxisSpacing: _basePadding * 0.75,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                if (index >= displayTopics.length) {
+                  return NewsLoadingCardWidget();
                 }
 
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    childAspectRatio: childAspectRatio,
-                    crossAxisSpacing: _basePadding * 0.75,
-                    mainAxisSpacing: _basePadding * 0.75,
-                  ),
-                  itemCount: itemCount,
-                  itemBuilder: (context, index) {
-                    if (index >= displayTopics.length) {
-                      return NewsLoadingCardWidget();
-                    }
-
-                    return AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        final slideAnimation = Tween<Offset>(
-                          begin: Offset(0, 0.3),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _animationController,
-                            curve: Interval(
-                              (index * 0.1).clamp(0.0, 1.0),
-                              ((index * 0.1) + 0.4).clamp(0.0, 1.0),
-                              curve: Curves.easeOutBack,
-                            ),
-                          ),
-                        );
-
-                        return SlideTransition(
-                          position: slideAnimation,
-                          child: FadeTransition(
-                            opacity: _animationController,
-                            child: NewsListCardWidget(
-                              topic: displayTopics[index],
-                              index: index,
-                              onTap: () => _onTopicTap(displayTopics[index]),
-                            ),
-                          ),
-                        );
-                      },
+                return TweenAnimationBuilder<double>(
+                  duration: Duration(milliseconds: 400 + (index * 30)),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 0.8 + (0.2 * value),
+                      child: Opacity(
+                        opacity: value,
+                        child: NewsListCardWidget(
+                          topic: displayTopics[index],
+                          index: index,
+                          onTap: () => _onTopicTap(displayTopics[index]),
+                        ),
+                      ),
                     );
                   },
                 );
               },
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
