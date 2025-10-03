@@ -305,149 +305,209 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildHeader() {
+    // Responsive values (เหมือนกับ HeaderWidget และ NewsSearchHeaderWidget)
+    double basePadding = _screenWidth < 320
+        ? 8.0
+        : _screenWidth < 360
+            ? 12.0
+            : _screenWidth < 400
+                ? 16.0
+                : _screenWidth < 480
+                    ? 18.0
+                    : 20.0;
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
+          bottomLeft: Radius.circular(basePadding * 2),
+          bottomRight: Radius.circular(basePadding * 2),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF07325D).withOpacity(0.3),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
       ),
       child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Top Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Padding(
+          padding: EdgeInsets.all(basePadding),
+          child: Column(
+            children: [
+              // Header Row - ใช้โครงสร้างเดียวกับ HeaderWidget
+              Row(
                 children: [
                   SharedHeaderButton(
                     icon: Icons.menu_rounded,
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                     screenWidth: _screenWidth,
                   ),
+                  Spacer(),
                   if (_isLoggedIn)
                     SharedHeaderButton(
                       icon: Icons.edit_rounded,
                       onPressed: _handleEditProfile,
                       screenWidth: _screenWidth,
-                    )
-                  else
-                    const SizedBox(width: 56),
+                    ),
                 ],
               ),
-            ),
 
-            // Profile Avatar & Info
-            Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 15,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        _isLoggedIn
-                            ? Icons.person_rounded
-                            : Icons.person_outline_rounded,
-                        size: 50,
-                        color: const Color(0xFF07325D),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_isLoggedIn && userInfo != null) ...[
-                    // ชื่อ-นามสกุล
-                    Container(
-                      constraints: BoxConstraints(maxWidth: _screenWidth * 0.85),
-                      child: Text(
-                        "${userInfo!['first_name'] ?? ''} ${userInfo!['last_name'] ?? ''}"
-                            .trim(),
-                        style: GoogleFonts.notoSansLao(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          height: 1.3,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // รหัสนักศึกษา
-                    if (userInfo?['admission_no'] != null)
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 1.5,
+              SizedBox(height: basePadding),
+
+              // Profile Avatar & Info
+              TweenAnimationBuilder<double>(
+                duration: Duration(milliseconds: 800),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.scale(
+                    scale: 0.8 + (0.2 * value),
+                    child: Opacity(
+                      opacity: value,
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: Colors.white, width: 3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: _screenWidth < 320
+                                  ? 40
+                                  : _screenWidth < 360
+                                      ? 45
+                                      : 50,
+                              backgroundColor: Colors.white,
+                              child: Icon(
+                                _isLoggedIn
+                                    ? Icons.person_rounded
+                                    : Icons.person_outline_rounded,
+                                size: _screenWidth < 320
+                                    ? 40
+                                    : _screenWidth < 360
+                                        ? 45
+                                        : 50,
+                                color: const Color(0xFF07325D),
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('🎓', style: TextStyle(fontSize: 16)),
-                            SizedBox(width: 6),
+                          const SizedBox(height: 16),
+                          if (_isLoggedIn && userInfo != null) ...[
+                            // ชื่อ-นามสกุล
+                            Container(
+                              constraints:
+                                  BoxConstraints(maxWidth: _screenWidth * 0.85),
+                              child: Text(
+                                "${userInfo!['first_name'] ?? ''} ${userInfo!['last_name'] ?? ''}"
+                                    .trim(),
+                                style: GoogleFonts.notoSansLao(
+                                  fontSize: _screenWidth < 320
+                                      ? 18.0
+                                      : _screenWidth < 360
+                                          ? 20.0
+                                          : _screenWidth < 400
+                                              ? 22.0
+                                              : 24.0,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 1.2,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // รหัสนักศึกษา
+                            if (userInfo?['admission_no'] != null)
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('🎓', style: TextStyle(fontSize: 16)),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      userInfo!['admission_no'].toString(),
+                                      style: GoogleFonts.notoSansLao(
+                                        fontSize: _screenWidth < 320
+                                            ? 11.0
+                                            : _screenWidth < 360
+                                                ? 12.0
+                                                : 13.0,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white.withOpacity(0.9),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ] else ...[
                             Text(
-                              userInfo!['admission_no'].toString(),
+                              'ສະຖາບັນການທະນາຄານ',
                               style: GoogleFonts.notoSansLao(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
+                                fontSize: _screenWidth < 320
+                                    ? 18.0
+                                    : _screenWidth < 360
+                                        ? 20.0
+                                        : _screenWidth < 400
+                                            ? 22.0
+                                            : 24.0,
+                                fontWeight: FontWeight.w900,
                                 color: Colors.white,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'ໂປຣໄຟລ໌ນັກສຶກສາ',
+                              style: GoogleFonts.notoSansLao(
+                                fontSize: _screenWidth < 320
+                                    ? 10.0
+                                    : _screenWidth < 360
+                                        ? 11.0
+                                        : _screenWidth < 400
+                                            ? 12.0
+                                            : 13.0,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white.withOpacity(0.9),
                                 letterSpacing: 0.5,
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                  ] else ...[
-                    Text(
-                      'ສະຖາບັນການທະນາຄານ',
-                      style: GoogleFonts.notoSansLao(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'ໂປຣໄຟລ໌ນັກສຶກສາ',
-                      style: GoogleFonts.notoSansLao(
-                        fontSize: 15,
-                        color: Colors.white.withOpacity(0.85),
-                      ),
-                    ),
-                  ],
-                ],
+                  );
+                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
