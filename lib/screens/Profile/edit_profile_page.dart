@@ -1,5 +1,6 @@
 import 'package:BIBOL/services/token/token_service.dart';
 import 'package:BIBOL/services/auth/students_auth_service.dart';
+import 'package:BIBOL/widgets/shared/shared_header_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,6 +24,8 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  
+  double get _screenWidth => MediaQuery.of(context).size.width;
 
   @override
   void initState() {
@@ -834,29 +837,15 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
           children: [
             // Top Bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.25),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      padding: EdgeInsets.all(10),
-                    ),
+                  SharedHeaderButton(
+                    icon: Icons.arrow_back_ios_new_rounded,
+                    onPressed: () => Navigator.pop(context),
+                    screenWidth: _screenWidth,
                   ),
-                  SizedBox(width: 16),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -864,16 +853,16 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                         Text(
                           'ແກ້ໄຂໂປຣໄຟລ໌',
                           style: GoogleFonts.notoSansLao(
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
-                            letterSpacing: 0.5,
                           ),
                         ),
+                        SizedBox(height: 2),
                         Text(
                           'ອັບເດດຂໍ້ມູນຂອງທ່ານ',
                           style: GoogleFonts.notoSansLao(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: Colors.white.withOpacity(0.9),
                           ),
                         ),
@@ -886,36 +875,26 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
 
             // Profile Icon
             Padding(
-              padding: const EdgeInsets.only(top: 12, bottom: 32),
+              padding: const EdgeInsets.only(top: 8, bottom: 24),
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 4),
+                  border: Border.all(color: Colors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.2),
-                      blurRadius: 20,
-                      offset: Offset(0, 10),
+                      blurRadius: 15,
+                      offset: Offset(0, 8),
                     ),
                   ],
                 ),
                 child: CircleAvatar(
-                  radius: 50,
+                  radius: 45,
                   backgroundColor: Colors.white,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.edit_note_rounded,
-                        size: 50,
-                        color: Colors.white,
-                      ),
-                    ),
+                  child: Icon(
+                    Icons.edit_rounded,
+                    size: 45,
+                    color: const Color(0xFF07325D),
                   ),
                 ),
               ),
