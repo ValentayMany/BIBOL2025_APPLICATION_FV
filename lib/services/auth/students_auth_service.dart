@@ -85,30 +85,31 @@ class StudentAuthService {
     }
   }
 
-  // Update student email
+  // Update student email (and other profile fields)
   Future<Map<String, dynamic>> updateStudentEmail({
-    required int studentId,
     required String email,
   }) async {
     try {
       debugPrint('📝 Attempting to update email...');
-      debugPrint('👤 Student ID: $studentId');
       debugPrint('📧 New Email: $email');
 
-      // Get token for authentication
+      // Get token for authentication (required by backend)
       final token = await TokenService.getToken();
       
-      final headers = {
-        'Content-Type': 'application/json',
-      };
-      
-      // Add token if available
-      if (token != null && token.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $token';
+      if (token == null || token.isEmpty) {
+        return {
+          'success': false,
+          'message': 'ไม่พบ Token กรุณาเข้าสู่ระบบใหม่',
+        };
       }
 
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+
       final response = await http.put(
-        Uri.parse(StudentsApiConfig.updateStudentUrl(studentId)),
+        Uri.parse(StudentsApiConfig.updateStudentProfileUrl()),
         headers: headers,
         body: jsonEncode({'email': email}),
       );
@@ -123,27 +124,38 @@ class StudentAuthService {
           debugPrint('✅ Email updated successfully!');
           
           // Update local storage with new email
-          if (jsonData['data'] != null) {
-            await TokenService.updateUserInfo({'email': email});
-          }
+          await TokenService.updateUserInfo({'email': email});
           
           return {
             'success': true,
-            'message': 'Email updated successfully',
-            'data': jsonData['data'],
+            'message': jsonData['message'] ?? 'อัพเดทอีเมวสำเร็จ',
+            'data': jsonData['updated'],
           };
         } else {
           debugPrint('❌ Update failed: ${jsonData['message']}');
           return {
             'success': false,
-            'message': jsonData['message'] ?? 'Update failed',
+            'message': jsonData['message'] ?? 'อัพเดทล้มเหลว',
           };
         }
+      } else if (response.statusCode == 400) {
+        // Bad request - validation error
+        final jsonData = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': jsonData['message'] ?? 'ข้อมูลไม่ถูกต้อง',
+        };
+      } else if (response.statusCode == 401) {
+        // Unauthorized - token expired or invalid
+        return {
+          'success': false,
+          'message': 'Token หมดอายุ กรุณาเข้าสู่ระบบใหม่',
+        };
       } else {
         debugPrint('❌ Server error: ${response.statusCode}');
         return {
           'success': false,
-          'message': 'Server error: ${response.statusCode}',
+          'message': 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ (${response.statusCode})',
         };
       }
     } catch (e, stackTrace) {
@@ -151,7 +163,7 @@ class StudentAuthService {
       debugPrint('Stack trace: $stackTrace');
       return {
         'success': false,
-        'message': 'Error: $e',
+        'message': 'เกิดข้อผิดพลาด: $e',
       };
     }
   }

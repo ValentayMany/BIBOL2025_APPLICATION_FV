@@ -50,16 +50,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     try {
       final newEmail = _emailController.text.trim();
-      final studentId = userInfo?['id'];
-
-      if (studentId == null) {
-        throw Exception('Student ID not found');
-      }
 
       // Call API to update email in backend
+      // Backend will get student ID from JWT token
       final authService = StudentAuthService();
       final result = await authService.updateStudentEmail(
-        studentId: studentId,
         email: newEmail,
       );
 
@@ -76,7 +71,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'ອັບເດດອີເມວສຳເລັດແລ້ວ',
+                      result['message'] ?? 'ອັບເດດອີເມວສຳເລັດແລ້ວ',
                       style: GoogleFonts.notoSansLao(),
                     ),
                   ),
