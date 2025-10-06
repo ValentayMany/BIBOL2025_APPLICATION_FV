@@ -75,12 +75,12 @@ class HeaderWidget extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(_basePadding * 1.2),
-          child: Column(
-            children: [
-              // Header Row
-              Row(
+        child: Column(
+          children: [
+            // Header Row with fixed padding
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
                 children: [
                   SharedHeaderButton(
                     icon: Icons.menu_rounded,
@@ -101,26 +101,32 @@ class HeaderWidget extends StatelessWidget {
                     ),
                 ],
               ),
+            ),
 
-              SizedBox(height: _basePadding * 1.5),
+            SizedBox(height: _basePadding * 1.5),
 
-              // Logo and Title Section with Animation
-              TweenAnimationBuilder<double>(
-                duration: Duration(milliseconds: 800),
-                tween: Tween(begin: 0.0, end: 1.0),
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: 0.8 + (0.2 * value),
-                    child: Opacity(
-                      opacity: value,
-                      child: Column(
-                        children: [
-                          // Logo with Glow Effect
-                          Stack(
-                            alignment: Alignment.center,
+            // Logo and Title Section with padding
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: _basePadding),
+              child: Column(
+                children: [
+                  // Logo and Title Section with Animation
+                  TweenAnimationBuilder<double>(
+                    duration: Duration(milliseconds: 800),
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    builder: (context, value, child) {
+                      return Transform.scale(
+                        scale: 0.8 + (0.2 * value),
+                        child: Opacity(
+                          opacity: value,
+                          child: Column(
                             children: [
-                              // Outer glow
-                              Container(
+                              // Logo with Glow Effect
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // Outer glow
+                                  Container(
                                 width: _logoSize + 20,
                                 height: _logoSize + 20,
                                 decoration: BoxDecoration(
@@ -168,119 +174,121 @@ class HeaderWidget extends StatelessWidget {
                                   ),
                                 ),
                               ),
+                                ],
+                              ),
+
+                              SizedBox(height: 16),
+
+                              // Title with Shadow
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: _basePadding,
+                                  vertical: _basePadding * 0.3,
+                                ),
+                                child: Text(
+                                  'ສະຖາບັນການທະນາຄານ',
+                                  style: GoogleFonts.notoSansLao(
+                                    fontSize: _titleFontSize,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: 1.5,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        blurRadius: 10,
+                                        offset: Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+
+                              SizedBox(height: 6),
+
+                              // Subtitle with Badge Style
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: _basePadding * 1.2,
+                                  vertical: _basePadding * 0.5,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.white.withOpacity(0.2),
+                                      Colors.white.withOpacity(0.1),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isLoggedIn && userInfo != null) ...[
+                                      Icon(
+                                        Icons.account_circle_rounded,
+                                        color: Colors.white,
+                                        size: _subtitleFontSize * 1.2,
+                                      ),
+                                      SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          'ຍິນດີຕ້ອນຮັບ ${userInfo!['fullname'] ?? ''}',
+                                          style: GoogleFonts.notoSansLao(
+                                            fontSize: _subtitleFontSize,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                            letterSpacing: 0.5,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                    ] else ...[
+                                      Text(
+                                        '🎓',
+                                        style: TextStyle(
+                                          fontSize: _subtitleFontSize * 1.2,
+                                        ),
+                                      ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'ຍິນດີຕ້ອນຮັບ',
+                                        style: GoogleFonts.notoSansLao(
+                                          fontSize: _subtitleFontSize,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        '🎓',
+                                        style: TextStyle(
+                                          fontSize: _subtitleFontSize * 1.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
+                        ),
+                      );
+                    },
+                  ),
 
-                          SizedBox(height: 16),
-
-                          // Title with Shadow
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: _basePadding,
-                              vertical: _basePadding * 0.3,
-                            ),
-                            child: Text(
-                              'ສະຖາບັນການທະນາຄານ',
-                              style: GoogleFonts.notoSansLao(
-                                fontSize: _titleFontSize,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: 1.5,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 10,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-
-                          SizedBox(height: 6),
-
-                          // Subtitle with Badge Style
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: _basePadding * 1.2,
-                              vertical: _basePadding * 0.5,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.2),
-                                  Colors.white.withOpacity(0.1),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (isLoggedIn && userInfo != null) ...[
-                                  Icon(
-                                    Icons.account_circle_rounded,
-                                    color: Colors.white,
-                                    size: _subtitleFontSize * 1.2,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      'ຍິນດີຕ້ອນຮັບ ${userInfo!['fullname'] ?? ''}',
-                                      style: GoogleFonts.notoSansLao(
-                                        fontSize: _subtitleFontSize,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                        letterSpacing: 0.5,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ] else ...[
-                                  Text(
-                                    '🎓',
-                                    style: TextStyle(
-                                      fontSize: _subtitleFontSize * 1.2,
-                                    ),
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'ຍິນດີຕ້ອນຮັບ',
-                                    style: GoogleFonts.notoSansLao(
-                                      fontSize: _subtitleFontSize,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    '🎓',
-                                    style: TextStyle(
-                                      fontSize: _subtitleFontSize * 1.2,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                  SizedBox(height: _basePadding * 0.5),
+                ],
               ),
-
-              SizedBox(height: _basePadding * 0.5),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

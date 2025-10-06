@@ -66,11 +66,12 @@ class _NewsSearchHeaderWidgetState extends State<NewsSearchHeaderWidget> {
         ],
       ),
       child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(basePadding),
-          child: Column(
-            children: [
-              Row(
+        child: Column(
+          children: [
+            // Header Row with fixed padding
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
                 children: [
                   SharedHeaderButton(
                     icon: Icons.menu_rounded,
@@ -86,86 +87,95 @@ class _NewsSearchHeaderWidgetState extends State<NewsSearchHeaderWidget> {
                   ),
                 ],
               ),
-              SizedBox(height: smallPadding),
-              TweenAnimationBuilder<double>(
-                duration: Duration(milliseconds: 800),
-                tween: Tween(begin: 0.0, end: 1.0),
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: 0.8 + (0.2 * value),
-                    child: Opacity(
-                      opacity: value,
-                      child: Column(
-                        children: [
-                          Container(
-                            width: logoSize,
-                            height: logoSize,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
-                                width: 3,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 20,
-                                  offset: Offset(0, 10),
+            ),
+            SizedBox(height: smallPadding),
+            
+            // Logo and content section
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: basePadding),
+              child: Column(
+                children: [
+                  TweenAnimationBuilder<double>(
+                    duration: Duration(milliseconds: 800),
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    builder: (context, value, child) {
+                      return Transform.scale(
+                        scale: 0.8 + (0.2 * value),
+                        child: Opacity(
+                          opacity: value,
+                          child: Column(
+                            children: [
+                              Container(
+                                width: logoSize,
+                                height: logoSize,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 3,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 20,
+                                      offset: Offset(0, 10),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.all(smallPadding),
-                              child: Image.asset(
-                                'assets/images/LOGO.png',
-                                fit: BoxFit.contain,
+                                child: Padding(
+                                  padding: EdgeInsets.all(smallPadding),
+                                  child: Image.asset(
+                                    'assets/images/LOGO.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          FittedBox(
-                            child: Text(
-                              'ຂ່າວສານ',
-                              style: GoogleFonts.notoSansLao(
-                                fontSize: titleFontSize,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: 1.2,
+                              SizedBox(height: 10),
+                              FittedBox(
+                                child: Text(
+                                  'ຂ່າວສານ',
+                                  style: GoogleFonts.notoSansLao(
+                                    fontSize: titleFontSize,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: 1.2,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          FittedBox(
-                            child: Text(
-                              'ສະຖາບັນການທະນາຄານ',
-                              style: GoogleFonts.notoSansLao(
-                                fontSize: subtitleFontSize,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white.withOpacity(0.9),
-                                letterSpacing: 0.5,
+                              FittedBox(
+                                child: Text(
+                                  'ສະຖາບັນການທະນາຄານ',
+                                  style: GoogleFonts.notoSansLao(
+                                    fontSize: subtitleFontSize,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withOpacity(0.9),
+                                    letterSpacing: 0.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
-                              textAlign: TextAlign.center,
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: 12),
+                  _buildSearchSection(
+                    screenWidth,
+                    basePadding,
+                    smallPadding,
+                    bodyFontSize,
+                    iconSize,
+                    isVerySmallScreen,
+                    isTinyScreen,
+                  ),
+                ],
               ),
-              SizedBox(height: 12),
-              _buildSearchSection(
-                screenWidth,
-                basePadding,
-                smallPadding,
-                bodyFontSize,
-                iconSize,
-                isVerySmallScreen,
-                isTinyScreen,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
