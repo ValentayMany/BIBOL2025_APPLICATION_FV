@@ -13,6 +13,7 @@ class AppRoutes {
   static const String gallery = '/gallery';
   static const String about = '/about';
   static const String profile = '/profile';
+  static const String editProfile = '/profile/edit';
   static const String courseDetail = '/course-detail';
   static const String newsDetail = '/news/detail';
 
@@ -26,6 +27,7 @@ class AppRoutes {
     gallery,
     about,
     profile,
+    editProfile,
     courseDetail,
     newsDetail,
   ];

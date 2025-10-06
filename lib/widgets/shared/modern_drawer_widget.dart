@@ -152,22 +152,27 @@ class ModernDrawerWidget extends StatelessWidget {
               constraints: BoxConstraints(maxWidth: maxTextWidth),
               child: Column(
                 children: [
-                  Text(
-                    "${userInfo!['first_name'] ?? ''} ${userInfo!['last_name'] ?? ''}"
-                        .trim(),
-                    style: GoogleFonts.notoSansLao(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: _bodyFontSize,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (userInfo!['student_id'] != null) ...[
+                  Builder(builder: (context) {
+                    final firstName = userInfo!['first_name']?.toString() ?? '';
+                    final lastName = userInfo!['last_name']?.toString() ?? '';
+                    final fullName = '$firstName $lastName'.trim();
+                    
+                    return Text(
+                      fullName.isNotEmpty ? fullName : 'ນັກສຶກສາ',
+                      style: GoogleFonts.notoSansLao(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: _bodyFontSize,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  }),
+                  if (userInfo!['admission_no'] != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'ລະຫັດ: ${userInfo!['student_id']}',
+                      'ລະຫັດ: ${userInfo!['admission_no']}',
                       style: GoogleFonts.notoSansLao(
                         color: Colors.white.withOpacity(0.6),
                         fontSize: _captionFontSize,
