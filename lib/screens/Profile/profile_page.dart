@@ -244,19 +244,12 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
-  void _handleEditProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'ຟັງຊັ່ນແກ້ໄຂຂໍ້ມູນກຳລັງພັດທະນາ',
-          style: GoogleFonts.notoSansLao(),
-        ),
-        backgroundColor: Colors.blue.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: EdgeInsets.all(16),
-      ),
-    );
+  Future<void> _handleEditProfile() async {
+    final result = await Navigator.pushNamed(context, '/profile/edit');
+    if (result == true) {
+      // Reload profile data if changes were made
+      _checkLoginAndLoadProfile();
+    }
   }
 
   double get _screenWidth => MediaQuery.of(context).size.width;
