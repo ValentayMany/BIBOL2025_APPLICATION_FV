@@ -5,6 +5,7 @@ import 'package:BIBOL/widgets/shared/shared_header_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -20,6 +21,8 @@ class _ProfilePageState extends State<ProfilePage>
   Map<String, dynamic>? userInfo;
   bool _isLoggedIn = false;
   bool _isLoading = true;
+  String _phoneNumber = '';
+  String _classroom = '';
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -75,6 +78,7 @@ class _ProfilePageState extends State<ProfilePage>
   void _loadUserProfile() async {
     final user = await TokenService.getUserInfo();
     final isLoggedIn = await TokenService.isLoggedIn();
+    await _loadLocalData();
 
     if (mounted) {
       setState(() {
@@ -87,6 +91,20 @@ class _ProfilePageState extends State<ProfilePage>
         }
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadLocalData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (mounted) {
+        setState(() {
+          _phoneNumber = prefs.getString('user_phone') ?? '';
+          _classroom = prefs.getString('user_classroom') ?? '';
+        });
+      }
+    } catch (e) {
+      // Handle error silently
     }
   }
 
@@ -244,19 +262,11 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
-  void _handleEditProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'ຟັງຊັ່ນແກ້ໄຂຂໍ້ມູນກຳລັງພັດທະນາ',
-          style: GoogleFonts.notoSansLao(),
-        ),
-        backgroundColor: Colors.blue.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: EdgeInsets.all(16),
-      ),
-    );
+  void _handleEditProfile() async {
+    final result = await Navigator.pushNamed(context, '/profile/edit');
+    if (result == true) {
+      await _loadLocalData();
+    }
   }
 
   double get _screenWidth => MediaQuery.of(context).size.width;
@@ -581,6 +591,24 @@ class _ProfilePageState extends State<ProfilePage>
                 iconColor: Colors.orange,
                 title: 'Roll No',
                 value: userInfo!['roll_no'].toString(),
+              ),
+            ],
+            if (_phoneNumber.isNotEmpty) ...[
+              SizedBox(height: 12),
+              _buildInfoCard(
+                icon: Icons.phone_rounded,
+                iconColor: Colors.purple,
+                title: 'ເບີໂທລະສັບ',
+                value: _phoneNumber,
+              ),
+            ],
+            if (_classroom.isNotEmpty) ...[
+              SizedBox(height: 12),
+              _buildInfoCard(
+                icon: Icons.school_rounded,
+                iconColor: Colors.teal,
+                title: 'ຫ້ອງຮຽນ',
+                value: _classroom,
               ),
             ],
             SizedBox(height: 24),
