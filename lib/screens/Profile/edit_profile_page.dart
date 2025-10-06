@@ -65,9 +65,23 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
       setState(() {
         userInfo = user;
         _emailController.text = user?['email']?.toString() ?? '';
+        
+        // Store original values before merging local data
+        final originalPhone = user?['phone']?.toString() ?? '';
+        final originalClass = user?['class']?.toString() ?? '';
+        
         // Use local data if available, otherwise use original data
-        _phoneController.text = localPhone ?? user?['phone']?.toString() ?? '';
-        _classController.text = localClass ?? user?['class']?.toString() ?? '';
+        _phoneController.text = localPhone ?? originalPhone;
+        _classController.text = localClass ?? originalClass;
+        
+        // Update userInfo with local data for comparison
+        if (localPhone != null) {
+          userInfo!['phone'] = localPhone;
+        }
+        if (localClass != null) {
+          userInfo!['class'] = localClass;
+        }
+        
         _isLoading = false;
       });
     }
@@ -82,11 +96,295 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
     super.dispose();
   }
 
-  Future<void> _saveProfile() async {
+  void _showConfirmationDialog() {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
+    final newEmail = _emailController.text.trim();
+    final newPhone = _phoneController.text.trim();
+    final newClass = _classController.text.trim();
+    
+    final originalEmail = userInfo?['email']?.toString() ?? '';
+    final originalPhone = userInfo?['phone']?.toString() ?? '';
+    final originalClass = userInfo?['class']?.toString() ?? '';
+
+    // Check if there are any changes
+    bool hasChanges = (originalEmail != newEmail) || 
+                      (originalPhone != newPhone) || 
+                      (originalClass != newClass);
+
+    if (!hasChanges) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.white),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'ບໍ່ມີການປ່ຽນແປງໃດໆ',
+                  style: GoogleFonts.notoSansLao(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          margin: EdgeInsets.all(16),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.help_outline_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'ຢືນຢັນການປ່ຽນແປງ',
+                style: GoogleFonts.notoSansLao(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF07325D),
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'ກະລຸນາກວດສອບຂໍ້ມູນທີ່ຈະປ່ຽນແປງ:',
+                style: GoogleFonts.notoSansLao(
+                  color: Colors.grey.shade700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 16),
+              
+              // Email changes
+              if (originalEmail != newEmail) ...[
+                _buildChangeItem(
+                  label: '📧 ອີເມວ',
+                  oldValue: originalEmail.isEmpty ? 'ບໍ່ມີ' : originalEmail,
+                  newValue: newEmail,
+                  color: Color(0xFF0D5AA7),
+                ),
+                SizedBox(height: 12),
+              ],
+              
+              // Phone changes
+              if (originalPhone != newPhone) ...[
+                _buildChangeItem(
+                  label: '📱 ເບີໂທ',
+                  oldValue: originalPhone.isEmpty ? 'ບໍ່ມີ' : originalPhone,
+                  newValue: newPhone.isEmpty ? 'ບໍ່ມີ' : newPhone,
+                  color: Color(0xFF0A4A85),
+                ),
+                SizedBox(height: 12),
+              ],
+              
+              // Class changes
+              if (originalClass != newClass) ...[
+                _buildChangeItem(
+                  label: '🏫 ຫ້ອງຮຽນ',
+                  oldValue: originalClass.isEmpty ? 'ບໍ່ມີ' : originalClass,
+                  newValue: newClass.isEmpty ? 'ບໍ່ມີ' : newClass,
+                  color: Color(0xFF07325D),
+                ),
+                SizedBox(height: 12),
+              ],
+              
+              SizedBox(height: 8),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Color(0xFF07325D).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Color(0xFF07325D).withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Color(0xFF07325D),
+                      size: 20,
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການບັນທຶກການປ່ຽນແປງນີ້?',
+                        style: GoogleFonts.notoSansLao(
+                          color: Color(0xFF07325D),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ຍົກເລີກ',
+              style: GoogleFonts.notoSansLao(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _saveProfile();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF07325D),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: Text(
+              'ຢືນຢັນ',
+              style: GoogleFonts.notoSansLao(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChangeItem({
+    required String label,
+    required String oldValue,
+    required String newValue,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.notoSansLao(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ເກົ່າ:',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    Text(
+                      oldValue,
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_rounded, color: color, size: 20),
+              SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ໃໝ່:',
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    Text(
+                      newValue,
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveProfile() async {
     setState(() => _isSaving = true);
 
     try {
@@ -211,12 +509,12 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF667eea),
-            Color(0xFF764ba2),
-            Color(0xFFf093fb),
+            Color(0xFF07325D),
+            Color(0xFF0A4A85),
+            Color(0xFF0D5AA7),
           ],
         ),
       ),
@@ -274,13 +572,13 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Color(0xFF667eea).withOpacity(0.1),
-                              Color(0xFF764ba2).withOpacity(0.1),
+                              Color(0xFF07325D).withOpacity(0.1),
+                              Color(0xFF0A4A85).withOpacity(0.1),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Color(0xFF667eea).withOpacity(0.3),
+                            color: Color(0xFF07325D).withOpacity(0.3),
                             width: 1.5,
                           ),
                         ),
@@ -290,12 +588,12 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                               padding: EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                                  colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Color(0xFF667eea).withOpacity(0.3),
+                                    color: Color(0xFF07325D).withOpacity(0.3),
                                     blurRadius: 8,
                                     offset: Offset(0, 4),
                                   ),
@@ -313,7 +611,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                                     style: GoogleFonts.notoSansLao(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF667eea),
+                                      color: Color(0xFF07325D),
                                     ),
                                   ),
                                   SizedBox(height: 4),
@@ -337,7 +635,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                         label: 'ລະຫັດນັກຮຽນ',
                         value: userInfo?['admission_no']?.toString() ?? 'N/A',
                         icon: Icons.badge_rounded,
-                        color: Colors.blue,
+                        color: Color(0xFF0D5AA7),
                       ),
                       SizedBox(height: 16),
 
@@ -345,7 +643,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                         label: 'ຊື່',
                         value: userInfo?['first_name']?.toString() ?? 'N/A',
                         icon: Icons.person_outline,
-                        color: Colors.purple,
+                        color: Color(0xFF0A4A85),
                       ),
                       SizedBox(height: 16),
 
@@ -353,7 +651,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                         label: 'ນາມສະກຸນ',
                         value: userInfo?['last_name']?.toString() ?? 'N/A',
                         icon: Icons.person_outline,
-                        color: Colors.purple,
+                        color: Color(0xFF0A4A85),
                       ),
                       SizedBox(height: 16),
 
@@ -362,7 +660,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                           label: 'ເພດ',
                           value: _getGenderText(userInfo!['gender'].toString()),
                           icon: Icons.wc_outlined,
-                          color: Colors.teal,
+                          color: Color(0xFF07325D),
                         ),
                         SizedBox(height: 16),
                       ],
@@ -372,7 +670,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                           label: 'Roll No',
                           value: userInfo!['roll_no'].toString(),
                           icon: Icons.numbers_rounded,
-                          color: Colors.orange,
+                          color: Color(0xFF0D5AA7),
                         ),
                         SizedBox(height: 16),
                       ],
@@ -390,7 +688,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                               style: GoogleFonts.notoSansLao(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF667eea),
+                                color: Color(0xFF07325D),
                               ),
                             ),
                           ),
@@ -404,7 +702,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                         label: 'ອີເມວ',
                         controller: _emailController,
                         icon: Icons.email_rounded,
-                        color: Colors.green,
+                        color: Color(0xFF0D5AA7),
                         hint: 'ກະລຸນາໃສ່ອີເມວ',
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
@@ -424,7 +722,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                         label: 'ເບີໂທລະສັບ',
                         controller: _phoneController,
                         icon: Icons.phone_rounded,
-                        color: Colors.blue,
+                        color: Color(0xFF0A4A85),
                         hint: 'ກະລຸນາໃສ່ເບີໂທລະສັບ',
                         keyboardType: TextInputType.phone,
                         helperText: '📱 ບັນທຶກໃນເຄື່ອງເທົ່ານັ້ນ',
@@ -436,7 +734,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                         label: 'ຫ້ອງຮຽນ',
                         controller: _classController,
                         icon: Icons.school_rounded,
-                        color: Colors.orange,
+                        color: Color(0xFF07325D),
                         hint: 'ກະລຸນາໃສ່ຫ້ອງຮຽນ',
                         helperText: '🏫 ບັນທຶກໃນເຄື່ອງເທົ່ານັ້ນ',
                       ),
@@ -448,19 +746,19 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                         height: 58,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                            colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
                           ),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF667eea).withOpacity(0.4),
+                              color: Color(0xFF07325D).withOpacity(0.4),
                               blurRadius: 20,
                               offset: Offset(0, 10),
                             ),
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: _isSaving ? null : _saveProfile,
+                          onPressed: _isSaving ? null : _showConfirmationDialog,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
@@ -511,12 +809,11 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF667eea),
-            Color(0xFF764ba2),
-            Color(0xFFf093fb),
+            Color(0xFF07325D),
+            Color(0xFF0A4A85),
           ],
         ),
         borderRadius: BorderRadius.only(
@@ -525,7 +822,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFF667eea).withOpacity(0.3),
+            color: Color(0xFF07325D).withOpacity(0.3),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -608,7 +905,7 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                        colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
                       ),
                       shape: BoxShape.circle,
                     ),
