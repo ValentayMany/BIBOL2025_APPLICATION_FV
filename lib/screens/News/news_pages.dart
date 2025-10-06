@@ -609,8 +609,11 @@ class _NewsListPageState extends State<NewsListPage>
     final displayTopics = _filteredTopics;
 
     return Container(
-      margin: EdgeInsets.fromLTRB(_basePadding, _basePadding, _basePadding, 0),
-      padding: EdgeInsets.all(_basePadding),
+      margin: EdgeInsets.symmetric(
+        horizontal: _basePadding,
+        vertical: _basePadding * 0.5,
+      ),
+      padding: EdgeInsets.all(_basePadding * 0.9),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -837,7 +840,12 @@ class _NewsListPageState extends State<NewsListPage>
 
     return SliverToBoxAdapter(
       child: Container(
-        padding: EdgeInsets.all(_basePadding),
+        padding: EdgeInsets.fromLTRB(
+          _basePadding,
+          _basePadding * 0.5,
+          _basePadding,
+          _basePadding,
+        ),
         child: LayoutBuilder(
           builder: (context, constraints) {
             int crossAxisCount;
@@ -876,8 +884,8 @@ class _NewsListPageState extends State<NewsListPage>
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
                 childAspectRatio: childAspectRatio,
-                crossAxisSpacing: _basePadding * 0.75,
-                mainAxisSpacing: _basePadding * 0.75,
+                crossAxisSpacing: _basePadding * 0.8,
+                mainAxisSpacing: _basePadding,
               ),
               itemCount: itemCount,
               itemBuilder: (context, index) {

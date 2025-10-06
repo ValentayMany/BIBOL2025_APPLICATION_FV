@@ -231,7 +231,7 @@ class _AboutPageState extends State<AboutPage>
       ),
       child: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(basePadding),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Column(
             children: [
               // Header Row with Menu Button - ใช้ SharedHeaderButton
@@ -246,7 +246,7 @@ class _AboutPageState extends State<AboutPage>
                 ],
               ),
 
-              SizedBox(height: basePadding),
+              SizedBox(height: 16),
 
               // Logo and Title
               TweenAnimationBuilder<double>(

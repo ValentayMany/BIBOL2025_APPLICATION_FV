@@ -168,7 +168,10 @@ class NewsListCardWidget extends StatelessWidget {
                             ),
                           ),
                         ),
-                        padding: EdgeInsets.all(smallPadding),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: smallPadding,
+                          vertical: smallPadding * 0.9,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -182,15 +185,15 @@ class NewsListCardWidget extends StatelessWidget {
                                     fontSize: subtitleFontSize,
                                     fontWeight: FontWeight.w800,
                                     color: Colors.grey[900],
-                                    height: 1.2,
-                                    letterSpacing: 0.3,
+                                    height: 1.25,
+                                    letterSpacing: 0.2,
                                   ),
                                   maxLines: isVerySmallScreen ? 2 : 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
-                            SizedBox(height: smallPadding * 0.5),
+                            SizedBox(height: smallPadding * 0.6),
                             // Bottom section
                             Container(
                               width: double.infinity,

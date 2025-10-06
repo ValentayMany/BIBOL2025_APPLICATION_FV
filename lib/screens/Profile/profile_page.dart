@@ -5,6 +5,7 @@ import 'package:BIBOL/widgets/shared/shared_header_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -69,6 +70,11 @@ class _ProfilePageState extends State<ProfilePage>
         }
         _isLoading = false;
       });
+
+      // Load local data if user is logged in
+      if (_isLoggedIn && userInfo != null) {
+        await _loadLocalData();
+      }
     }
   }
 
@@ -86,6 +92,31 @@ class _ProfilePageState extends State<ProfilePage>
           _isLoggedIn = false;
         }
         _isLoading = false;
+      });
+
+      // Load local data if user is logged in
+      if (_isLoggedIn && userInfo != null) {
+        await _loadLocalData();
+      }
+    }
+  }
+
+  Future<void> _loadLocalData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Load local edits if they exist
+    final localPhone = prefs.getString('local_phone_${userInfo?['id']}');
+    final localClass = prefs.getString('local_class_${userInfo?['id']}');
+
+    if (mounted) {
+      setState(() {
+        // Merge local data with user info
+        if (localPhone != null) {
+          userInfo!['phone'] = localPhone;
+        }
+        if (localClass != null) {
+          userInfo!['class'] = localClass;
+        }
       });
     }
   }
@@ -338,7 +369,7 @@ class _ProfilePageState extends State<ProfilePage>
 
             // Profile Avatar & Info
             Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 24),
+              padding: const EdgeInsets.only(top: 8, bottom: 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -355,13 +386,13 @@ class _ProfilePageState extends State<ProfilePage>
                       ],
                     ),
                     child: CircleAvatar(
-                      radius: 50,
+                      radius: 45,
                       backgroundColor: Colors.white,
                       child: Icon(
                         _isLoggedIn
                             ? Icons.person_rounded
                             : Icons.person_outline_rounded,
-                        size: 50,
+                        size: 45,
                         color: const Color(0xFF07325D),
                       ),
                     ),
