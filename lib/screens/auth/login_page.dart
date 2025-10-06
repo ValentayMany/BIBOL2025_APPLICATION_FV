@@ -89,10 +89,24 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           debugPrint('⚠️ No token in response');
         }
 
-        // บันทึกข้อมูล Student
+        // บันทึกข้อมูล Student จาก login response ก่อน
         final studentData = response.data!.toJson();
         await TokenService.saveUserInfo(studentData);
-        debugPrint('✅ User info saved');
+        debugPrint('✅ Initial user info saved');
+
+        // ดึงข้อมูล profile เต็มจาก /profile endpoint
+        try {
+          debugPrint('🔄 Fetching full profile...');
+          final fullProfile = await authService.getProfile();
+          if (fullProfile != null) {
+            await TokenService.saveUserInfo(fullProfile);
+            debugPrint('✅ Full profile saved with all fields');
+          } else {
+            debugPrint('⚠️ Could not fetch full profile, using login data');
+          }
+        } catch (e) {
+          debugPrint('⚠️ Error fetching full profile: $e, using login data');
+        }
 
         // ตรวจสอบว่าบันทึกสำเร็จไหม
         final isLoggedIn = await TokenService.isLoggedIn();
