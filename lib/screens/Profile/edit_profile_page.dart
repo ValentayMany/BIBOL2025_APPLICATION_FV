@@ -1,4 +1,5 @@
 import 'package:BIBOL/services/token/token_service.dart';
+import 'package:BIBOL/services/auth/students_auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -48,40 +49,75 @@ class _EditProfilePageState extends State<EditProfilePage> {
     setState(() => _isSaving = true);
 
     try {
-      // Update email in local storage
-      await TokenService.updateUserInfo({
-        'email': _emailController.text.trim(),
-      });
+      final newEmail = _emailController.text.trim();
+      final studentId = userInfo?['id'];
+
+      if (studentId == null) {
+        throw Exception('Student ID not found');
+      }
+
+      // Call API to update email in backend
+      final authService = StudentAuthService();
+      final result = await authService.updateStudentEmail(
+        studentId: studentId,
+        email: newEmail,
+      );
 
       if (mounted) {
         setState(() => _isSaving = false);
-        
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle_outline, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'ອັບເດດຂໍ້ມູນສຳເລັດແລ້ວ',
-                    style: GoogleFonts.notoSansLao(),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green.shade600,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: EdgeInsets.all(16),
-          ),
-        );
 
-        // Go back to profile page
-        Navigator.pop(context, true);
+        if (result['success'] == true) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.white),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'ອັບເດດອີເມວສຳເລັດແລ້ວ',
+                      style: GoogleFonts.notoSansLao(),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green.shade600,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: EdgeInsets.all(16),
+            ),
+          );
+
+          // Go back to profile page
+          Navigator.pop(context, true);
+        } else {
+          // Show error message from server
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.white),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      result['message'] ?? 'ເກີດຂໍ້ຜິດພາດ',
+                      style: GoogleFonts.notoSansLao(),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.red.shade600,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: EdgeInsets.all(16),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

@@ -220,6 +220,7 @@ class StudentsApiConfig {
   static String getStudentsUrl() => '$baseUrl/students';
   static String getStudentLoginUrl() => '$baseUrl/students/login';
   static String getStudentByIdUrl(int id) => '$baseUrl/students/$id';
+  static String updateStudentUrl(int id) => '$baseUrl/students/$id';
 
   // Debug helper
   static void printConfig() {
