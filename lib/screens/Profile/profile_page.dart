@@ -76,6 +76,15 @@ class _ProfilePageState extends State<ProfilePage>
     final user = await TokenService.getUserInfo();
     final isLoggedIn = await TokenService.isLoggedIn();
 
+    // Debug: แสดงข้อมูลที่ได้
+    debugPrint('🔍 Profile Page - User Info: $user');
+    debugPrint('🔍 Profile Page - Is Logged In: $isLoggedIn');
+    if (user != null) {
+      debugPrint('👤 First Name: ${user['first_name']}');
+      debugPrint('👤 Last Name: ${user['last_name']}');
+      debugPrint('🎫 Admission No: ${user['admission_no']}');
+    }
+
     if (mounted) {
       setState(() {
         if (user != null && user["id"] != null && isLoggedIn) {
@@ -369,15 +378,23 @@ class _ProfilePageState extends State<ProfilePage>
                   const SizedBox(height: 16),
                   if (_isLoggedIn && userInfo != null) ...[
                     // ชื่อ-นามสกุล
-                    Text(
-                      '${userInfo?['first_name'] ?? ''} ${userInfo?['last_name'] ?? ''}'.trim(),
-                      style: GoogleFonts.notoSansLao(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    Builder(builder: (context) {
+                      final firstName = userInfo?['first_name']?.toString() ?? '';
+                      final lastName = userInfo?['last_name']?.toString() ?? '';
+                      final fullName = '$firstName $lastName'.trim();
+                      
+                      debugPrint('🏷️ Displaying name: "$fullName"');
+                      
+                      return Text(
+                        fullName.isNotEmpty ? fullName : 'ນັກສຶກສາ',
+                        style: GoogleFonts.notoSansLao(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      );
+                    }),
                     const SizedBox(height: 8),
                     // รหัสนักเรียน
                     if (userInfo?['admission_no'] != null)

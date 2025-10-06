@@ -23,23 +23,30 @@ class TokenService {
     try {
       final prefs = await SharedPreferences.getInstance();
 
+      // Debug: แสดงข้อมูลที่ได้รับมา
+      debugPrint('📥 Received user info to save:');
+      debugPrint('   - firstname: ${userInfo['firstname']}');
+      debugPrint('   - lastname: ${userInfo['lastname']}');
+      debugPrint('   - admission_no: ${userInfo['admission_no']}');
+      debugPrint('   - email: ${userInfo['email']}');
+
       // แปลง Student Model เป็นรูปแบบที่ HomePage/ProfilePage ต้องการ
       Map<String, dynamic> normalizedUserInfo = {
         'id': userInfo['id'],
         'student_id':
             userInfo['admission_no'] ??
             userInfo['roll_no'], // ใช้ admission_no เป็น student_id
-        'first_name': userInfo['firstname'] ?? '',
-        'last_name': userInfo['lastname'] ?? '',
-        'phone': userInfo['mobileno'] ?? '',
-        'email': userInfo['email'] ?? '',
-        'class': userInfo['class'] ?? 'N/A',
-        'gender': userInfo['gender'] ?? '',
+        'first_name': userInfo['firstname']?.toString() ?? '',
+        'last_name': userInfo['lastname']?.toString() ?? '',
+        'phone': userInfo['mobileno']?.toString() ?? '',
+        'email': userInfo['email']?.toString() ?? '',
+        'class': userInfo['class']?.toString() ?? 'N/A',
+        'gender': userInfo['gender']?.toString() ?? '',
         'image': userInfo['image'],
         // เก็บข้อมูลเพิ่มเติม
-        'middlename': userInfo['middlename'] ?? '',
-        'admission_no': userInfo['admission_no'] ?? '',
-        'roll_no': userInfo['roll_no'] ?? '',
+        'middlename': userInfo['middlename']?.toString() ?? '',
+        'admission_no': userInfo['admission_no']?.toString() ?? '',
+        'roll_no': userInfo['roll_no']?.toString() ?? '',
         'admission_date': userInfo['admission_date'],
         'dob': userInfo['dob'],
         'religion': userInfo['religion'],
@@ -57,9 +64,10 @@ class TokenService {
       debugPrint(
         '👤 Student: ${normalizedUserInfo['first_name']} ${normalizedUserInfo['last_name']}',
       );
-      debugPrint('🎫 Student ID: ${normalizedUserInfo['student_id']}');
+      debugPrint('🎫 Admission No: ${normalizedUserInfo['admission_no']}');
     } catch (e) {
       debugPrint('❌ Error saving user info: $e');
+      rethrow;
     }
   }
 
