@@ -368,6 +368,18 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                   const SizedBox(height: 16),
                   if (_isLoggedIn && userInfo != null) ...[
+                    // ชื่อ-นามสกุล
+                    Text(
+                      '${userInfo?['first_name'] ?? ''} ${userInfo?['last_name'] ?? ''}'.trim(),
+                      style: GoogleFonts.notoSansLao(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    // รหัสนักเรียน
                     if (userInfo?['admission_no'] != null)
                       Container(
                         padding: EdgeInsets.symmetric(
@@ -554,57 +566,13 @@ class _ProfilePageState extends State<ProfilePage>
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            _buildInfoCard(
-              icon: Icons.badge_rounded,
-              iconColor: Colors.blue,
-              title: 'ລະຫັດນັກຮຽນ',
-              value: userInfo?['admission_no']?.toString() ?? 'N/A',
-            ),
-            SizedBox(height: 12),
-            _buildInfoCard(
-              icon: Icons.email_rounded,
-              iconColor: Colors.green,
-              title: 'ອີເມວ',
-              value: userInfo?['email']?.toString() ?? 'N/A',
-            ),
-            if (userInfo?['roll_no'] != null) ...[
-              SizedBox(height: 12),
-              _buildInfoCard(
-                icon: Icons.numbers_rounded,
-                iconColor: Colors.orange,
-                title: 'Roll No',
-                value: userInfo!['roll_no'].toString(),
-              ),
-            ],
-            SizedBox(height: 24),
+            SizedBox(height: 8),
             _buildActionCard(
               icon: Icons.edit_rounded,
               iconColor: Colors.blue,
               title: 'ແກ້ໄຂຂໍ້ມູນສ່ວນຕົວ',
               subtitle: 'ອັບເດດຂໍ້ມູນຂອງທ່ານ',
               onTap: _handleEditProfile,
-            ),
-            SizedBox(height: 12),
-            _buildActionCard(
-              icon: Icons.lock_rounded,
-              iconColor: Colors.orange,
-              title: 'ປ່ຽນລະຫັດຜ່ານ',
-              subtitle: 'ອັບເດດລະຫັດຜ່ານຂອງທ່ານ',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'ຟັງຊັ່ນນີ້ກຳລັງພັດທະນາ',
-                      style: GoogleFonts.notoSansLao(),
-                    ),
-                    backgroundColor: Colors.blue.shade600,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                );
-              },
             ),
             SizedBox(height: 12),
             _buildActionCard(
