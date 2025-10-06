@@ -820,8 +820,8 @@ class _EditProfilePageState extends State<EditProfilePage> with SingleTickerProv
           ],
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(40),
-          bottomRight: Radius.circular(40),
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
         ),
         boxShadow: [
           BoxShadow(

@@ -369,7 +369,7 @@ class _ProfilePageState extends State<ProfilePage>
 
             // Profile Avatar & Info
             Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 24),
+              padding: const EdgeInsets.only(top: 8, bottom: 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -386,13 +386,13 @@ class _ProfilePageState extends State<ProfilePage>
                       ],
                     ),
                     child: CircleAvatar(
-                      radius: 50,
+                      radius: 45,
                       backgroundColor: Colors.white,
                       child: Icon(
                         _isLoggedIn
                             ? Icons.person_rounded
                             : Icons.person_outline_rounded,
-                        size: 50,
+                        size: 45,
                         color: const Color(0xFF07325D),
                       ),
                     ),
