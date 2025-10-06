@@ -85,6 +85,47 @@ class StudentAuthService {
     }
   }
 
+  // Get full profile (รับข้อมูลเต็มจาก /profile endpoint)
+  Future<Map<String, dynamic>?> getProfile() async {
+    try {
+      final token = await TokenService.getToken();
+      
+      if (token == null || token.isEmpty) {
+        debugPrint('❌ No token found');
+        return null;
+      }
+
+      final response = await http.get(
+        Uri.parse(StudentsApiConfig.getStudentProfileUrl()),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      debugPrint('📊 Get profile response: ${response.statusCode}');
+      debugPrint('📄 Profile body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData['success'] == true && jsonData['data'] != null) {
+          debugPrint('✅ Profile fetched successfully');
+          return jsonData['data'] as Map<String, dynamic>;
+        }
+        return null;
+      } else if (response.statusCode == 401) {
+        debugPrint('❌ Token expired or invalid');
+        return null;
+      } else {
+        debugPrint('❌ Failed to fetch profile: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('💥 Error fetching profile: $e');
+      return null;
+    }
+  }
+
   // Update student email (and other profile fields)
   Future<Map<String, dynamic>> updateStudentEmail({
     required String email,
