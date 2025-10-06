@@ -350,7 +350,7 @@ class _GalleryPageState extends State<GalleryPage>
           ),
           child: SafeArea(
             child: Padding(
-              padding: EdgeInsets.all(_basePadding),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
