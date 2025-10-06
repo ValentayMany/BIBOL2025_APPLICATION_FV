@@ -21,7 +21,12 @@ class NewsCategoryFilterWidget extends StatelessWidget {
     final basePadding = _getBasePadding(screenWidth);
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: basePadding, vertical: 20),
+      margin: EdgeInsets.only(
+        left: basePadding,
+        right: basePadding,
+        top: basePadding * 0.8,
+        bottom: basePadding * 0.6,
+      ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: BouncingScrollPhysics(),
