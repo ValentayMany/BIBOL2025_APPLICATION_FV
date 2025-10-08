@@ -1,4 +1,3 @@
-// pages/Home_page.dart - Fixed login state management
 // ignore_for_file: unused_field, use_key_in_widget_constructors, avoid_print, sized_box_for_whitespace
 
 import 'package:BIBOL/models/course/course_model.dart' show CourseModel;
@@ -50,9 +49,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<Topic> _latestNews = [];
   bool _isNewsLoading = true;
   String? _newsErrorMessage;
-
-  // Refresh state
-  bool _isRefreshing = false;
 
   // Search controller
   final TextEditingController _searchController = TextEditingController();

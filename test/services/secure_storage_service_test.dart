@@ -11,12 +11,12 @@ void main() {
       // Clear all data before each test
       await SecureStorageService.clearAll();
     });
-  });
 
-  tearDown() async {
-    // Clean up after each test
-    await SecureStorageService.clearAll();
-  }
+    tearDown() async {
+      // Clean up after each test
+      await SecureStorageService.clearAll();
+    }
+  });
 
   test('should save and retrieve token', () async {
     const testToken = 'test_token_12345';

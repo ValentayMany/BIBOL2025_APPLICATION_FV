@@ -7,8 +7,6 @@ import 'package:BIBOL/utils/logger.dart';
 /// ⚠️ DEPRECATED: This service is kept for backward compatibility
 /// Please use SecureStorageService instead for better security
 class TokenService {
-  static const String _tokenKey = 'auth_token';
-  static const String _userInfoKey = 'user_info';
   static const String _studentIdKey = 'student_id';
 
   static bool _hasMigrated = false;
