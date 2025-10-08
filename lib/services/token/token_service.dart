@@ -1,27 +1,44 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:BIBOL/services/storage/secure_storage_service.dart';
+import 'package:BIBOL/utils/logger.dart';
 
+/// ⚠️ DEPRECATED: This service is kept for backward compatibility
+/// Please use SecureStorageService instead for better security
 class TokenService {
   static const String _tokenKey = 'auth_token';
   static const String _userInfoKey = 'user_info';
   static const String _studentIdKey = 'student_id';
 
+  static bool _hasMigrated = false;
+
+  /// Auto-migrate to SecureStorage on first use
+  static Future<void> _ensureMigrated() async {
+    if (!_hasMigrated) {
+      await SecureStorageService.migrateFromOldService();
+      _hasMigrated = true;
+    }
+  }
+
   // บันทึก Token และข้อมูล Student
+  // ✅ Now using SecureStorageService for better security
   static Future<void> saveToken(String token) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenKey, token);
-      debugPrint('✅ Token saved successfully');
+      await _ensureMigrated();
+      await SecureStorageService.saveToken(token);
+      AppLogger.success('Token saved securely', tag: 'AUTH');
     } catch (e) {
-      debugPrint('❌ Error saving token: $e');
+      AppLogger.error('Error saving token', tag: 'AUTH', error: e);
+      rethrow;
     }
   }
 
   // บันทึกข้อมูล Student (รองรับ Student Model)
+  // ✅ Now using SecureStorageService for better security
   static Future<void> saveUserInfo(Map<String, dynamic> userInfo) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      await _ensureMigrated();
 
       // แปลง Student Model เป็นรูปแบบที่ HomePage/ProfilePage ต้องการ
       Map<String, dynamic> normalizedUserInfo = {
@@ -46,52 +63,38 @@ class TokenService {
         'is_active': userInfo['is_active'] ?? 'yes',
       };
 
-      await prefs.setString(_userInfoKey, jsonEncode(normalizedUserInfo));
+      await SecureStorageService.saveUserInfo(normalizedUserInfo);
 
-      // บันทึก student ID แยกไว้ด้วย
-      if (userInfo['id'] != null) {
-        await prefs.setInt(_studentIdKey, userInfo['id']);
-      }
-
-      debugPrint('✅ User info saved successfully');
-      debugPrint(
-        '👤 Student: ${normalizedUserInfo['first_name']} ${normalizedUserInfo['last_name']}',
+      AppLogger.success(
+        'User info saved: ${normalizedUserInfo['first_name']} ${normalizedUserInfo['last_name']}',
+        tag: 'AUTH',
       );
-      debugPrint('🎫 Student ID: ${normalizedUserInfo['student_id']}');
     } catch (e) {
-      debugPrint('❌ Error saving user info: $e');
+      AppLogger.error('Error saving user info', tag: 'AUTH', error: e);
+      rethrow;
     }
   }
 
   // ดึง Token
+  // ✅ Now using SecureStorageService
   static Future<String?> getToken() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(_tokenKey);
+      await _ensureMigrated();
+      return await SecureStorageService.getToken();
     } catch (e) {
-      debugPrint('❌ Error getting token: $e');
+      AppLogger.error('Error getting token', tag: 'AUTH', error: e);
       return null;
     }
   }
 
   // ดึงข้อมูล User
+  // ✅ Now using SecureStorageService
   static Future<Map<String, dynamic>?> getUserInfo() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userInfoString = prefs.getString(_userInfoKey);
-
-      if (userInfoString != null && userInfoString.isNotEmpty) {
-        final userInfo = jsonDecode(userInfoString) as Map<String, dynamic>;
-        debugPrint(
-          '✅ User info retrieved: ${userInfo['first_name']} ${userInfo['last_name']}',
-        );
-        return userInfo;
-      }
-
-      debugPrint('⚠️ No user info found');
-      return null;
+      await _ensureMigrated();
+      return await SecureStorageService.getUserInfo();
     } catch (e) {
-      debugPrint('❌ Error getting user info: $e');
+      AppLogger.error('Error getting user info', tag: 'AUTH', error: e);
       return null;
     }
   }
@@ -128,38 +131,39 @@ class TokenService {
   }
 
   // ล้างข้อมูลทั้งหมด (Logout)
+  // ✅ Now using SecureStorageService
   static Future<void> clearAll() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_tokenKey);
-      await prefs.remove(_userInfoKey);
-      await prefs.remove(_studentIdKey);
-      debugPrint('✅ All auth data cleared (Logged out)');
+      await SecureStorageService.clearAll();
+      _hasMigrated = false; // Reset migration flag
+      AppLogger.info('All auth data cleared (Logged out)', tag: 'AUTH');
     } catch (e) {
-      debugPrint('❌ Error clearing auth data: $e');
+      AppLogger.error('Error clearing auth data', tag: 'AUTH', error: e);
+      rethrow;
     }
   }
 
   // ล้างเฉพาะ Token
+  // ✅ Now using SecureStorageService
   static Future<void> clearToken() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_tokenKey);
-      debugPrint('✅ Token cleared');
+      await SecureStorageService.deleteToken();
+      AppLogger.info('Token cleared', tag: 'AUTH');
     } catch (e) {
-      debugPrint('❌ Error clearing token: $e');
+      AppLogger.error('Error clearing token', tag: 'AUTH', error: e);
+      rethrow;
     }
   }
 
   // ล้างเฉพาะข้อมูล User
+  // ✅ Now using SecureStorageService
   static Future<void> clearUserInfo() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_userInfoKey);
-      await prefs.remove(_studentIdKey);
-      debugPrint('✅ User info cleared');
+      await SecureStorageService.deleteUserInfo();
+      AppLogger.info('User info cleared', tag: 'AUTH');
     } catch (e) {
-      debugPrint('❌ Error clearing user info: $e');
+      AppLogger.error('Error clearing user info', tag: 'AUTH', error: e);
+      rethrow;
     }
   }
 

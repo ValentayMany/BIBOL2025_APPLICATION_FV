@@ -5,6 +5,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:BIBOL/config/environment.dart';
 import 'package:BIBOL/models/course/course_response.dart';
 
 /// ============================================
@@ -14,13 +15,13 @@ class ApiConfig {
   // Private constructor
   ApiConfig._();
 
-  // Common configurations
-  static const String newsWebsite = 'https://web2025.bibol.edu.la';
-  static const String baseApiV1 = 'https://web2025.bibol.edu.la/api/v1';
+  // Common configurations - now using EnvironmentConfig
+  static String get newsWebsite => EnvironmentConfig.webBaseUrl;
+  static String get baseApiV1 => '${EnvironmentConfig.webBaseUrl}/api/v1';
 
   // Media URLs Configuration
-  static const String imageBaseUrl = '$newsWebsite/uploads/images/';
-  static const String mediaBaseUrl = '$newsWebsite/media/';
+  static String get imageBaseUrl => '$newsWebsite/uploads/images/';
+  static String get mediaBaseUrl => '$newsWebsite/media/';
 
   static var baseUrl;
 
@@ -214,7 +215,8 @@ class StudentsApiConfig {
   // Private constructor
   StudentsApiConfig._();
 
-  static const String baseUrl = 'http://localhost:8000/api';
+  // ✅ Now using EnvironmentConfig instead of hardcoded localhost
+  static String get baseUrl => EnvironmentConfig.apiBaseUrl;
 
   // Students endpoints
   static String getStudentsUrl() => '$baseUrl/students';
