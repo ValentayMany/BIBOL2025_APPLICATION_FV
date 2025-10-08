@@ -5,6 +5,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:BIBOL/config/environment.dart';
 import 'package:BIBOL/models/course/course_response.dart';
 
 /// ============================================
@@ -14,13 +15,13 @@ class ApiConfig {
   // Private constructor
   ApiConfig._();
 
-  // Common configurations
-  static const String newsWebsite = 'https://web2025.bibol.edu.la';
-  static const String baseApiV1 = 'https://web2025.bibol.edu.la/api/v1';
+  // Common configurations - now using EnvironmentConfig
+  static String get newsWebsite => EnvironmentConfig.webBaseUrl;
+  static String get baseApiV1 => '${EnvironmentConfig.webBaseUrl}/api/v1';
 
   // Media URLs Configuration
-  static const String imageBaseUrl = '$newsWebsite/uploads/images/';
-  static const String mediaBaseUrl = '$newsWebsite/media/';
+  static String get imageBaseUrl => '$newsWebsite/uploads/images/';
+  static String get mediaBaseUrl => '$newsWebsite/media/';
 
   static var baseUrl;
 
@@ -210,25 +211,28 @@ class GalleryApiConfig {
 /// ============================================
 /// 🎓 Students API Configuration
 /// ============================================
+/// ============================================
+/// 🎓 Students API Configuration
+/// ============================================
 class StudentsApiConfig {
-  // Private constructor
   StudentsApiConfig._();
 
-  static const String baseUrl = 'http://localhost:8000/api';
+  static String get baseUrl => EnvironmentConfig.apiBaseUrl;
 
-  // Students endpoints
-  static String getStudentsUrl() => '$baseUrl/students';
+  // ✅ เปลี่ยนเป็น /students ตาม Node.js routes
+  static String getStudentsUrl() => '$baseUrl/students/all';
   static String getStudentLoginUrl() => '$baseUrl/students/login';
   static String getStudentByIdUrl(int id) => '$baseUrl/students/$id';
   static String getStudentProfileUrl() => '$baseUrl/students/profile';
   static String updateStudentProfileUrl() => '$baseUrl/students/profile';
+  static String getStudentLogoutUrl() => '$baseUrl/students/logout';
+  static String getStudentVerifyUrl() => '$baseUrl/students/verify';
 
-  // Debug helper
   static void printConfig() {
     debugPrint("=== 🎓 Students API Configuration ===");
     debugPrint("Base URL: $baseUrl");
-    debugPrint("Students URL: ${getStudentsUrl()}");
     debugPrint("Login URL: ${getStudentLoginUrl()}");
+    debugPrint("Profile URL: ${getStudentProfileUrl()}");
     debugPrint("======================================");
   }
 }

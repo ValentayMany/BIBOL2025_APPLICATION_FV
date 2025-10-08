@@ -1,13 +1,28 @@
 // lib/main.dart
 
+import 'package:BIBOL/config/environment.dart';
 import 'package:BIBOL/routes/app_navigator.dart';
 import 'package:BIBOL/routes/app_routes.dart';
 import 'package:BIBOL/routes/route_generator.dart';
+import 'package:BIBOL/services/cache/cache_service.dart';
 import 'package:BIBOL/theme/app_theme.dart';
+import 'package:BIBOL/utils/logger.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Print environment configuration
+  EnvironmentConfig.printConfig();
+
+  // Initialize cache service
+  try {
+    await CacheService.initialize();
+    AppLogger.success('App initialization completed', tag: 'MAIN');
+  } catch (e) {
+    AppLogger.error('Failed to initialize app', tag: 'MAIN', error: e);
+  }
 
   // Set system UI overlay style
   AppTheme.setSystemUIOverlayStyle();
