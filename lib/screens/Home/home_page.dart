@@ -51,9 +51,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool _isNewsLoading = true;
   String? _newsErrorMessage;
 
-  // Refresh state
-  bool _isRefreshing = false;
-
   // Search controller
   final TextEditingController _searchController = TextEditingController();
 

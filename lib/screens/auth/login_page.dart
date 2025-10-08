@@ -16,7 +16,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
-  bool _obscureEmail = false;
 
   late AnimationController _animationController;
   late Animation<double> _animation;
