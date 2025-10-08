@@ -21,9 +21,8 @@ class EnvironmentConfig {
   static String get apiBaseUrl {
     switch (current) {
       case Environment.development:
-        // TODO: Replace with your local machine IP address
-        // Find your IP: ifconfig (Mac/Linux) or ipconfig (Windows)
-        return 'http://192.168.1.100:8000/api'; // ⚠️ Change this to your IP!
+        // ✅ Using ngrok for development
+        return 'https://scalpless-sarai-fractural.ngrok-free.dev/api';
       case Environment.staging:
         return 'https://staging-api.bibol.edu.la/api';
       case Environment.production:
@@ -35,7 +34,8 @@ class EnvironmentConfig {
   static String get webBaseUrl {
     switch (current) {
       case Environment.development:
-        return 'http://192.168.1.100:8000'; // ⚠️ Change this to your IP!
+        // ✅ Using ngrok for development
+        return 'https://scalpless-sarai-fractural.ngrok-free.dev';
       case Environment.staging:
         return 'https://staging.bibol.edu.la';
       case Environment.production:
