@@ -4,10 +4,11 @@
     <!-- Dark blue background matching Dart splash screen -->
     <item android:drawable="@color/splash_background" />
 
-    <!-- Optional: Add your logo here -->
-    <!-- <item>
+    <!-- Banking Institute Logo with proper sizing -->
+    <item>
         <bitmap
             android:gravity="center"
-            android:src="@mipmap/ic_launcher" />
-    </item> -->
+            android:src="@drawable/logo">
+        </bitmap>
+    </item>
 </layer-list>
