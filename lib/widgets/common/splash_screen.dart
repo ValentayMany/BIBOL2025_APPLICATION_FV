@@ -143,12 +143,14 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateToHome() async {
-    // Smooth transition out
-    await _transitionController.forward();
+    try {
+      // Smooth transition out
+      await _transitionController.forward();
 
-    // Navigate with custom transition
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
+      // Navigate with custom transition
+      if (!mounted) return;
+
+      await Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
           transitionDuration: const Duration(milliseconds: 600),
@@ -174,6 +176,12 @@ class _SplashScreenState extends State<SplashScreen>
           },
         ),
       );
+    } catch (e) {
+      print('❌ Navigation error: $e');
+      // Fallback navigation
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     }
   }
 
@@ -187,35 +195,45 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final mediaQuery = MediaQuery.of(context);
-
-    // Enhanced screen detection
-    final isSmallScreen = screenSize.height < 700;
-    final isVerySmallScreen = screenSize.height < 600;
-    final isTablet = screenSize.shortestSide >= 600;
-    final isLandscape = screenSize.width > screenSize.height;
-    final textScaleFactor = mediaQuery.textScaleFactor;
-
-    // Dynamic scaling based on screen type
-    final scaleFactor = isTablet ? 1.3 : (isVerySmallScreen ? 0.8 : 1.0);
-
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
-      body: AnimatedBuilder(
-        animation: _transitionController,
-        builder: (context, child) {
-          return Opacity(
-            opacity: 1.0 - _transitionController.value,
-            child: _buildSplashContent(
-              screenSize,
-              isSmallScreen,
-              scaleFactor,
-              isTablet,
-              isLandscape,
-            ),
-          );
+      body: GestureDetector(
+        onTap: () {
+          // Allow user to skip animation by tapping
+          if (_primaryController.isAnimating || !_transitionController.isAnimating) {
+            _navigateToHome();
+          }
         },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final screenSize = Size(constraints.maxWidth, constraints.maxHeight);
+
+            // Enhanced screen detection
+            final isSmallScreen = screenSize.height < 700;
+            final isVerySmallScreen = screenSize.height < 600;
+            final isTablet = screenSize.shortestSide >= 600;
+            final isLandscape = screenSize.width > screenSize.height;
+
+            // Dynamic scaling based on screen type
+            final scaleFactor = isTablet ? 1.3 : (isVerySmallScreen ? 0.8 : 1.0);
+
+            return AnimatedBuilder(
+              animation: _transitionController,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: 1.0 - _transitionController.value,
+                  child: _buildSplashContent(
+                    screenSize,
+                    isSmallScreen,
+                    scaleFactor,
+                    isTablet,
+                    isLandscape,
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -598,39 +616,77 @@ class _SplashScreenState extends State<SplashScreen>
       right: 20,
       child: FadeTransition(
         opacity: _subtitleAnimation,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            gradient: LinearGradient(
-              colors: [Colors.white.withOpacity(0.08), Colors.transparent],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Tap to continue hint
+            AnimatedBuilder(
+              animation: _loadingAnimation,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: _loadingAnimation.value,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.touch_app,
+                          size: 16,
+                          color: Colors.white.withOpacity(0.5),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Tap to continue',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            color: Colors.white.withOpacity(0.5),
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.15),
-              width: 0.5,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Version 1.0.0',
-                style: GoogleFonts.montserrat(
-                  fontSize: 10,
-                  color: Colors.white.withOpacity(0.6),
-                  fontWeight: FontWeight.w300,
+            // Version info
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                gradient: LinearGradient(
+                  colors: [Colors.white.withOpacity(0.08), Colors.transparent],
+                ),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.15),
+                  width: 0.5,
                 ),
               ),
-              Text(
-                '© 2025 Banking Institute',
-                style: GoogleFonts.montserrat(
-                  fontSize: 10,
-                  color: Colors.white.withOpacity(0.6),
-                  fontWeight: FontWeight.w300,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Version 1.0.0',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10,
+                      color: Colors.white.withOpacity(0.6),
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                  Text(
+                    '© 2025 Banking Institute',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10,
+                      color: Colors.white.withOpacity(0.6),
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
