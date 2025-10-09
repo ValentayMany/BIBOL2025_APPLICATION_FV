@@ -151,6 +151,9 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   void _handleLogout() {
+    // Save reference to ScaffoldMessenger before any async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -209,7 +212,10 @@ class _ProfilePageState extends State<ProfilePage>
               ElevatedButton(
                 onPressed: () async {
                   Navigator.pop(context);
-                  setState(() => _isLoading = true);
+                  
+                  if (mounted) {
+                    setState(() => _isLoading = true);
+                  }
 
                   await TokenService.clearAll();
                   await Future.delayed(const Duration(milliseconds: 100));
@@ -224,7 +230,8 @@ class _ProfilePageState extends State<ProfilePage>
                     _animationController.reset();
                     _animationController.forward();
 
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    // Use the saved reference instead of looking it up from context
+                    scaffoldMessenger.showSnackBar(
                       SnackBar(
                         content: Row(
                           children: [

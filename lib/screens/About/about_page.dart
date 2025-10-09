@@ -86,6 +86,9 @@ class _AboutPageState extends State<AboutPage>
 
   // เพิ่ม method สำหรับ logout
   Future<void> _handleLogout() async {
+    // Save reference to ScaffoldMessenger before any async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     showDialog(
       context: context,
       builder:
@@ -126,7 +129,8 @@ class _AboutPageState extends State<AboutPage>
                   await TokenService.clearAll();
                   await _checkLoginStatus();
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    // Use the saved reference instead of looking it up from context
+                    scaffoldMessenger.showSnackBar(
                       SnackBar(
                         content: Text(
                           'ອອກຈາກລະບົບສຳເລັດ',
