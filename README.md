@@ -16,11 +16,13 @@ A modern, feature-rich mobile application for the Banking Institute of Laos (BIB
 - **🖼️ Photo Gallery** - View institutional photos and events
 - **👤 Student Profile** - Manage your student profile
 - **🔐 Secure Authentication** - Login securely with encrypted storage
+- **🔔 Push Notifications** - Receive real-time updates and announcements
 
 ### 🚀 **Technical Features**
 - ✅ Multi-environment support (Dev, Staging, Production)
 - ✅ Secure token storage with `flutter_secure_storage`
 - ✅ **Automatic token refresh** - Seamlessly refresh expired tokens
+- ✅ **Push Notifications** - Firebase Cloud Messaging integration
 - ✅ API Interceptor with retry mechanism
 - ✅ Offline caching with Hive
 - ✅ Beautiful UI with animations
@@ -60,6 +62,11 @@ shared_preferences: ^2.5.3
 flutter_secure_storage: ^9.2.2
 hive: ^2.2.3
 hive_flutter: ^1.1.0
+
+# Push Notifications
+firebase_core: ^3.6.0
+firebase_messaging: ^15.1.3
+flutter_local_notifications: ^18.0.1
 
 # UI/UX
 google_fonts: ^6.1.0
@@ -375,13 +382,19 @@ For support, please contact:
 
 ## 🗺️ Roadmap
 
-### Version 1.1 (Upcoming)
-- [ ] Push notifications
-- [ ] Offline mode improvements
+### Version 1.2 (Current) ✅
+- [x] Token refresh mechanism
+- [x] Push notifications (Firebase)
+- [x] Comprehensive test coverage (80%+)
+- [x] API interceptor
+
+### Version 1.3 (Upcoming)
 - [ ] Dark mode
 - [ ] Multi-language support (English, Thai)
+- [ ] Offline mode improvements
+- [ ] Enhanced accessibility
 
-### Version 1.2 (Future)
+### Version 1.4 (Future)
 - [ ] Chat feature
 - [ ] Course enrollment
 - [ ] Grade tracking

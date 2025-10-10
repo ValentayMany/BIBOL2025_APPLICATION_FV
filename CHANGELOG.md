@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.2.0] - 2025-10-10 - 🔄 Token Refresh & Test Coverage Update
+## [1.2.0] - 2025-10-10 - 🔄 Token Refresh, Tests & Push Notifications
 
 ### ✨ Added
 
@@ -41,6 +41,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Authentication state tests
   - Error handling tests
 
+#### Push Notifications
+- **PushNotificationService** 🔔
+  - Firebase Cloud Messaging integration
+  - Local notifications support
+  - Foreground/background/terminated state handling
+  - Topic subscription management
+  - Badge count management
+  - Custom notification channels
+
+- **Notification Helper** 🛠️
+  - Navigation from notifications
+  - In-app notification banners
+  - Permission handling
+  - Topic subscription helpers
+  - Backend token management
+
 #### Documentation
 - **Token Refresh Guide** 📚
   - Complete usage documentation
@@ -48,6 +64,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Code examples
   - Migration guide
   - Debugging tips
+
+- **Firebase Setup Guide** 🔥
+  - Step-by-step Firebase configuration
+  - Android & iOS setup
+  - Testing instructions
+  - Troubleshooting guide
+  - Security best practices
 
 ### 🔧 Changed
 
