@@ -307,7 +307,7 @@ class _ProfilePageState extends State<ProfilePage>
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: ModernDrawerWidget(
         key: ValueKey('drawer_$_isLoggedIn'),
         isLoggedIn: _isLoggedIn,

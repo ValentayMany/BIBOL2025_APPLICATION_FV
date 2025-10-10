@@ -278,7 +278,7 @@ class _GalleryPageState extends State<GalleryPage>
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBodyBehindAppBar: true,
       drawer: ModernDrawerWidget(
         isLoggedIn: _isLoggedIn,
