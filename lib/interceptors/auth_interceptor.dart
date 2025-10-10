@@ -33,8 +33,12 @@ class AuthInterceptor {
     Duration? timeout,
   }) async {
     return _makeRequest(
-      () => http.get(url, headers: await _buildHeaders(headers))
-          .timeout(timeout ?? const Duration(seconds: 30)),
+      () async {
+        return http.get(
+          url,
+          headers: await _buildHeaders(headers),
+        ).timeout(timeout ?? const Duration(seconds: 30));
+      },
       url,
       'GET',
       headers,
