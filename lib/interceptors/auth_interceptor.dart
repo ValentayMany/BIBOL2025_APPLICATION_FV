@@ -50,12 +50,14 @@ class AuthInterceptor {
     Duration? timeout,
   }) async {
     return _makeRequest(
-      () => http.post(
-        url,
-        headers: await _buildHeaders(headers),
-        body: body,
-        encoding: encoding,
-      ).timeout(timeout ?? const Duration(seconds: 30)),
+      () async {
+        return http.post(
+          url,
+          headers: await _buildHeaders(headers),
+          body: body,
+          encoding: encoding,
+        ).timeout(timeout ?? const Duration(seconds: 30));
+      },
       url,
       'POST',
       headers,
@@ -73,12 +75,14 @@ class AuthInterceptor {
     Duration? timeout,
   }) async {
     return _makeRequest(
-      () => http.put(
-        url,
-        headers: await _buildHeaders(headers),
-        body: body,
-        encoding: encoding,
-      ).timeout(timeout ?? const Duration(seconds: 30)),
+      () async {
+        return http.put(
+          url,
+          headers: await _buildHeaders(headers),
+          body: body,
+          encoding: encoding,
+        ).timeout(timeout ?? const Duration(seconds: 30));
+      },
       url,
       'PUT',
       headers,
@@ -96,12 +100,14 @@ class AuthInterceptor {
     Duration? timeout,
   }) async {
     return _makeRequest(
-      () => http.delete(
-        url,
-        headers: await _buildHeaders(headers),
-        body: body,
-        encoding: encoding,
-      ).timeout(timeout ?? const Duration(seconds: 30)),
+      () async {
+        return http.delete(
+          url,
+          headers: await _buildHeaders(headers),
+          body: body,
+          encoding: encoding,
+        ).timeout(timeout ?? const Duration(seconds: 30));
+      },
       url,
       'DELETE',
       headers,
