@@ -468,7 +468,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       const SystemUiOverlayStyle(
         statusBarColor: Color(0xFF07325D),
         statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
       ),
     );
 
