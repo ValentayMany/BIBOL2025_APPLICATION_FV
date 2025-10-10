@@ -227,6 +227,7 @@ class StudentsApiConfig {
   static String updateStudentProfileUrl() => '$baseUrl/students/profile';
   static String getStudentLogoutUrl() => '$baseUrl/students/logout';
   static String getStudentVerifyUrl() => '$baseUrl/students/verify';
+  static String getTokenRefreshUrl() => '$baseUrl/students/refresh'; // Token refresh endpoint
 
   static void printConfig() {
     debugPrint("=== 🎓 Students API Configuration ===");

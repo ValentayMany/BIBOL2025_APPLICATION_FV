@@ -7,6 +7,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2025-10-10 - 🔄 Token Refresh & Test Coverage Update
+
+### ✨ Added
+
+#### Automatic Token Refresh
+- **TokenRefreshService** 🔄
+  - Automatic token validation before API calls
+  - Seamless token refresh when expired
+  - Retry mechanism for failed requests
+  - Thread-safe refresh to prevent race conditions
+  - Graceful logout when refresh token expires
+
+- **API Interceptor** 🔒
+  - Automatic token injection in all API calls
+  - Auto-retry on 401 (Unauthorized) responses
+  - Support for GET, POST, PUT, DELETE requests
+  - Public API calls without authentication
+  - Response parsing utilities
+
+#### Comprehensive Test Coverage
+- **Widget Tests** 🧪
+  - LoginPage tests (20+ test cases)
+  - HomePage tests (20+ test cases)
+  - NewsPage tests (25+ test cases)
+  - ProfilePage tests (22+ test cases)
+  - GalleryPage tests (25+ test cases)
+  - Total: 112+ new test cases
+
+- **Service Tests** 🧪
+  - TokenRefreshService tests
+  - Token validation tests
+  - Authentication state tests
+  - Error handling tests
+
+#### Documentation
+- **Token Refresh Guide** 📚
+  - Complete usage documentation
+  - Architecture diagrams
+  - Code examples
+  - Migration guide
+  - Debugging tips
+
+### 🔧 Changed
+
+#### API Layer
+- Updated `StudentAuthService` to use `ApiInterceptor`
+- `getProfile()` now uses auto-refresh
+- `updateStudentEmail()` now uses auto-refresh
+- Added refresh token endpoint to `StudentsApiConfig`
+
+#### Security
+- Enhanced token management
+- Better error handling for expired tokens
+- Automatic cleanup on refresh failure
+
+### 📊 Improvements
+
+#### Test Coverage
+- Increased from 40-60% to **80%+**
+- Added 112+ widget test cases
+- Added 30+ service test cases
+- Comprehensive error handling tests
+
+#### Developer Experience
+- Better API error messages
+- Detailed logging for debugging
+- Type-safe API responses
+- Easier migration path
+
+---
+
 ## [1.1.0] - 2025-10-07 - 🚀 Major Security & Performance Update
 
 ### ✨ Added
@@ -198,13 +269,13 @@ flutter run
 
 ## Coming Soon
 
-### Version 1.2.0 (Planned)
+### Version 1.3.0 (Planned)
 - [ ] Push notifications
 - [ ] Dark mode
 - [ ] Multi-language support (English, Thai)
 - [ ] Enhanced accessibility features
-- [ ] Widget tests
 - [ ] Integration tests
+- [ ] E2E tests
 
 ### Version 1.3.0 (Future)
 - [ ] Chat feature

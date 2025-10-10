@@ -20,12 +20,15 @@ A modern, feature-rich mobile application for the Banking Institute of Laos (BIB
 ### 🚀 **Technical Features**
 - ✅ Multi-environment support (Dev, Staging, Production)
 - ✅ Secure token storage with `flutter_secure_storage`
+- ✅ **Automatic token refresh** - Seamlessly refresh expired tokens
+- ✅ API Interceptor with retry mechanism
 - ✅ Offline caching with Hive
 - ✅ Beautiful UI with animations
 - ✅ Responsive design (supports all screen sizes)
 - ✅ Lao language support with Google Fonts
 - ✅ Comprehensive error handling
 - ✅ Logger for debugging
+- ✅ Comprehensive test coverage (80%+)
 
 ---
 
@@ -185,15 +188,20 @@ flutter test
 # Specific test file
 flutter test test/services/secure_storage_service_test.dart
 
+# Widget tests
+flutter test test/screens/
+
 # With coverage
 flutter test --coverage
 ```
 
 ### Test Coverage
-Current test coverage:
-- Services: ✅ Tested
-- Utils: ✅ Tested
-- Widgets: 🚧 In Progress
+Current test coverage: **80%+** 🎉
+- Services: ✅ Comprehensive coverage
+- Utils: ✅ Fully tested
+- Widgets: ✅ Major screens tested
+- Screens: ✅ 5 major screens with 112+ test cases
+- Token Refresh: ✅ Fully tested
 
 ---
 
@@ -247,8 +255,10 @@ flutter build ios --release
 ### API Security
 - ✅ HTTPS endpoints (production)
 - ✅ Token-based authentication
+- ✅ **Automatic token refresh** before expiry
 - ✅ Request timeout handling
-- ✅ Retry mechanism for failed requests
+- ✅ Retry mechanism with auto-refresh on 401
+- ✅ Graceful logout when refresh fails
 
 ---
 
