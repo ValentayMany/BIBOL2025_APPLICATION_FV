@@ -80,9 +80,6 @@ class HeaderWidget extends StatelessWidget {
                     screenWidth: screenWidth,
                   ),
                   Spacer(),
-                  // 🌙 Theme Toggle - NEW!
-                  ThemeToggleWidget(showLabel: false),
-                  const SizedBox(width: 8),
                   if (isLoggedIn && onLogoutPressed != null)
                     SharedHeaderButton(
                       icon: Icons.power_settings_new_rounded,

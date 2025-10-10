@@ -364,9 +364,6 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                   Row(
                     children: [
-                      // 🌙 Theme Toggle Button - NEW!
-                      ThemeToggleWidget(showLabel: false),
-                      const SizedBox(width: 8),
                       if (_isLoggedIn)
                         SharedHeaderButton(
                           icon: Icons.edit_rounded,
