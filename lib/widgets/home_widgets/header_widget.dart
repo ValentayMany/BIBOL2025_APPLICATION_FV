@@ -49,12 +49,12 @@ class HeaderWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFF06304F), Color(0xFF07325D), Color(0xFF0A4A85)],
         ),
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
@@ -62,7 +62,7 @@ class HeaderWidget extends StatelessWidget {
           BoxShadow(
             color: Color(0xFF07325D).withOpacity(0.4),
             blurRadius: 25,
-            offset: Offset(0, 12),
+            offset: const Offset(0, 12),
           ),
         ],
       ),

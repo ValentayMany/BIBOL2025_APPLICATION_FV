@@ -1,4 +1,4 @@
-// widgets/home_widgets/course_card_widget.dart - Premium Design
+// widgets/home_widgets/course_card_widget.dart - Premium Design with Dark Mode Support
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -169,7 +169,7 @@ class CourseCardWidget extends StatelessWidget {
                     style: GoogleFonts.notoSansLao(
                       fontSize: _bodyFontSize,
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFF07325D),
+                      color: Color(0xFF07325D),
                       height: 1.3,
                       letterSpacing: 0.3,
                     ),
