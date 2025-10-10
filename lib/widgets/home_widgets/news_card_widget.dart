@@ -1,4 +1,4 @@
-// widgets/home_widgets/news_card_widget.dart - Premium Design
+// widgets/home_widgets/news_card_widget.dart - Premium Design with Dark Mode Support
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:BIBOL/models/topic/topic_model.dart';
@@ -73,10 +73,12 @@ class NewsCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return isFeatured ? _buildFeaturedNewsCard() : _buildCompactNewsCard();
+    return isFeatured ? _buildFeaturedNewsCard(context) : _buildCompactNewsCard(context);
   }
 
-  Widget _buildFeaturedNewsCard() {
+  Widget _buildFeaturedNewsCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     final cardHeight =
         _isExtraSmallScreen
             ? 160.0
@@ -88,33 +90,29 @@ class NewsCardWidget extends StatelessWidget {
             ? 280.0
             : 250.0;
 
-    return Builder(
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        
-        return Container(
-          height: cardHeight,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark 
-                  ? [Color(0xFF2C2C2C), Color(0xFF1E1E1E)]
-                  : [Colors.white, Color(0xFFFAFBFF)],
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Color(0xFF10B981).withOpacity(isDark ? 0.3 : 0.2),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (isDark ? Colors.black : Color(0xFF10B981)).withOpacity(0.15),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+    return Container(
+      height: cardHeight,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark 
+              ? [Color(0xFF2C2C2C), Color(0xFF1E1E1E)]
+              : [Colors.white, Color(0xFFFAFBFF)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Color(0xFF10B981).withOpacity(isDark ? 0.3 : 0.2),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : Color(0xFF10B981)).withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
+        ],
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -122,14 +120,14 @@ class NewsCardWidget extends StatelessWidget {
           onTap: onTap,
           child:
               _isExtraSmallScreen || _isSmallScreen
-                  ? _buildVerticalLayout(cardHeight)
-                  : _buildHorizontalLayout(cardHeight),
+                  ? _buildVerticalLayout(context, cardHeight, isDark)
+                  : _buildHorizontalLayout(context, cardHeight, isDark),
         ),
       ),
     );
   }
 
-  Widget _buildVerticalLayout(double cardHeight) {
+  Widget _buildVerticalLayout(BuildContext context, double cardHeight, bool isDark) {
     return Column(
       children: [
         Stack(
@@ -198,7 +196,7 @@ class NewsCardWidget extends StatelessWidget {
                     style: GoogleFonts.notoSansLao(
                       fontSize: _bodyFontSize,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF07325D),
+                      color: isDark ? Colors.white : Color(0xFF07325D),
                       height: 1.3,
                       letterSpacing: 0.3,
                     ),
@@ -213,7 +211,7 @@ class NewsCardWidget extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: isDark ? Colors.grey.shade800 : Colors.grey[100],
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
@@ -222,14 +220,14 @@ class NewsCardWidget extends StatelessWidget {
                           Icon(
                             Icons.visibility_rounded,
                             size: _captionFontSize,
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.grey.shade400 : Colors.grey[600],
                           ),
                           SizedBox(width: 4),
                           Text(
                             '${news.visits}',
                             style: GoogleFonts.notoSansLao(
                               fontSize: _captionFontSize * 0.9,
-                              color: Colors.grey[600],
+                              color: isDark ? Colors.grey.shade400 : Colors.grey[600],
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -284,7 +282,7 @@ class NewsCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildHorizontalLayout(double cardHeight) {
+  Widget _buildHorizontalLayout(BuildContext context, double cardHeight, bool isDark) {
     return Row(
       children: [
         Stack(
@@ -357,7 +355,7 @@ class NewsCardWidget extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: isDark ? Colors.grey.shade800 : Colors.grey[100],
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
@@ -366,14 +364,14 @@ class NewsCardWidget extends StatelessWidget {
                           Icon(
                             Icons.visibility_rounded,
                             size: _captionFontSize,
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.grey.shade400 : Colors.grey[600],
                           ),
                           SizedBox(width: 4),
                           Text(
                             '${news.visits}',
                             style: GoogleFonts.notoSansLao(
                               fontSize: _captionFontSize * 0.9,
-                              color: Colors.grey[600],
+                              color: isDark ? Colors.grey.shade400 : Colors.grey[600],
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -388,7 +386,7 @@ class NewsCardWidget extends StatelessWidget {
                   style: GoogleFonts.notoSansLao(
                     fontSize: _bodyFontSize * 1.2,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF07325D),
+                    color: isDark ? Colors.white : Color(0xFF07325D),
                     height: 1.3,
                     letterSpacing: 0.3,
                   ),
@@ -401,7 +399,7 @@ class NewsCardWidget extends StatelessWidget {
                     _stripHtmlTags(news.details),
                     style: GoogleFonts.notoSansLao(
                       fontSize: _bodyFontSize * 0.9,
-                      color: Colors.grey[600],
+                      color: isDark ? Colors.grey.shade400 : Colors.grey[600],
                       height: 1.5,
                       fontWeight: FontWeight.w500,
                     ),
@@ -462,7 +460,9 @@ class NewsCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCompactNewsCard() {
+  Widget _buildCompactNewsCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     final cardHeight =
         _isExtraSmallScreen
             ? 180.0
@@ -470,33 +470,29 @@ class NewsCardWidget extends StatelessWidget {
             ? 200.0
             : 220.0;
 
-    return Builder(
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        
-        return Container(
-          height: cardHeight,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [Color(0xFF2C2C2C), Color(0xFF1E1E1E)]
-                  : [Colors.white, Color(0xFFFAFBFF)],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: (isDark ? Colors.grey.shade700 : Color(0xFF07325D)).withOpacity(0.1),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (isDark ? Colors.black : Color(0xFF07325D)).withOpacity(0.08),
-                blurRadius: 15,
-                offset: const Offset(0, 6),
-              ),
-            ],
+    return Container(
+      height: cardHeight,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [Color(0xFF2C2C2C), Color(0xFF1E1E1E)]
+              : [Colors.white, Color(0xFFFAFBFF)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: (isDark ? Colors.grey.shade700 : Color(0xFF07325D)).withOpacity(0.1),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : Color(0xFF07325D)).withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
           ),
+        ],
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -554,7 +550,7 @@ class NewsCardWidget extends StatelessWidget {
                           style: GoogleFonts.notoSansLao(
                             fontSize: _bodyFontSize,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF07325D),
+                            color: isDark ? Colors.white : Color(0xFF07325D),
                             height: 1.3,
                             letterSpacing: 0.3,
                           ),
@@ -571,7 +567,7 @@ class NewsCardWidget extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: isDark ? Colors.grey.shade800 : Colors.grey[100],
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Row(
@@ -580,14 +576,14 @@ class NewsCardWidget extends StatelessWidget {
                                 Icon(
                                   Icons.visibility_rounded,
                                   size: _captionFontSize,
-                                  color: Colors.grey[600],
+                                  color: isDark ? Colors.grey.shade400 : Colors.grey[600],
                                 ),
                                 SizedBox(width: 4),
                                 Text(
                                   '${news.visits}',
                                   style: GoogleFonts.notoSansLao(
                                     fontSize: _captionFontSize * 0.9,
-                                    color: Colors.grey[600],
+                                    color: isDark ? Colors.grey.shade400 : Colors.grey[600],
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
