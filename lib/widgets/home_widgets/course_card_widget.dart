@@ -56,6 +56,8 @@ class CourseCardWidget extends StatelessWidget {
             : _isSmallScreen
             ? 160.0
             : 180.0;
+    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       height: cardHeight,
@@ -63,16 +65,18 @@ class CourseCardWidget extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.white, Color(0xFFFAFBFF)],
+          colors: isDark
+              ? [Color(0xFF2C2C2C), Color(0xFF1E1E1E)]
+              : [Colors.white, Color(0xFFFAFBFF)],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Color(0xFF07325D).withOpacity(0.1),
+          color: (isDark ? Colors.grey.shade700 : Color(0xFF07325D)).withOpacity(0.1),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFF07325D).withOpacity(0.08),
+            color: (isDark ? Colors.black : Color(0xFF07325D)).withOpacity(0.08),
             blurRadius: 15,
             offset: const Offset(0, 6),
           ),

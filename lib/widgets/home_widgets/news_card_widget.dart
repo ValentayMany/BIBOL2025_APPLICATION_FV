@@ -88,27 +88,33 @@ class NewsCardWidget extends StatelessWidget {
             ? 280.0
             : 250.0;
 
-    return Container(
-      height: cardHeight,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Color(0xFFFAFBFF)],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Color(0xFF10B981).withOpacity(0.2),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0xFF10B981).withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        
+        return Container(
+          height: cardHeight,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark 
+                  ? [Color(0xFF2C2C2C), Color(0xFF1E1E1E)]
+                  : [Colors.white, Color(0xFFFAFBFF)],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Color(0xFF10B981).withOpacity(isDark ? 0.3 : 0.2),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (isDark ? Colors.black : Color(0xFF10B981)).withOpacity(0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
           ),
-        ],
-      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -464,27 +470,33 @@ class NewsCardWidget extends StatelessWidget {
             ? 200.0
             : 220.0;
 
-    return Container(
-      height: cardHeight,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Color(0xFFFAFBFF)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Color(0xFF07325D).withOpacity(0.1),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0xFF07325D).withOpacity(0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        
+        return Container(
+          height: cardHeight,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? [Color(0xFF2C2C2C), Color(0xFF1E1E1E)]
+                  : [Colors.white, Color(0xFFFAFBFF)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: (isDark ? Colors.grey.shade700 : Color(0xFF07325D)).withOpacity(0.1),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (isDark ? Colors.black : Color(0xFF07325D)).withOpacity(0.08),
+                blurRadius: 15,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ],
-      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(

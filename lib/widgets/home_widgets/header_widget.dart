@@ -48,12 +48,16 @@ class HeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF06304F), Color(0xFF07325D), Color(0xFF0A4A85)],
+          colors: isDark
+              ? [Color(0xFF1E1E1E), Color(0xFF2C2C2C), Color(0xFF3A3A3A)]
+              : [Color(0xFF06304F), Color(0xFF07325D), Color(0xFF0A4A85)],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),
@@ -61,7 +65,7 @@ class HeaderWidget extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFF07325D).withOpacity(0.4),
+            color: (isDark ? Colors.black : Color(0xFF07325D)).withOpacity(0.4),
             blurRadius: 25,
             offset: Offset(0, 12),
           ),
