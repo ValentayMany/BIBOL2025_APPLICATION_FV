@@ -335,16 +335,12 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildHeader() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: isDark
-              ? [Color(0xFF1E1E1E), Color(0xFF2C2C2C)]
-              : [Color(0xFF07325D), Color(0xFF0A4A85)],
+          colors: [Color(0xFF07325D), Color(0xFF0A4A85)],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),

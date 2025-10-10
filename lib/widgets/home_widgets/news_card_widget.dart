@@ -1,4 +1,4 @@
-// widgets/home_widgets/news_card_widget.dart - Premium Design with Dark Mode Support
+// widgets/home_widgets/news_card_widget.dart - Premium Design
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:BIBOL/models/topic/topic_model.dart';
@@ -73,12 +73,10 @@ class NewsCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return isFeatured ? _buildFeaturedNewsCard(context) : _buildCompactNewsCard(context);
+    return isFeatured ? _buildFeaturedNewsCard() : _buildCompactNewsCard();
   }
 
-  Widget _buildFeaturedNewsCard(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+  Widget _buildFeaturedNewsCard() {
     final cardHeight =
         _isExtraSmallScreen
             ? 160.0
@@ -118,14 +116,14 @@ class NewsCardWidget extends StatelessWidget {
           onTap: onTap,
           child:
               _isExtraSmallScreen || _isSmallScreen
-                  ? _buildVerticalLayout(context, cardHeight)
-                  : _buildHorizontalLayout(context, cardHeight),
+                  ? _buildVerticalLayout(cardHeight)
+                  : _buildHorizontalLayout(cardHeight),
         ),
       ),
     );
   }
 
-  Widget _buildVerticalLayout(BuildContext context, double cardHeight, bool isDark) {
+  Widget _buildVerticalLayout(double cardHeight) {
     return Column(
       children: [
         Stack(
@@ -209,7 +207,7 @@ class NewsCardWidget extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.grey.shade800 : Colors.grey[100],
+                        color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
@@ -218,14 +216,14 @@ class NewsCardWidget extends StatelessWidget {
                           Icon(
                             Icons.visibility_rounded,
                             size: _captionFontSize,
-                            color: isDark ? Colors.grey.shade400 : Colors.grey[600],
+                            color: Colors.grey[600],
                           ),
                           SizedBox(width: 4),
                           Text(
                             '${news.visits}',
                             style: GoogleFonts.notoSansLao(
                               fontSize: _captionFontSize * 0.9,
-                              color: isDark ? Colors.grey.shade400 : Colors.grey[600],
+                              color: Colors.grey[600],
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -674,13 +672,3 @@ class NewsCardWidget extends StatelessWidget {
     );
   }
 }
-    );
-  }
-}
- color: Colors.white.withOpacity(0.7),
-        ),
-      ),
-    );
-  }
-}
-
