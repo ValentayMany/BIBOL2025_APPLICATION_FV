@@ -42,6 +42,8 @@ class AuthInterceptor {
       url,
       'GET',
       headers,
+      null, // GET ไม่มี body
+      null, // GET ไม่มี encoding
     );
   }
 
