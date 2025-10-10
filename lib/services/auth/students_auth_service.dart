@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:BIBOL/config/bibol_api.dart';
 import 'package:BIBOL/models/students/student_model.dart';
 import 'package:BIBOL/services/token/token_service.dart';
+import 'package:BIBOL/services/auth/api_interceptor.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -86,21 +87,13 @@ class StudentAuthService {
   }
 
   // Get full profile (รับข้อมูลเต็มจาก /profile endpoint)
+  // ✅ ใช้ ApiInterceptor สำหรับ auto token refresh
   Future<Map<String, dynamic>?> getProfile() async {
     try {
-      final token = await TokenService.getToken();
-
-      if (token == null || token.isEmpty) {
-        debugPrint('❌ No token found');
-        return null;
-      }
-
-      final response = await http.get(
-        Uri.parse(StudentsApiConfig.getStudentProfileUrl()),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+      // Use ApiInterceptor which handles token refresh automatically
+      final response = await ApiInterceptor.get(
+        StudentsApiConfig.getStudentProfileUrl(),
+        timeout: const Duration(seconds: 30),
       );
 
       debugPrint('📊 Get profile response: ${response.statusCode}');
@@ -114,7 +107,7 @@ class StudentAuthService {
         }
         return null;
       } else if (response.statusCode == 401) {
-        debugPrint('❌ Token expired or invalid');
+        debugPrint('❌ Token expired or invalid (after refresh attempt)');
         return null;
       } else {
         debugPrint('❌ Failed to fetch profile: ${response.statusCode}');
@@ -127,6 +120,7 @@ class StudentAuthService {
   }
 
   // Update student email (and other profile fields)
+  // ✅ ใช้ ApiInterceptor สำหรับ auto token refresh
   Future<Map<String, dynamic>> updateStudentEmail({
     required String email,
   }) async {
@@ -134,25 +128,11 @@ class StudentAuthService {
       debugPrint('📝 Attempting to update email...');
       debugPrint('📧 New Email: $email');
 
-      // Get token for authentication (required by backend)
-      final token = await TokenService.getToken();
-
-      if (token == null || token.isEmpty) {
-        return {
-          'success': false,
-          'message': 'ไม่พบ Token กรุณาเข้าสู่ระบบใหม่',
-        };
-      }
-
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
-
-      final response = await http.put(
-        Uri.parse(StudentsApiConfig.updateStudentProfileUrl()),
-        headers: headers,
-        body: jsonEncode({'email': email}),
+      // Use ApiInterceptor which handles token refresh automatically
+      final response = await ApiInterceptor.put(
+        StudentsApiConfig.updateStudentProfileUrl(),
+        body: {'email': email},
+        timeout: const Duration(seconds: 30),
       );
 
       debugPrint('📊 Update response status: ${response.statusCode}');
@@ -187,7 +167,7 @@ class StudentAuthService {
           'message': jsonData['message'] ?? 'ข้อมูลไม่ถูกต้อง',
         };
       } else if (response.statusCode == 401) {
-        // Unauthorized - token expired or invalid
+        // Unauthorized - token expired (even after refresh attempt)
         return {
           'success': false,
           'message': 'Token หมดอายุ กรุณาเข้าสู่ระบบใหม่',
