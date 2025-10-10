@@ -227,12 +227,16 @@ class StudentsApiConfig {
   static String updateStudentProfileUrl() => '$baseUrl/students/profile';
   static String getStudentLogoutUrl() => '$baseUrl/students/logout';
   static String getStudentVerifyUrl() => '$baseUrl/students/verify';
+  
+  // 🔄 Token Refresh - NEW!
+  static String refreshTokenUrl() => '$baseUrl/students/refresh-token';
 
   static void printConfig() {
     debugPrint("=== 🎓 Students API Configuration ===");
     debugPrint("Base URL: $baseUrl");
     debugPrint("Login URL: ${getStudentLoginUrl()}");
     debugPrint("Profile URL: ${getStudentProfileUrl()}");
+    debugPrint("Refresh Token URL: ${refreshTokenUrl()}");
     debugPrint("======================================");
   }
 }
