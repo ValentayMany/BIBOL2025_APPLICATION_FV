@@ -223,8 +223,6 @@ class TokenRefreshService {
 
   /// Wait for ongoing refresh to complete
   static Future<bool> _waitForRefresh() async {
-    // Create a completer to wait for refresh result
-    final completer = <Function>[];
     bool result = false;
 
     // Add callback to pending requests
