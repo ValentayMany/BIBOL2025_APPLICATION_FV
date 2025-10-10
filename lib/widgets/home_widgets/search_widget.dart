@@ -77,8 +77,6 @@ class _SearchWidgetState extends State<SearchWidget>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: _basePadding,
@@ -93,8 +91,8 @@ class _SearchWidgetState extends State<SearchWidget>
             BoxShadow(
               color:
                   _isFocused
-                      ? (isDark ? Colors.blue : Color(0xFF07325D)).withOpacity(0.25)
-                      : (isDark ? Colors.black87 : Colors.black).withOpacity(0.1),
+                      ? Color(0xFF07325D).withOpacity(0.25)
+                      : Colors.black.withOpacity(0.1),
               blurRadius: _isFocused ? 20 : 15,
               offset: Offset(0, _isFocused ? 6 : 4),
             ),
@@ -110,22 +108,17 @@ class _SearchWidgetState extends State<SearchWidget>
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: isDark
-                      ? [
-                          Color(0xFF2C2C2C),
-                          _isFocused ? Color(0xFF3A3A3A) : Color(0xFF2C2C2C),
-                        ]
-                      : [
-                          Colors.white,
-                          _isFocused ? Color(0xFFF8FAFF) : Colors.white,
-                        ],
+                  colors: [
+                    Colors.white,
+                    _isFocused ? Color(0xFFF8FAFF) : Colors.white,
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
                   color:
                       _isFocused
-                          ? (isDark ? Colors.blue : Color(0xFF07325D)).withOpacity(0.3)
-                          : (isDark ? Colors.grey.shade700 : Colors.grey).withOpacity(0.2),
+                          ? Color(0xFF07325D).withOpacity(0.3)
+                          : Colors.grey.withOpacity(0.2),
                   width: _isFocused ? 2 : 1.5,
                 ),
               ),
@@ -139,7 +132,7 @@ class _SearchWidgetState extends State<SearchWidget>
                 style: GoogleFonts.notoSansLao(
                   fontSize: _bodyFontSize,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Color(0xFF07325D),
+                  color: Color(0xFF07325D),
                 ),
                 decoration: InputDecoration(
                   hintText:
@@ -149,7 +142,7 @@ class _SearchWidgetState extends State<SearchWidget>
                           ? 'ຄົ້ນຫາຫຼັກສູດ...'
                           : 'ຄົ້ນຫາຫຼັກສູດ ຫຼື ຂ່າວສານ...',
                   hintStyle: GoogleFonts.notoSansLao(
-                    color: isDark ? Colors.grey.shade600 : Colors.grey[400],
+                    color: Colors.grey[400],
                     fontSize: _bodyFontSize,
                     fontWeight: FontWeight.w500,
                   ),

@@ -60,8 +60,6 @@ class ModernDrawerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     final drawerWidth =
         screenWidth *
         (_isExtraSmallScreen
@@ -74,24 +72,17 @@ class ModernDrawerWidget extends StatelessWidget {
       backgroundColor: Colors.transparent,
       width: drawerWidth,
       child: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    Color(0xFF1E1E1E),
-                    Color(0xFF2C2C2C),
-                    Color(0xFF3A3A3A),
-                    Color(0xFF4A4A4A),
-                  ]
-                : [
-                    Color(0xFF06304F),
-                    Color(0xFF07325D),
-                    Color(0xFF0A4A85),
-                    Color(0xFF0D5299),
-                  ],
-            stops: const [0.0, 0.3, 0.7, 1.0],
+            colors: [
+              Color(0xFF06304F),
+              Color(0xFF07325D),
+              Color(0xFF0A4A85),
+              Color(0xFF0D5299),
+            ],
+            stops: [0.0, 0.3, 0.7, 1.0],
           ),
         ),
         child: SafeArea(

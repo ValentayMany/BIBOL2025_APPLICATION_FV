@@ -1,6 +1,5 @@
 // widgets/home_widgets/header_widget.dart - Premium Design
 import 'package:BIBOL/widgets/shared/shared_header_button.dart';
-import 'package:BIBOL/widgets/settings/theme_toggle_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -48,26 +47,22 @@ class HeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isDark
-              ? [Color(0xFF1E1E1E), Color(0xFF2C2C2C), Color(0xFF3A3A3A)]
-              : [Color(0xFF06304F), Color(0xFF07325D), Color(0xFF0A4A85)],
+          colors: [Color(0xFF06304F), Color(0xFF07325D), Color(0xFF0A4A85)],
         ),
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Color(0xFF07325D)).withOpacity(0.4),
+            color: Color(0xFF07325D).withOpacity(0.4),
             blurRadius: 25,
-            offset: Offset(0, 12),
+            offset: const Offset(0, 12),
           ),
         ],
       ),
