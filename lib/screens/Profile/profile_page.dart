@@ -2,6 +2,9 @@ import 'package:BIBOL/services/token/token_service.dart';
 import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
 import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
 import 'package:BIBOL/widgets/shared/shared_header_button.dart';
+import 'package:BIBOL/widgets/settings/theme_toggle_widget.dart';
+import 'package:BIBOL/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -362,14 +365,21 @@ class _ProfilePageState extends State<ProfilePage>
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                     screenWidth: _screenWidth,
                   ),
-                  if (_isLoggedIn)
-                    SharedHeaderButton(
-                      icon: Icons.edit_rounded,
-                      onPressed: _handleEditProfile,
-                      screenWidth: _screenWidth,
-                    )
-                  else
-                    const SizedBox(width: 56),
+                  Row(
+                    children: [
+                      // 🌙 Theme Toggle Button - NEW!
+                      ThemeToggleWidget(showLabel: false),
+                      const SizedBox(width: 8),
+                      if (_isLoggedIn)
+                        SharedHeaderButton(
+                          icon: Icons.edit_rounded,
+                          onPressed: _handleEditProfile,
+                          screenWidth: _screenWidth,
+                        )
+                      else
+                        const SizedBox(width: 56),
+                    ],
+                  ),
                 ],
               ),
             ),

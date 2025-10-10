@@ -1,5 +1,6 @@
 // widgets/home_widgets/header_widget.dart - Premium Design
 import 'package:BIBOL/widgets/shared/shared_header_button.dart';
+import 'package:BIBOL/widgets/settings/theme_toggle_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -80,6 +81,9 @@ class HeaderWidget extends StatelessWidget {
                     screenWidth: screenWidth,
                   ),
                   Spacer(),
+                  // 🌙 Theme Toggle - NEW!
+                  ThemeToggleWidget(showLabel: false),
+                  const SizedBox(width: 8),
                   if (isLoggedIn && onLogoutPressed != null)
                     SharedHeaderButton(
                       icon: Icons.power_settings_new_rounded,
