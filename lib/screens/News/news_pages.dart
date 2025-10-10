@@ -392,6 +392,9 @@ class _NewsListPageState extends State<NewsListPage>
   }
 
   Future<void> _handleLogout() async {
+    // Save reference to ScaffoldMessenger before any async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     showDialog(
       context: context,
       builder:
@@ -450,7 +453,8 @@ class _NewsListPageState extends State<NewsListPage>
                   await _checkLoginStatus();
 
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    // Use the saved reference instead of looking it up from context
+                    scaffoldMessenger.showSnackBar(
                       SnackBar(
                         content: Row(
                           children: [

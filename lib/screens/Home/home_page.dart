@@ -234,6 +234,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<void> _handleLogout() async {
+    // Save reference to ScaffoldMessenger before any async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     showDialog(
       context: context,
       builder:
@@ -289,7 +292,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     _fadeController.forward();
                     _slideController.forward();
 
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    // Use the saved reference instead of looking it up from context
+                    scaffoldMessenger.showSnackBar(
                       SnackBar(
                         content: Row(
                           children: [

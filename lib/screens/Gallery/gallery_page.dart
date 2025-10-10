@@ -175,6 +175,9 @@ class _GalleryPageState extends State<GalleryPage>
   }
 
   Future<void> _handleLogout() async {
+    // Save reference to ScaffoldMessenger before any async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     showDialog(
       context: context,
       builder:
@@ -228,7 +231,8 @@ class _GalleryPageState extends State<GalleryPage>
                   await TokenService.clearAll();
                   await _checkLoginStatus();
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    // Use the saved reference instead of looking it up from context
+                    scaffoldMessenger.showSnackBar(
                       SnackBar(
                         content: Text(
                           'ອອກຈາກລະບົບສຳເລັດ',

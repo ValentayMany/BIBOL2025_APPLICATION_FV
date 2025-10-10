@@ -388,6 +388,9 @@ class _EditProfilePageState extends State<EditProfilePage>
   }
 
   Future<void> _saveProfile() async {
+    // Save reference to ScaffoldMessenger before any async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     setState(() => _isSaving = true);
 
     try {
@@ -409,8 +412,8 @@ class _EditProfilePageState extends State<EditProfilePage>
         setState(() => _isSaving = false);
 
         if (result['success'] == true) {
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
+          // Show success message using the saved reference
+          scaffoldMessenger.showSnackBar(
             SnackBar(
               content: Row(
                 children: [
@@ -437,8 +440,8 @@ class _EditProfilePageState extends State<EditProfilePage>
           // Go back to profile page
           Navigator.pop(context, true);
         } else {
-          // Show error message from server
-          ScaffoldMessenger.of(context).showSnackBar(
+          // Show error message from server using the saved reference
+          scaffoldMessenger.showSnackBar(
             SnackBar(
               content: Row(
                 children: [
@@ -466,7 +469,8 @@ class _EditProfilePageState extends State<EditProfilePage>
       if (mounted) {
         setState(() => _isSaving = false);
 
-        ScaffoldMessenger.of(context).showSnackBar(
+        // Use the saved reference instead of looking it up from context
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Row(
               children: [
