@@ -9,6 +9,7 @@ class CourseModel {
     required this.title,
     required this.details,
     this.icon,
+    String? description,
   });
 
   factory CourseModel.fromJson(Map<String, dynamic> json) {

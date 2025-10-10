@@ -336,7 +336,7 @@ class _ProfilePageState extends State<ProfilePage>
 
   Widget _buildHeader() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -362,14 +362,18 @@ class _ProfilePageState extends State<ProfilePage>
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                     screenWidth: _screenWidth,
                   ),
-                  if (_isLoggedIn)
-                    SharedHeaderButton(
-                      icon: Icons.edit_rounded,
-                      onPressed: _handleEditProfile,
-                      screenWidth: _screenWidth,
-                    )
-                  else
-                    const SizedBox(width: 56),
+                  Row(
+                    children: [
+                      if (_isLoggedIn)
+                        SharedHeaderButton(
+                          icon: Icons.edit_rounded,
+                          onPressed: _handleEditProfile,
+                          screenWidth: _screenWidth,
+                        )
+                      else
+                        const SizedBox(width: 56),
+                    ],
+                  ),
                 ],
               ),
             ),

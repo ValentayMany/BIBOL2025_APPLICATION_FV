@@ -168,7 +168,7 @@ class _AboutPageState extends State<AboutPage>
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: ModernDrawerWidget(
         isLoggedIn: _isLoggedIn,
         userInfo: _userInfo,

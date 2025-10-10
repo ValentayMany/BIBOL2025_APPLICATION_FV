@@ -474,7 +474,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: ModernDrawerWidget(
         key: ValueKey('drawer_$_isLoggedIn'), // เพิ่ม key เพื่อบังคับ rebuild
         isLoggedIn: _isLoggedIn,
@@ -492,7 +492,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               : SafeArea(
                 top: false,
                 child: Container(
-                  color: const Color(0xFFF8FAFF),
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   child: CustomScrollView(
                     physics: const BouncingScrollPhysics(),
                     slivers: [
