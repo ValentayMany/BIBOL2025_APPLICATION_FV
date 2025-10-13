@@ -5,8 +5,53 @@ import 'package:BIBOL/services/token/token_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+/// 🔐 StudentAuthService - Service สำหรับจัดการการ Authentication ของนักศึกษา
+/// 
+/// Service นี้ใช้สำหรับ login, logout และจัดการ token
+/// 
+/// **ฟีเจอร์หลัก:**
+/// - Login ด้วย admission number และ email
+/// - บันทึกและจัดการ access token
+/// - ตรวจสอบสถานะการ login
+/// - Logout
+/// 
+/// **ตัวอย่างการใช้งาน:**
+/// ```dart
+/// final authService = StudentAuthService();
+/// 
+/// // Login
+/// final response = await authService.login(
+///   admissionNo: '12345',
+///   email: 'student@example.com',
+/// );
+/// 
+/// if (response?.success == true) {
+///   print('Login สำเร็จ!');
+/// }
+/// 
+/// // Check login status
+/// final isLoggedIn = await authService.isLoggedIn();
+/// 
+/// // Logout
+/// await authService.logout();
+/// ```
 class StudentAuthService {
-  // Login with admission_no and email only
+  /// เข้าสู่ระบบด้วย admission number และ email
+  /// 
+  /// **Parameters:**
+  /// - [admissionNo] - เลขประจำตัวนักศึกษา (required)
+  /// - [email] - อีเมลนักศึกษา (required)
+  /// 
+  /// **Returns:**
+  /// - [StudentLoginResponse?] - ข้อมูล response จาก API หรือ null ถ้าเกิดข้อผิดพลาด
+  /// 
+  /// **Example:**
+  /// ```dart
+  /// final response = await authService.login(
+  ///   admissionNo: '12345',
+  ///   email: 'student@example.com',
+  /// );
+  /// ```
   Future<StudentLoginResponse?> login({
     required String admissionNo,
     required String email,
