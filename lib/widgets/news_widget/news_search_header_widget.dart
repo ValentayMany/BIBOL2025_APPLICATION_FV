@@ -64,6 +64,7 @@ class _NewsSearchHeaderWidgetState extends State<NewsSearchHeaderWidget> {
         ],
       ),
       child: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             // Header Row with fixed padding
@@ -156,9 +157,9 @@ class _NewsSearchHeaderWidgetState extends State<NewsSearchHeaderWidget> {
 
             SizedBox(height: 16),
 
-            // Search section with padding
+            // Search section with padding - FIXED: เอาซ้ำออก
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.only(left: 16, right: 16, bottom: 20),
               child: _buildSearchSection(
                 screenWidth,
                 basePadding,
@@ -169,8 +170,6 @@ class _NewsSearchHeaderWidgetState extends State<NewsSearchHeaderWidget> {
                 isTinyScreen,
               ),
             ),
-
-            SizedBox(height: 16),
           ],
         ),
       ),

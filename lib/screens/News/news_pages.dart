@@ -566,7 +566,9 @@ class _NewsListPageState extends State<NewsListPage>
         physics: BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
+            key: ValueKey('news_search_header'),
             child: NewsSearchHeaderWidget(
+              key: ValueKey('news_header_widget'),
               onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
               onNotificationPressed: () {},
               searchController: _searchController,
