@@ -7,6 +7,29 @@ import 'package:BIBOL/models/website/website_info_model.dart'
     show WebsiteInfoModel;
 import 'package:http/http.dart' as http;
 
+/// 📰 NewsService - Service สำหรับจัดการข่าวสารทั้งหมด
+///
+/// Service นี้ใช้สำหรับดึงข้อมูลข่าวสารจาก API และจัดการข้อมูลข่าว
+///
+/// **ฟีเจอร์หลัก:**
+/// - ดึงรายการข่าวพร้อม pagination
+/// - ดึงข่าวตาม ID
+/// - ดึงข้อมูลเว็บไซต์
+/// - รองรับ retry mechanism เมื่อ request ล้มเหลว
+/// - Timeout protection (30 วินาที)
+///
+/// **ตัวอย่างการใช้งาน:**
+/// ```dart
+/// // ดึงข่าวหน้าแรก 10 ข่าว
+/// final newsResponse = await NewsService.getNews(limit: 10, page: 1);
+///
+/// // ดึงข่าวตาม ID
+/// final news = await NewsService.getNewsById('123');
+///
+/// // ดึงข้อมูลเว็บไซต์
+/// final website = await NewsService.getWebsiteInfo();
+/// ```
+
 class NewsService {
   static const Duration _defaultTimeout = Duration(seconds: 30);
   static const int _maxRetries = 3;

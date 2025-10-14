@@ -6,6 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class StudentAuthService {
+  // 🔥 Base headers สำหรับทุก request - เพิ่ม ngrok header
+  static Map<String, String> get _baseHeaders => {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    // 🎯 สำคัญมาก! ข้าม ngrok warning page
+    'ngrok-skip-browser-warning': 'true',
+  };
+
   // Login with admission_no and email only
   Future<StudentLoginResponse?> login({
     required String admissionNo,
@@ -16,11 +24,18 @@ class StudentAuthService {
       debugPrint('📧 Email: $email');
       debugPrint('🎫 Admission No: $admissionNo');
 
-      final response = await http.post(
-        Uri.parse(StudentsApiConfig.getStudentLoginUrl()),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'admission_no': admissionNo, 'email': email}),
-      );
+      final response = await http
+          .post(
+            Uri.parse(StudentsApiConfig.getStudentLoginUrl()),
+            headers: _baseHeaders, // ใช้ headers ที่มี ngrok bypass
+            body: jsonEncode({'admission_no': admissionNo, 'email': email}),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Connection timeout - กรุณาลองใหม่อีกครั้ง');
+            },
+          );
 
       debugPrint('📊 Response status: ${response.statusCode}');
       debugPrint('📄 Response body: ${response.body}');
@@ -62,10 +77,12 @@ class StudentAuthService {
   // Get student by ID (optional)
   Future<Student?> getStudentById(int id) async {
     try {
-      final response = await http.get(
-        Uri.parse(StudentsApiConfig.getStudentByIdUrl(id)),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await http
+          .get(
+            Uri.parse(StudentsApiConfig.getStudentByIdUrl(id)),
+            headers: _baseHeaders, // เพิ่ม ngrok header
+          )
+          .timeout(const Duration(seconds: 30));
 
       debugPrint('📊 Get student response: ${response.statusCode}');
 
@@ -95,13 +112,15 @@ class StudentAuthService {
         return null;
       }
 
-      final response = await http.get(
-        Uri.parse(StudentsApiConfig.getStudentProfileUrl()),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+      final response = await http
+          .get(
+            Uri.parse(StudentsApiConfig.getStudentProfileUrl()),
+            headers: {
+              ..._baseHeaders, // รวม base headers
+              'Authorization': 'Bearer $token', // เพิ่ม token
+            },
+          )
+          .timeout(const Duration(seconds: 30));
 
       debugPrint('📊 Get profile response: ${response.statusCode}');
       debugPrint('📄 Profile body: ${response.body}');
@@ -144,16 +163,16 @@ class StudentAuthService {
         };
       }
 
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
-
-      final response = await http.put(
-        Uri.parse(StudentsApiConfig.updateStudentProfileUrl()),
-        headers: headers,
-        body: jsonEncode({'email': email}),
-      );
+      final response = await http
+          .put(
+            Uri.parse(StudentsApiConfig.updateStudentProfileUrl()),
+            headers: {
+              ..._baseHeaders, // รวม base headers
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({'email': email}),
+          )
+          .timeout(const Duration(seconds: 30));
 
       debugPrint('📊 Update response status: ${response.statusCode}');
       debugPrint('📄 Update response body: ${response.body}');
@@ -203,6 +222,86 @@ class StudentAuthService {
       debugPrint('💥 Error updating email: $e');
       debugPrint('Stack trace: $stackTrace');
       return {'success': false, 'message': 'เกิดข้อผิดพลาด: $e'};
+    }
+  }
+
+  // 🔓 Logout
+  Future<bool> logout() async {
+    try {
+      final token = await TokenService.getToken();
+
+      if (token != null && token.isNotEmpty) {
+        try {
+          await http
+              .post(
+                Uri.parse(StudentsApiConfig.getStudentLogoutUrl()),
+                headers: {..._baseHeaders, 'Authorization': 'Bearer $token'},
+              )
+              .timeout(const Duration(seconds: 10));
+        } catch (e) {
+          debugPrint('⚠️ Logout API error (will clear local data anyway): $e');
+        }
+      }
+
+      // ลบข้อมูลทั้งหมดไม่ว่า API จะสำเร็จหรือไม่
+      await TokenService.clearAll();
+      debugPrint('✅ Logged out and cleared local data');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Logout error: $e');
+      // ลบข้อมูลแม้จะ error
+      await TokenService.clearAll();
+      return true;
+    }
+  }
+
+  // ✅ Verify Token
+  Future<bool> verifyToken() async {
+    try {
+      final token = await TokenService.getToken();
+      if (token == null || token.isEmpty) return false;
+
+      final response = await http
+          .get(
+            Uri.parse(StudentsApiConfig.getStudentVerifyUrl()),
+            headers: {..._baseHeaders, 'Authorization': 'Bearer $token'},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('❌ Verify Token Error: $e');
+      return false;
+    }
+  }
+
+  // 🔄 Refresh Token
+  Future<String?> refreshToken() async {
+    try {
+      final token = await TokenService.getToken();
+      if (token == null || token.isEmpty) return null;
+
+      final response = await http
+          .post(
+            Uri.parse(StudentsApiConfig.refreshTokenUrl()),
+            headers: {..._baseHeaders, 'Authorization': 'Bearer $token'},
+          )
+          .timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['token'] != null) {
+          final newToken = data['token'] as String;
+          await TokenService.saveToken(newToken);
+          debugPrint('✅ Token refreshed successfully');
+          return newToken;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      debugPrint('❌ Refresh Token Error: $e');
+      return null;
     }
   }
 }

@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'secure_storage_adapter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 🔐 Secure Storage Service
@@ -11,11 +12,13 @@ class SecureStorageService {
   // Private constructor
   SecureStorageService._();
 
-  /// Secure storage instance
-  static const _secureStorage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
-  );
+  /// Adapter instance (can be replaced for tests)
+  static SecureStorageAdapter _adapter = FlutterSecureStorageAdapter();
+
+  /// Expose method to inject a test adapter
+  static void setAdapter(SecureStorageAdapter adapter) {
+    _adapter = adapter;
+  }
 
   // Storage Keys
   static const String _keyAuthToken = 'auth_token';
@@ -31,10 +34,10 @@ class SecureStorageService {
   /// Save authentication token securely
   static Future<void> saveToken(String token) async {
     try {
-      await _secureStorage.write(key: _keyAuthToken, value: token);
+      await _adapter.write(key: _keyAuthToken, value: token);
       // Also save expiry time (default 24 hours from now)
       final expiry = DateTime.now().add(const Duration(hours: 24));
-      await _secureStorage.write(
+      await _adapter.write(
         key: _keyTokenExpiry,
         value: expiry.toIso8601String(),
       );
@@ -48,7 +51,7 @@ class SecureStorageService {
   /// Get authentication token
   static Future<String?> getToken() async {
     try {
-      final token = await _secureStorage.read(key: _keyAuthToken);
+      final token = await _adapter.read(key: _keyAuthToken);
       if (token != null && await isTokenValid()) {
         return token;
       }
@@ -62,7 +65,7 @@ class SecureStorageService {
   /// Save refresh token
   static Future<void> saveRefreshToken(String refreshToken) async {
     try {
-      await _secureStorage.write(key: _keyRefreshToken, value: refreshToken);
+      await _adapter.write(key: _keyRefreshToken, value: refreshToken);
       debugPrint('✅ Refresh token saved securely');
     } catch (e) {
       debugPrint('❌ Error saving refresh token: $e');
@@ -73,7 +76,7 @@ class SecureStorageService {
   /// Get refresh token
   static Future<String?> getRefreshToken() async {
     try {
-      return await _secureStorage.read(key: _keyRefreshToken);
+      return await _adapter.read(key: _keyRefreshToken);
     } catch (e) {
       debugPrint('❌ Error getting refresh token: $e');
       return null;
@@ -83,7 +86,7 @@ class SecureStorageService {
   /// Check if token is valid (not expired)
   static Future<bool> isTokenValid() async {
     try {
-      final expiryStr = await _secureStorage.read(key: _keyTokenExpiry);
+      final expiryStr = await _adapter.read(key: _keyTokenExpiry);
       if (expiryStr == null) return false;
 
       final expiry = DateTime.parse(expiryStr);
@@ -103,9 +106,9 @@ class SecureStorageService {
   /// Delete authentication token
   static Future<void> deleteToken() async {
     try {
-      await _secureStorage.delete(key: _keyAuthToken);
-      await _secureStorage.delete(key: _keyRefreshToken);
-      await _secureStorage.delete(key: _keyTokenExpiry);
+      await _adapter.delete(key: _keyAuthToken);
+      await _adapter.delete(key: _keyRefreshToken);
+      await _adapter.delete(key: _keyTokenExpiry);
       debugPrint('✅ Tokens deleted');
     } catch (e) {
       debugPrint('❌ Error deleting token: $e');
@@ -121,7 +124,7 @@ class SecureStorageService {
   static Future<void> saveUserInfo(Map<String, dynamic> userInfo) async {
     try {
       final jsonString = jsonEncode(userInfo);
-      await _secureStorage.write(key: _keyUserInfo, value: jsonString);
+      await _adapter.write(key: _keyUserInfo, value: jsonString);
 
       // Save login status
       final prefs = await SharedPreferences.getInstance();
@@ -137,7 +140,7 @@ class SecureStorageService {
   /// Get user information
   static Future<Map<String, dynamic>?> getUserInfo() async {
     try {
-      final jsonString = await _secureStorage.read(key: _keyUserInfo);
+      final jsonString = await _adapter.read(key: _keyUserInfo);
       if (jsonString == null) return null;
 
       return jsonDecode(jsonString) as Map<String, dynamic>;
@@ -150,7 +153,7 @@ class SecureStorageService {
   /// Delete user information
   static Future<void> deleteUserInfo() async {
     try {
-      await _secureStorage.delete(key: _keyUserInfo);
+      await _adapter.delete(key: _keyUserInfo);
 
       // Clear login status
       final prefs = await SharedPreferences.getInstance();
@@ -194,7 +197,7 @@ class SecureStorageService {
   static Future<void> clearAll() async {
     try {
       // Clear secure storage
-      await _secureStorage.deleteAll();
+      await _adapter.deleteAll();
 
       // Clear shared preferences
       final prefs = await SharedPreferences.getInstance();
@@ -246,8 +249,8 @@ class SecureStorageService {
   /// Check if secure storage is available
   static Future<bool> isSecureStorageAvailable() async {
     try {
-      await _secureStorage.write(key: 'test', value: 'test');
-      await _secureStorage.delete(key: 'test');
+      await _adapter.write(key: 'test', value: 'test');
+      await _adapter.delete(key: 'test');
       return true;
     } catch (e) {
       debugPrint('❌ Secure storage not available: $e');
@@ -258,7 +261,7 @@ class SecureStorageService {
   /// Get all keys (for debugging - only in development)
   static Future<List<String>> getAllKeys() async {
     try {
-      final all = await _secureStorage.readAll();
+      final all = await _adapter.readAll();
       return all.keys.toList();
     } catch (e) {
       debugPrint('❌ Error getting all keys: $e');

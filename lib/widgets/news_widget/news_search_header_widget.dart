@@ -187,56 +187,71 @@ class _NewsSearchHeaderWidgetState extends State<NewsSearchHeaderWidget> {
     bool isTinyScreen,
   ) {
     return Container(
-      height: 50,
+      height: isVerySmallScreen ? 50 : 56,
+      padding: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
             offset: Offset(0, 4),
           ),
         ],
       ),
-      child: TextField(
-        controller: widget.searchController,
-        onChanged: widget.onSearchChanged,
-        style: GoogleFonts.notoSansLao(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        textAlignVertical: TextAlignVertical.center,
-        decoration: InputDecoration(
-          hintText: 'ຄົ້ນຫາຂ່າວ...',
-          hintStyle: GoogleFonts.notoSansLao(
-            color: Colors.grey[400],
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            color: Color(0xFF07325D),
-            size: 22,
-          ),
-          suffixIcon:
-              widget.searchQuery.isNotEmpty
-                  ? IconButton(
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: Colors.grey[600],
-                      size: 20,
+      child: Row(
+        children: [
+          Icon(Icons.search_rounded, color: Colors.grey[600], size: 22),
+          SizedBox(width: 10),
+          Expanded(
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                // 🔹 Hint text โชว์เมื่อ searchQuery ยังว่าง
+                if (widget.searchQuery.isEmpty)
+                  Text(
+                    'ຄົ້ນຫາຂ່າວສານ...',
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey[500],
                     ),
-                    onPressed: () {
-                      widget.searchController.clear();
-                      widget.onSearchChanged('');
-                    },
-                  )
-                  : null,
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          isDense: true,
-        ),
+                  ),
+                TextField(
+                  controller: widget.searchController,
+                  onChanged: widget.onSearchChanged,
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                  decoration: null, // ❌ ไม่มี InputDecoration
+                  cursorColor: Colors.blueAccent,
+                ),
+              ],
+            ),
+          ),
+          if (widget.searchQuery.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                widget.searchController.clear();
+                widget.onSearchChanged('');
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[300],
+                ),
+                padding: EdgeInsets.all(4),
+                child: Icon(
+                  Icons.close_rounded,
+                  color: Colors.grey[700],
+                  size: 18,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

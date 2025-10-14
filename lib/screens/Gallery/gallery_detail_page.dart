@@ -10,21 +10,12 @@ class GalleryDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFF),
       appBar: AppBar(
         title: const Text('รายละเอียด'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              // เพิ่มฟังก์ชัน share
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: () {
-              // เพิ่มฟังก์ชัน download
-            },
-          ),
+          IconButton(icon: const Icon(Icons.share), onPressed: null),
+          IconButton(icon: const Icon(Icons.download), onPressed: null),
         ],
       ),
       body: SingleChildScrollView(

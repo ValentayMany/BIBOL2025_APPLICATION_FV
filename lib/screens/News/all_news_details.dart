@@ -17,7 +17,10 @@ class TopicDetailPage extends StatefulWidget {
 class _TopicDetailPageState extends State<TopicDetailPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.white, body: _buildMainContent());
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFF),
+      body: _buildMainContent(),
+    );
   }
 
   Widget _buildMainContent() {

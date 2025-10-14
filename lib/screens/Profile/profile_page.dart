@@ -619,6 +619,14 @@ class _ProfilePageState extends State<ProfilePage>
             ),
             SizedBox(height: 12),
             _buildActionCard(
+              icon: Icons.table_chart_rounded,
+              iconColor: Colors.yellow.shade700,
+              title: 'ເບີ່ງຄະແນນ',
+              subtitle: 'ກວດສອບຄະແນນຂອງທ່ານ',
+              onTap: _handleEditProfile,
+            ),
+            SizedBox(height: 12),
+            _buildActionCard(
               icon: Icons.logout_rounded,
               iconColor: Colors.red,
               title: 'ອອກຈາກລະບົບ',

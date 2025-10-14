@@ -2,75 +2,91 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:BIBOL/services/storage/secure_storage_service.dart';
+import '../helpers/shared_prefs_helpers.dart';
+import '../helpers/in_memory_secure_storage_adapter.dart';
+import 'package:BIBOL/services/storage/secure_storage_adapter.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('SecureStorageService Tests', () {
+    setUpAll(() async {
+      // Initialize mocks once for the group
+      TestWidgetsFlutterBinding.ensureInitialized();
+      // use in-memory adapter to avoid platform channels
+      SecureStorageService.setAdapter(InMemorySecureStorageAdapter());
+      setupMockSharedPreferences();
+    });
+
     setUp(() async {
       // Clear all data before each test
       await SecureStorageService.clearAll();
     });
 
-    tearDown() async {
+    tearDown(() async {
       // Clean up after each test
       await SecureStorageService.clearAll();
-    }
-  });
+    });
 
-  test('should save and retrieve token', () async {
-    const testToken = 'test_token_12345';
+    tearDownAll(() async {
+      // No platform channel mocks used; just reset shared preferences
+      tearDownMockSharedPreferences();
+    });
 
-    await SecureStorageService.saveToken(testToken);
-    final retrievedToken = await SecureStorageService.getToken();
+    test('should save and retrieve token', () async {
+      const testToken = 'test_token_12345';
 
-    expect(retrievedToken, equals(testToken));
-  });
+      await SecureStorageService.saveToken(testToken);
+      final retrievedToken = await SecureStorageService.getToken();
 
-  test('should validate token expiry', () async {
-    const testToken = 'test_token_12345';
+      expect(retrievedToken, equals(testToken));
+    });
 
-    await SecureStorageService.saveToken(testToken);
-    final isValid = await SecureStorageService.isTokenValid();
+    test('should validate token expiry', () async {
+      const testToken = 'test_token_12345';
 
-    expect(isValid, isTrue);
-  });
+      await SecureStorageService.saveToken(testToken);
+      final isValid = await SecureStorageService.isTokenValid();
 
-  test('should save and retrieve user info', () async {
-    final testUserInfo = {
-      'id': 1,
-      'first_name': 'Test',
-      'last_name': 'User',
-      'email': 'test@example.com',
-    };
+      expect(isValid, isTrue);
+    });
 
-    await SecureStorageService.saveUserInfo(testUserInfo);
-    final retrievedInfo = await SecureStorageService.getUserInfo();
+    test('should save and retrieve user info', () async {
+      final testUserInfo = {
+        'id': 1,
+        'first_name': 'Test',
+        'last_name': 'User',
+        'email': 'test@example.com',
+      };
 
-    expect(retrievedInfo, isNotNull);
-    expect(retrievedInfo!['first_name'], equals('Test'));
-    expect(retrievedInfo['email'], equals('test@example.com'));
-  });
+      await SecureStorageService.saveUserInfo(testUserInfo);
+      final retrievedInfo = await SecureStorageService.getUserInfo();
 
-  test('should check login status correctly', () async {
-    // Initially not logged in
-    expect(await SecureStorageService.isLoggedIn(), isFalse);
+      expect(retrievedInfo, isNotNull);
+      expect(retrievedInfo!['first_name'], equals('Test'));
+      expect(retrievedInfo['email'], equals('test@example.com'));
+    });
 
-    // After saving token and user info
-    await SecureStorageService.saveToken('test_token');
-    await SecureStorageService.saveUserInfo({'id': 1, 'name': 'Test'});
+    test('should check login status correctly', () async {
+      // Initially not logged in
+      expect(await SecureStorageService.isLoggedIn(), isFalse);
 
-    expect(await SecureStorageService.isLoggedIn(), isTrue);
-  });
+      // After saving token and user info
+      await SecureStorageService.saveToken('test_token');
+      await SecureStorageService.saveUserInfo({'id': 1, 'name': 'Test'});
 
-  test('should clear all data', () async {
-    await SecureStorageService.saveToken('test_token');
-    await SecureStorageService.saveUserInfo({'id': 1, 'name': 'Test'});
+      expect(await SecureStorageService.isLoggedIn(), isTrue);
+    });
 
-    await SecureStorageService.clearAll();
+    test('should clear all data', () async {
+      await SecureStorageService.saveToken('test_token');
+      await SecureStorageService.saveUserInfo({'id': 1, 'name': 'Test'});
 
-    expect(await SecureStorageService.getToken(), isNull);
-    expect(await SecureStorageService.getUserInfo(), isNull);
-    expect(await SecureStorageService.isLoggedIn(), isFalse);
+      await SecureStorageService.clearAll();
+
+      expect(await SecureStorageService.getToken(), isNull);
+      expect(await SecureStorageService.getUserInfo(), isNull);
+      expect(await SecureStorageService.isLoggedIn(), isFalse);
+    });
   });
 }
