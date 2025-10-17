@@ -77,12 +77,12 @@ class _NewsSearchHeaderWidgetState extends State<NewsSearchHeaderWidget> {
                     screenWidth: screenWidth,
                   ),
                   Spacer(),
-                  SharedHeaderButton(
-                    icon: Icons.notifications_outlined,
-                    onPressed: widget.onNotificationPressed ?? () {},
-                    hasNotification: widget.hasNotification,
-                    screenWidth: screenWidth,
-                  ),
+                  // SharedHeaderButton(
+                  //   icon: Icons.notifications_outlined,
+                  //   onPressed: widget.onNotificationPressed ?? () {},
+                  //   hasNotification: widget.hasNotification,
+                  //   screenWidth: screenWidth,
+                  // ),
                 ],
               ),
             ),

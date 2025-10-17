@@ -211,9 +211,6 @@ class GalleryApiConfig {
 /// ============================================
 /// 🎓 Students API Configuration
 /// ============================================
-/// ============================================
-/// 🎓 Students API Configuration
-/// ============================================
 class StudentsApiConfig {
   StudentsApiConfig._();
 
@@ -242,6 +239,28 @@ class StudentsApiConfig {
 }
 
 /// ============================================
+/// 🌐 Website API Configuration
+/// ============================================
+class WebsiteApiConfig {
+  // Private constructor
+  WebsiteApiConfig._();
+
+  // Base API configuration
+  static String get baseUrl => ApiConfig.baseApiV1;
+
+  // Website endpoints
+  static String get contactsUrl => '$baseUrl/website/contacts';
+
+  // Debug helper
+  static void printConfig() {
+    debugPrint("=== 🌐 Website API Configuration ===");
+    debugPrint("Base URL: $baseUrl");
+    debugPrint("Contacts URL: $contactsUrl");
+    debugPrint("====================================");
+  }
+}
+
+/// ============================================
 /// 🚀 All Configs Debug Helper
 /// ============================================
 class AllConfigsDebugHelper {
@@ -255,6 +274,7 @@ class AllConfigsDebugHelper {
     CourseApiConfig.printConfig();
     GalleryApiConfig.printConfig();
     StudentsApiConfig.printConfig();
+    WebsiteApiConfig.printConfig();
     debugPrint("🚀 ====================================");
   }
 }

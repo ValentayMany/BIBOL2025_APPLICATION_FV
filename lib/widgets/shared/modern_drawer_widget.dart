@@ -369,11 +369,16 @@ class ModernDrawerWidget extends StatelessWidget {
               icon: Icons.settings_rounded,
               title: 'ຕັ້ງຄ່າ',
               isSelected: false,
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                if (currentRoute != '/settings') {
+                  Navigator.pushReplacementNamed(context, '/settings');
+                }
+              },
             ),
             _buildDrawerItem(
-              icon: Icons.help_rounded,
-              title: 'ຊ່ວຍເຫຼືອ',
+              icon: Icons.contact_mail_rounded,
+              title: 'ຕິດຕໍ່',
               isSelected: false,
               onTap: () => Navigator.pop(context),
             ),

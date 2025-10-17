@@ -14,7 +14,9 @@ class AppRoutes {
   static const String about = '/about';
   static const String profile = '/profile';
   static const String editProfile = '/profile/edit';
+  static const String settings = '/settings';
   static const String courseDetail = '/course-detail';
+
   static const String newsDetail = '/news/detail';
 
   // List of all routes
@@ -28,7 +30,9 @@ class AppRoutes {
     about,
     profile,
     editProfile,
+    settings,
     courseDetail,
+
     newsDetail,
   ];
 }

@@ -16,6 +16,7 @@ import 'package:BIBOL/screens/home/news_detail_in_home.dart';
 import 'package:BIBOL/screens/news/news_pages.dart';
 import 'package:BIBOL/screens/profile/profile_page.dart';
 import 'package:BIBOL/screens/profile/edit_profile_page.dart';
+import 'package:BIBOL/screens/settings/settings_page.dart';
 import 'package:BIBOL/widgets/common/splash_screen.dart';
 
 class RouteGenerator {
@@ -57,6 +58,9 @@ class RouteGenerator {
       case AppRoutes.editProfile:
         return MaterialPageRoute(builder: (context) => EditProfilePage());
 
+      case AppRoutes.settings:
+        return MaterialPageRoute(builder: (context) => const SettingsPage());
+
       case AppRoutes.courseDetail:
         if (settings.arguments is CourseModel) {
           final CourseModel course = settings.arguments as CourseModel;
@@ -96,6 +100,7 @@ class RouteGenerator {
       AppRoutes.about: (context) => AboutPage(),
       AppRoutes.profile: (context) => ProfilePage(),
       AppRoutes.editProfile: (context) => EditProfilePage(),
+      AppRoutes.settings: (context) => const SettingsPage(),
       AppRoutes.courseDetail: (context) {
         final CourseModel course =
             ModalRoute.of(context)!.settings.arguments as CourseModel;

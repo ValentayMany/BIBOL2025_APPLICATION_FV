@@ -73,6 +73,19 @@ class _CustomBottomNavState extends State<CustomBottomNav>
 
   @override
   Widget build(BuildContext context) {
+    // Get screen size for responsive design
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.width < 360;
+    final isVerySmallScreen = screenSize.width < 320;
+    
+    // Calculate responsive height
+    double navHeight = 65;
+    if (isVerySmallScreen) {
+      navHeight = 55;
+    } else if (isSmallScreen) {
+      navHeight = 60;
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF07325D),
@@ -86,12 +99,12 @@ class _CustomBottomNavState extends State<CustomBottomNav>
       ),
       child: SafeArea(
         child: SizedBox(
-          height: 65,
+          height: navHeight,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(
               _navItems.length,
-              (index) => _buildNavItem(index),
+              (index) => _buildNavItem(index, navHeight),
             ),
           ),
         ),
@@ -99,9 +112,18 @@ class _CustomBottomNavState extends State<CustomBottomNav>
     );
   }
 
-  Widget _buildNavItem(int index) {
+  Widget _buildNavItem(int index, double navHeight) {
     final isSelected = widget.currentIndex == index;
     final item = _navItems[index];
+    
+    // Calculate responsive sizes based on nav height
+    final iconSize = navHeight < 60 ? 20.0 : (navHeight < 65 ? 22.0 : 24.0);
+    final activeIconSize = navHeight < 60 ? 22.0 : (navHeight < 65 ? 24.0 : 26.0);
+    final fontSize = navHeight < 60 ? 9.0 : (navHeight < 65 ? 10.0 : 11.0);
+    final activeFontSize = navHeight < 60 ? 9.5 : (navHeight < 65 ? 10.5 : 11.5);
+    final padding = navHeight < 60 ? 4.0 : (navHeight < 65 ? 6.0 : 8.0);
+    final indicatorWidth = navHeight < 60 ? 20.0 : (navHeight < 65 ? 22.0 : 24.0);
+    final indicatorHeight = navHeight < 60 ? 2.0 : (navHeight < 65 ? 2.5 : 3.0);
 
     return Expanded(
       child: Material(
@@ -112,9 +134,10 @@ class _CustomBottomNavState extends State<CustomBottomNav>
           highlightColor: Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(12),
           child: SizedBox(
-            height: 65,
+            height: navHeight,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min, // Prevent overflow
               children: [
                 // Icon with smooth animation and bounce effect
                 TweenAnimationBuilder<double>(
@@ -127,7 +150,7 @@ class _CustomBottomNavState extends State<CustomBottomNav>
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeOutCubic,
-                        padding: EdgeInsets.all(isSelected ? 8 : 6),
+                        padding: EdgeInsets.all(isSelected ? padding : padding - 2),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color:
@@ -150,7 +173,7 @@ class _CustomBottomNavState extends State<CustomBottomNav>
                             isSelected ? item.activeIcon : item.icon,
                             key: ValueKey(isSelected),
                             color: isSelected ? Colors.white : Colors.white70,
-                            size: isSelected ? 26 : 24,
+                            size: isSelected ? activeIconSize : iconSize,
                           ),
                         ),
                       ),
@@ -158,41 +181,43 @@ class _CustomBottomNavState extends State<CustomBottomNav>
                   },
                 ),
 
-                const SizedBox(height: 1),
+                SizedBox(height: navHeight < 60 ? 0.5 : 1),
 
                 // Label with smooth transition
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white70,
-                    fontSize: isSelected ? 11.5 : 11,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.normal,
-                    letterSpacing: isSelected ? 0.2 : 0,
-                  ),
-                  child: AnimatedSlide(
+                Flexible( // Use Flexible to prevent overflow
+                  child: AnimatedDefaultTextStyle(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
-                    offset: Offset(0, isSelected ? 0 : 0.1),
-                    child: Text(
-                      item.label,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.white70,
+                      fontSize: isSelected ? activeFontSize : fontSize,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      letterSpacing: isSelected ? 0.2 : 0,
+                    ),
+                    child: AnimatedSlide(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      offset: Offset(0, isSelected ? 0 : 0.1),
+                      child: Text(
+                        item.label,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 1),
+                SizedBox(height: navHeight < 60 ? 0.5 : 1),
 
                 // Active indicator with smooth animation
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 350),
                   curve: Curves.easeOutCubic,
-                  margin: const EdgeInsets.only(top: 2),
-                  width: isSelected ? 24 : 0,
-                  height: isSelected ? 3 : 2,
+                  margin: EdgeInsets.only(top: navHeight < 60 ? 1 : 2),
+                  width: isSelected ? indicatorWidth : 0,
+                  height: isSelected ? indicatorHeight : indicatorHeight - 1,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(2),

@@ -551,7 +551,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             title: 'ຫຼັກສູດການສຶກສາ',
             subtitle: 'ເລືອກຫຼັກສູດທີ່ເໝາະກັບທ່ານ',
             screenWidth: _screenWidth,
-            onActionPressed: () {},
           ),
           const SizedBox(height: 16),
           _isCoursesLoading

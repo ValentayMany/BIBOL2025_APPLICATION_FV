@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:BIBOL/config/bibol_api.dart';
 import 'package:BIBOL/models/course/course_response.dart';
+import 'package:BIBOL/models/course/course_model.dart';
 import 'package:http/http.dart' as http;
 
 /// 📚 CourseService - Service สำหรับจัดการหลักสูตรทั้งหมด
@@ -41,6 +42,18 @@ class CourseService {
       throw Exception(
         'Failed to load courses (status: ${response.statusCode})',
       );
+    }
+  }
+
+  Future<List<CourseModel>> getAllCourses() async {
+    try {
+      print('Fetching courses from API...');
+      final courseResponse = await CourseService.fetchCourses();
+      print('API returned ${courseResponse.courses.length} courses');
+      return courseResponse.courses;
+    } catch (e) {
+      print('Error fetching courses: $e');
+      return [];
     }
   }
 }
