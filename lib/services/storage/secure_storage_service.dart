@@ -87,7 +87,7 @@ class SecureStorageService {
   static Future<bool> isTokenValid() async {
     try {
       final expiryStr = await _adapter.read(key: _keyTokenExpiry);
-      if (expiryStr == null) return false;
+      if (expiryStr == null || expiryStr.isEmpty) return false;
 
       final expiry = DateTime.parse(expiryStr);
       final isValid = DateTime.now().isBefore(expiry);
@@ -179,7 +179,8 @@ class SecureStorageService {
       if (isLoggedIn) {
         // Double check if token exists and is valid
         final token = await getToken();
-        return token != null && await isTokenValid();
+        final isValid = await isTokenValid();
+        return token != null && token.isNotEmpty && isValid;
       }
 
       return false;

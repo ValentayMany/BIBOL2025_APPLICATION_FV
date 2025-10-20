@@ -7,7 +7,10 @@ import 'package:BIBOL/routes/route_generator.dart';
 import 'package:BIBOL/services/cache/cache_service.dart';
 import 'package:BIBOL/theme/app_theme.dart';
 import 'package:BIBOL/utils/logger.dart';
+import 'package:BIBOL/providers/simple_realtime_provider.dart';
+import 'package:BIBOL/providers/offline_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   // Ensure Flutter binding is initialized
@@ -35,19 +38,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Banking Institute App',
-      theme: AppTheme.theme,
-      debugShowCheckedModeBanner: false,
+      return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => SimpleRealtimeProvider.instance),
+          ChangeNotifierProvider(create: (_) => OfflineProvider.instance),
+        ],
+      child: MaterialApp(
+        title: 'Banking Institute App',
+        theme: AppTheme.theme,
+        debugShowCheckedModeBanner: false,
 
-      // Navigation
-      navigatorKey: AppNavigator.navigatorKey,
-      initialRoute: AppRoutes.splash,
+        // Navigation
+        navigatorKey: AppNavigator.navigatorKey,
+        initialRoute: AppRoutes.splash,
 
-      // Routes
-      routes: RouteGenerator.getRoutes(),
-      onGenerateRoute: RouteGenerator.generateRoute,
-      onUnknownRoute: RouteGenerator.onUnknownRoute,
+        // Routes
+        routes: RouteGenerator.getRoutes(),
+        onGenerateRoute: RouteGenerator.generateRoute,
+        onUnknownRoute: RouteGenerator.onUnknownRoute,
+      ),
     );
   }
 }

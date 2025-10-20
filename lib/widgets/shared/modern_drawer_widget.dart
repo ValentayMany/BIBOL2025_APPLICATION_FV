@@ -195,6 +195,7 @@ class ModernDrawerWidget extends StatelessWidget {
             Container(
               constraints: BoxConstraints(maxWidth: screenWidth * 0.65),
               child: Text(
+                // ✅ ใช้ค่าจาก userInfo โดยตรง ไม่ merge กับ local data
                 "${userInfo!['first_name'] ?? ''} ${userInfo!['last_name'] ?? ''}"
                     .trim(),
                 style: GoogleFonts.notoSansLao(
@@ -284,7 +285,6 @@ class ModernDrawerWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Main Menu Section
             SizedBox(height: _smallPadding),
             _buildSectionLabel('ເມນູຫຼັກ'),
             SizedBox(height: _smallPadding),
@@ -346,7 +346,6 @@ class ModernDrawerWidget extends StatelessWidget {
                 },
               ),
 
-            // Divider
             Container(
               margin: EdgeInsets.symmetric(vertical: _basePadding),
               height: 1,
@@ -361,7 +360,6 @@ class ModernDrawerWidget extends StatelessWidget {
               ),
             ),
 
-            // Other Section
             _buildSectionLabel('ການຕັ້ງຄ່າ'),
             SizedBox(height: _smallPadding),
 
@@ -481,7 +479,6 @@ class ModernDrawerWidget extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Icon container
                 Container(
                   padding: EdgeInsets.all(_isExtraSmallScreen ? 8 : 10),
                   decoration: BoxDecoration(
@@ -551,7 +548,6 @@ class ModernDrawerWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Institution info
           Container(
             padding: EdgeInsets.symmetric(
               horizontal: _basePadding,
@@ -587,7 +583,6 @@ class ModernDrawerWidget extends StatelessWidget {
 
           SizedBox(height: _basePadding),
 
-          // Login/Logout button
           Container(
             width: double.infinity,
             constraints: BoxConstraints(minHeight: buttonHeight),

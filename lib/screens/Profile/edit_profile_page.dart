@@ -56,37 +56,100 @@ class _EditProfilePageState extends State<EditProfilePage>
     _animationController.forward();
   }
 
+  // 🔥 ปรับปรุง: ใช้ข้อมูลจาก TokenService แทน API
   void _loadUserProfile() async {
-    final user = await TokenService.getUserInfo();
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      // 🎯 ใช้ข้อมูลจาก TokenService (เก็บไว้ตอน login)
+      final userData = await TokenService.getUserInfo();
 
-    // Load local edits if they exist
-    final localPhone = prefs.getString('local_phone_${user?['id']}');
-    final localClass = prefs.getString('local_class_${user?['id']}');
+      if (mounted && userData != null) {
+        final prefs = await SharedPreferences.getInstance();
 
-    if (mounted) {
-      setState(() {
-        userInfo = user;
-        _emailController.text = user?['email']?.toString() ?? '';
+        // Load local edits if they exist
+        final localPhone = prefs.getString('local_phone_${userData['id']}');
+        final localClass = prefs.getString('local_class_${userData['id']}');
 
-        // Store original values before merging local data
-        final originalPhone = user?['phone']?.toString() ?? '';
-        final originalClass = user?['class']?.toString() ?? '';
+        setState(() {
+          // ✅ เก็บข้อมูลต้นฉบับจาก TokenService
+          userInfo = Map<String, dynamic>.from(userData);
 
-        // Use local data if available, otherwise use original data
-        _phoneController.text = localPhone ?? originalPhone;
-        _classController.text = localClass ?? originalClass;
+          // แสดงค่าต้นฉบับ
+          _emailController.text = userData['email']?.toString() ?? '';
 
-        // Update userInfo with local data for comparison
-        if (localPhone != null) {
-          userInfo!['phone'] = localPhone;
+          // แสดงค่า local ใน TextField (ถ้ามี) หรือใช้ค่าจาก server
+          _phoneController.text =
+              localPhone ?? userData['phone']?.toString() ?? '';
+          _classController.text =
+              localClass ?? userData['class']?.toString() ?? '';
+
+          _isLoading = false;
+        });
+
+        debugPrint('✅ Profile loaded successfully');
+        debugPrint(
+          '👤 Name: ${userData['first_name']} ${userData['last_name']}',
+        );
+        debugPrint('📧 Email: ${userData['email']}');
+        debugPrint('📱 Phone (local): $localPhone');
+        debugPrint('🏫 Class (local): $localClass');
+      } else {
+        if (mounted) {
+          setState(() => _isLoading = false);
+
+          // แสดง error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.white),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໄດ້',
+                      style: GoogleFonts.notoSansLao(),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.red.shade600,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              margin: EdgeInsets.all(16),
+            ),
+          );
         }
-        if (localClass != null) {
-          userInfo!['class'] = localClass;
-        }
+      }
+    } catch (e) {
+      debugPrint('💥 Error loading profile: $e');
 
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'ເກີດຂໍ້ຜິດພາດ: $e',
+                    style: GoogleFonts.notoSansLao(),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            margin: EdgeInsets.all(16),
+          ),
+        );
+      }
     }
   }
 
@@ -108,6 +171,7 @@ class _EditProfilePageState extends State<EditProfilePage>
     final newPhone = _phoneController.text.trim();
     final newClass = _classController.text.trim();
 
+    // 🎯 เปรียบเทียบกับข้อมูลต้นฉบับจาก server
     final originalEmail = userInfo?['email']?.toString() ?? '';
     final originalPhone = userInfo?['phone']?.toString() ?? '';
     final originalClass = userInfo?['class']?.toString() ?? '';
@@ -204,6 +268,7 @@ class _EditProfilePageState extends State<EditProfilePage>
                       oldValue: originalEmail.isEmpty ? 'ບໍ່ມີ' : originalEmail,
                       newValue: newEmail,
                       color: Color(0xFF0D5AA7),
+                      note: 'ບັນທຶກລົງ Database',
                     ),
                     SizedBox(height: 12),
                   ],
@@ -215,6 +280,7 @@ class _EditProfilePageState extends State<EditProfilePage>
                       oldValue: originalPhone.isEmpty ? 'ບໍ່ມີ' : originalPhone,
                       newValue: newPhone.isEmpty ? 'ບໍ່ມີ' : newPhone,
                       color: Color(0xFF0A4A85),
+                      note: 'ບັນທຶກໃນເຄື່ອງເທົ່ານັ້ນ',
                     ),
                     SizedBox(height: 12),
                   ],
@@ -226,6 +292,7 @@ class _EditProfilePageState extends State<EditProfilePage>
                       oldValue: originalClass.isEmpty ? 'ບໍ່ມີ' : originalClass,
                       newValue: newClass.isEmpty ? 'ບໍ່ມີ' : newClass,
                       color: Color(0xFF07325D),
+                      note: 'ບັນທຶກໃນເຄື່ອງເທົ່ານັ້ນ',
                     ),
                     SizedBox(height: 12),
                   ],
@@ -307,6 +374,7 @@ class _EditProfilePageState extends State<EditProfilePage>
     required String oldValue,
     required String newValue,
     required Color color,
+    String? note,
   }) {
     return Container(
       padding: EdgeInsets.all(12),
@@ -318,13 +386,35 @@ class _EditProfilePageState extends State<EditProfilePage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: GoogleFonts.notoSansLao(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.notoSansLao(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ),
+              if (note != null)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    note,
+                    style: GoogleFonts.notoSansLao(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                ),
+            ],
           ),
           SizedBox(height: 8),
           Row(
@@ -388,7 +478,6 @@ class _EditProfilePageState extends State<EditProfilePage>
   }
 
   Future<void> _saveProfile() async {
-    // Save reference to ScaffoldMessenger before any async operations
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     setState(() => _isSaving = true);
@@ -398,13 +487,16 @@ class _EditProfilePageState extends State<EditProfilePage>
       final newPhone = _phoneController.text.trim();
       final newClass = _classController.text.trim();
 
-      // Save phone and class locally
+      // 📱 Save phone and class locally (ไม่ส่งไป API)
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('local_phone_${userInfo?['id']}', newPhone);
       await prefs.setString('local_class_${userInfo?['id']}', newClass);
 
-      // Call API to update email in backend
-      // Backend will get student ID from JWT token
+      debugPrint('✅ Phone & Class saved locally');
+      debugPrint('📱 Phone: $newPhone');
+      debugPrint('🏫 Class: $newClass');
+
+      // 📧 Call API to update email in backend (เฉพาะอีเมลเท่านั้น)
       final authService = StudentAuthService();
       final result = await authService.updateStudentEmail(email: newEmail);
 
@@ -412,7 +504,11 @@ class _EditProfilePageState extends State<EditProfilePage>
         setState(() => _isSaving = false);
 
         if (result['success'] == true) {
-          // Show success message using the saved reference
+          // 🔥 อัพเดท local storage ด้วย
+          await TokenService.updateUserInfo({'email': newEmail});
+
+          debugPrint('✅ Email updated in database');
+
           scaffoldMessenger.showSnackBar(
             SnackBar(
               content: Row(
@@ -421,7 +517,7 @@ class _EditProfilePageState extends State<EditProfilePage>
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'ບັນທຶກຂໍ້ມູນສຳເລັດແລ້ວ! 🎉\nອີເມວ, ເບີໂທ ແລະ ຫ້ອງຮຽນໄດ້ຮັບການອັບເດດແລ້ວ',
+                      'ບັນທຶກຂໍ້ມູນສຳເລັດແລ້ວ! 🎉',
                       style: GoogleFonts.notoSansLao(),
                     ),
                   ),
@@ -437,10 +533,8 @@ class _EditProfilePageState extends State<EditProfilePage>
             ),
           );
 
-          // Go back to profile page
           Navigator.pop(context, true);
         } else {
-          // Show error message from server using the saved reference
           scaffoldMessenger.showSnackBar(
             SnackBar(
               content: Row(
@@ -466,10 +560,11 @@ class _EditProfilePageState extends State<EditProfilePage>
         }
       }
     } catch (e) {
+      debugPrint('💥 Error saving profile: $e');
+
       if (mounted) {
         setState(() => _isSaving = false);
 
-        // Use the saved reference instead of looking it up from context
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Row(
@@ -538,7 +633,7 @@ class _EditProfilePageState extends State<EditProfilePage>
             ),
             SizedBox(height: 24),
             Text(
-              'ກຳລັງໂຫຼດ...',
+              'ກຳລັງໂຫຼດຂໍ້ມູນ...',
               style: GoogleFonts.notoSansLao(
                 color: Colors.white,
                 fontSize: 18,
@@ -569,7 +664,6 @@ class _EditProfilePageState extends State<EditProfilePage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Section Header
                       Container(
                         padding: EdgeInsets.all(20),
                         decoration: BoxDecoration(
@@ -640,7 +734,6 @@ class _EditProfilePageState extends State<EditProfilePage>
                       ),
                       SizedBox(height: 24),
 
-                      // Read-only fields
                       _buildReadOnlyField(
                         label: 'ລະຫັດນັກຮຽນ',
                         value: userInfo?['admission_no']?.toString() ?? 'N/A',
@@ -687,7 +780,6 @@ class _EditProfilePageState extends State<EditProfilePage>
 
                       SizedBox(height: 8),
 
-                      // Editable section divider
                       Row(
                         children: [
                           Expanded(
@@ -717,7 +809,6 @@ class _EditProfilePageState extends State<EditProfilePage>
                       ),
                       SizedBox(height: 20),
 
-                      // Editable: Email
                       _buildEditableField(
                         label: 'ອີເມວ',
                         controller: _emailController,
@@ -725,6 +816,7 @@ class _EditProfilePageState extends State<EditProfilePage>
                         color: Color(0xFF0D5AA7),
                         hint: 'ກະລຸນາໃສ່ອີເມວ',
                         keyboardType: TextInputType.emailAddress,
+                        helperText: '💾 ບັນທຶກລົງ Database',
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'ກະລຸນາໃສ່ອີເມວ';
@@ -739,7 +831,6 @@ class _EditProfilePageState extends State<EditProfilePage>
                       ),
                       SizedBox(height: 16),
 
-                      // Editable: Phone
                       _buildEditableField(
                         label: 'ເບີໂທລະສັບ',
                         controller: _phoneController,
@@ -751,7 +842,6 @@ class _EditProfilePageState extends State<EditProfilePage>
                       ),
                       SizedBox(height: 16),
 
-                      // Editable: Class
                       _buildEditableField(
                         label: 'ຫ້ອງຮຽນ',
                         controller: _classController,
@@ -762,7 +852,6 @@ class _EditProfilePageState extends State<EditProfilePage>
                       ),
                       SizedBox(height: 32),
 
-                      // Save button
                       Container(
                         width: double.infinity,
                         height: 58,
@@ -854,7 +943,6 @@ class _EditProfilePageState extends State<EditProfilePage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Top Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
@@ -892,7 +980,6 @@ class _EditProfilePageState extends State<EditProfilePage>
               ),
             ),
 
-            // Profile Icon
             Padding(
               padding: const EdgeInsets.only(top: 8, bottom: 24),
               child: Container(

@@ -17,6 +17,7 @@ import 'package:BIBOL/models/topic/topic_model.dart';
 import 'package:BIBOL/models/topic/joined_category_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:BIBOL/services/token/token_service.dart';
+import 'package:BIBOL/widgets/common/pull_to_refresh_widget.dart';
 
 const Color kPrimaryColor = Color(0xFF07325D);
 
@@ -368,6 +369,25 @@ class _NewsListPageState extends State<NewsListPage>
     if (index != 1) Navigator.pushReplacementNamed(context, routes[index]);
   }
 
+  Future<void> _handleRefresh() async {
+    try {
+      // Reset state
+      setState(() {
+        _isLoading = true;
+        _allTopics.clear();
+        _filteredTopics.clear();
+        _currentPage = 1;
+      });
+
+      // Fetch fresh data
+      await _loadNews(isRefresh: true);
+      
+    } catch (e) {
+      print('❌ Refresh error: $e');
+      // Error will be shown by the pull-to-refresh widget
+    }
+  }
+
   void _onTopicTap(Topic topic) {
     Navigator.push(
       context,
@@ -557,9 +577,11 @@ class _NewsListPageState extends State<NewsListPage>
           ),
         ),
       ),
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: BouncingScrollPhysics(),
+      body: NewsPullToRefreshWidget(
+        onRefresh: _handleRefresh,
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
             child: NewsSearchHeaderWidget(
@@ -597,6 +619,7 @@ class _NewsListPageState extends State<NewsListPage>
               ? SliverFillRemaining(child: _buildLoadingState())
               : _buildNewsGrid(),
         ],
+        ),
       ),
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _currentIndex,

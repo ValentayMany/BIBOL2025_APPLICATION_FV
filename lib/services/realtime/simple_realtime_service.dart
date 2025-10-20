@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:BIBOL/config/bibol_api.dart';
 import 'package:BIBOL/models/website/contact_model.dart';
 import 'package:BIBOL/services/website/contact_service.dart';
+import 'package:BIBOL/services/error/error_handler_service.dart';
 
 /// 🔄 Simple Real-time Service (Smart Polling)
 ///
@@ -27,6 +28,8 @@ class SimpleRealtimeService {
   StreamController<List<NewsModel>>? _newsController;
   StreamController<List<ContactModel>>? _contactsController;
   StreamController<String>? _statusController;
+  StreamController<bool>? _loadingController;
+  StreamController<AppError?>? _errorController;
 
   // Data tracking
   String _lastNewsHash = '';
@@ -39,6 +42,8 @@ class SimpleRealtimeService {
   Stream<List<NewsModel>>? get newsStream => _newsController?.stream;
   Stream<List<ContactModel>>? get contactsStream => _contactsController?.stream;
   Stream<String>? get statusStream => _statusController?.stream;
+  Stream<bool>? get loadingStream => _loadingController?.stream;
+  Stream<AppError?>? get errorStream => _errorController?.stream;
   bool get isRunning => _isRunning;
 
   /// 🚀 Start real-time polling
@@ -49,6 +54,8 @@ class SimpleRealtimeService {
     _newsController ??= StreamController<List<NewsModel>>.broadcast();
     _contactsController ??= StreamController<List<ContactModel>>.broadcast();
     _statusController ??= StreamController<String>.broadcast();
+    _loadingController ??= StreamController<bool>.broadcast();
+    _errorController ??= StreamController<AppError?>.broadcast();
 
     _updateStatus('Starting real-time polling...');
     _scheduleNextPoll();
@@ -80,11 +87,22 @@ class SimpleRealtimeService {
     if (!_isRunning) return;
 
     try {
+      _setLoading(true);
+      _clearError();
       _updateStatus('Checking for updates...');
 
-      // Poll news and contacts
-      final newsChanged = await _checkNewsUpdates();
-      final contactsChanged = await _checkContactsUpdates();
+      // Poll news and contacts with error handling
+      final newsChanged = await ErrorHandlerService.executeWithRetry(
+        () => _checkNewsUpdates(),
+        operationName: 'News Polling',
+        maxRetries: 2,
+      );
+
+      final contactsChanged = await ErrorHandlerService.executeWithRetry(
+        () => _checkContactsUpdates(),
+        operationName: 'Contacts Polling',
+        maxRetries: 2,
+      );
 
       if (newsChanged || contactsChanged) {
         _updateStatus('Updates found!');
@@ -93,9 +111,19 @@ class SimpleRealtimeService {
         _updateStatus('No updates');
         print('📊 No updates found');
       }
+    } on AppError catch (error) {
+      _handleError(error);
+      _updateStatus('Error occurred');
     } catch (e) {
-      _updateStatus('Error: $e');
-      print('❌ Polling error: $e');
+      final appError = AppError(
+        type: ErrorHandlerService.unknownError,
+        message: 'Unexpected error during polling',
+        originalException: e,
+        operationName: 'Real-time Polling',
+      );
+      _handleError(appError);
+    } finally {
+      _setLoading(false);
     }
 
     _scheduleNextPoll();
@@ -103,63 +131,69 @@ class SimpleRealtimeService {
 
   /// 📰 Check for news updates
   Future<bool> _checkNewsUpdates() async {
-    try {
-      final response = await http.get(
-        Uri.parse(NewsApiConfig.getNewsUrl()),
-        headers: {'Content-Type': 'application/json'},
-      );
+    final response = await http.get(
+      Uri.parse(NewsApiConfig.getNewsUrl()),
+      headers: {'Content-Type': 'application/json'},
+    );
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        final currentHash = json.encode(jsonData).hashCode.toString();
+    // Handle HTTP response errors
+    ErrorHandlerService.handleHttpResponse(response, operationName: 'News API');
 
-        if (currentHash != _lastNewsHash) {
-          _lastNewsHash = currentHash;
+    final jsonData = json.decode(response.body);
+    final currentHash = json.encode(jsonData).hashCode.toString();
 
-          // Parse and emit news data
-          if (jsonData is Map && jsonData['data'] is List) {
-            final newsList =
-                (jsonData['data'] as List)
-                    .map((item) => NewsModel.fromJson(item))
-                    .toList();
-            _newsController?.add(newsList);
-            print('📰 News updated: ${newsList.length} items');
-            return true;
-          }
-        }
+    if (currentHash != _lastNewsHash) {
+      _lastNewsHash = currentHash;
+
+      // Parse and emit news data
+      if (jsonData is Map && jsonData['data'] is List) {
+        final newsList = (jsonData['data'] as List)
+            .map((item) => NewsModel.fromJson(item))
+            .toList();
+        _newsController?.add(newsList);
+        print('📰 News updated: ${newsList.length} items');
+        return true;
       }
-
-      return false;
-    } catch (e) {
-      print('❌ News polling error: $e');
-      return false;
     }
+
+    return false;
   }
 
   /// 📞 Check for contacts updates
   Future<bool> _checkContactsUpdates() async {
-    try {
-      final contacts = await ContactService.getContacts();
-      final currentHash =
-          contacts.map((c) => c.toJson()).toString().hashCode.toString();
+    final contacts = await ContactService.getContacts();
+    final currentHash = contacts.map((c) => c.toJson()).toString().hashCode.toString();
 
-      if (currentHash != _lastContactHash) {
-        _lastContactHash = currentHash;
-        _contactsController?.add(contacts);
-        print('📞 Contacts updated: ${contacts.length} items');
-        return true;
-      }
-
-      return false;
-    } catch (e) {
-      print('❌ Contacts polling error: $e');
-      return false;
+    if (currentHash != _lastContactHash) {
+      _lastContactHash = currentHash;
+      _contactsController?.add(contacts);
+      print('📞 Contacts updated: ${contacts.length} items');
+      return true;
     }
+
+    return false;
   }
 
   /// 📊 Update status
   void _updateStatus(String status) {
     _statusController?.add(status);
+  }
+
+  /// 🔄 Set loading state
+  void _setLoading(bool isLoading) {
+    _loadingController?.add(isLoading);
+  }
+
+  /// 🚨 Handle error
+  void _handleError(AppError error) {
+    ErrorHandlerService.logError(error);
+    _errorController?.add(error);
+    print('❌ Real-time service error: ${error.message}');
+  }
+
+  /// ✅ Clear error
+  void _clearError() {
+    _errorController?.add(null);
   }
 
   /// 🎛️ Configure polling interval
@@ -184,5 +218,7 @@ class SimpleRealtimeService {
     _newsController?.close();
     _contactsController?.close();
     _statusController?.close();
+    _loadingController?.close();
+    _errorController?.close();
   }
 }

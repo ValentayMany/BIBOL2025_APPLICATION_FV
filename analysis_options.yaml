@@ -16,6 +16,7 @@ analyzer:
     use_super_parameters: ignore
     unnecessary_import: ignore
     file_names: ignore
+    unused_field: ignore
 include: package:flutter_lints/flutter.yaml
 
 linter:

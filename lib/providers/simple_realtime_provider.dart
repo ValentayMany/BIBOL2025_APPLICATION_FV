@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:BIBOL/services/realtime/simple_realtime_service.dart';
+import 'package:BIBOL/services/error/error_handler_service.dart';
 
 /// 🔄 Simple Real-time Provider
 /// 
@@ -17,12 +18,16 @@ class SimpleRealtimeProvider extends ChangeNotifier {
   String _status = 'Disconnected';
   int _newsCount = 0;
   int _contactsCount = 0;
+  bool _isLoading = false;
+  AppError? _lastError;
 
   // Getters
   bool get isInitialized => _isInitialized;
   String get status => _status;
   int get newsCount => _newsCount;
   int get contactsCount => _contactsCount;
+  bool get isLoading => _isLoading;
+  AppError? get lastError => _lastError;
 
   /// 🚀 Initialize real-time service
   void initialize() {
@@ -48,6 +53,18 @@ class SimpleRealtimeProvider extends ChangeNotifier {
       notifyListeners();
     });
 
+    // Listen to loading state
+    _service.loadingStream?.listen((isLoading) {
+      _isLoading = isLoading;
+      notifyListeners();
+    });
+
+    // Listen to errors
+    _service.errorStream?.listen((error) {
+      _lastError = error;
+      notifyListeners();
+    });
+
     _isInitialized = true;
     _status = 'Connected';
     notifyListeners();
@@ -65,7 +82,19 @@ class SimpleRealtimeProvider extends ChangeNotifier {
   /// 🔄 Restart service
   void restart() {
     stop();
+    _clearError();
     initialize();
+  }
+
+  /// ✅ Clear error
+  void _clearError() {
+    _lastError = null;
+    notifyListeners();
+  }
+
+  /// 🚨 Clear last error
+  void clearError() {
+    _clearError();
   }
 
   /// 🎛️ Set polling interval
@@ -80,6 +109,9 @@ class SimpleRealtimeProvider extends ChangeNotifier {
       'status': _status,
       'newsCount': _newsCount,
       'contactsCount': _contactsCount,
+      'isLoading': _isLoading,
+      'hasError': _lastError != null,
+      'lastError': _lastError?.toString(),
       'serviceStatus': _service.getStatus(),
     };
   }

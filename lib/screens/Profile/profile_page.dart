@@ -1,4 +1,5 @@
 import 'package:BIBOL/services/token/token_service.dart';
+import 'package:BIBOL/services/auth/students_auth_service.dart';
 import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
 import 'package:BIBOL/widgets/shared/modern_drawer_widget.dart';
 import 'package:BIBOL/widgets/shared/shared_header_button.dart';
@@ -53,69 +54,160 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
+  // 🔥 แก้ไข: ใช้ API /profile แทน getUserInfo
   void _checkLoginAndLoadProfile() async {
     setState(() => _isLoading = true);
 
-    final user = await TokenService.getUserInfo();
     final isLoggedIn = await TokenService.isLoggedIn();
 
-    if (mounted) {
-      setState(() {
-        if (user != null && user["id"] != null && isLoggedIn) {
-          userInfo = user;
+    if (!isLoggedIn) {
+      if (mounted) {
+        setState(() {
+          userInfo = null;
+          _isLoggedIn = false;
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      final authService = StudentAuthService();
+
+      // 🎯 เรียก API /profile เพื่อดึงข้อมูลเต็มจาก server
+      Map<String, dynamic>? profileData = await authService.getProfile();
+
+      if (profileData == null) {
+        // Fallback ไปที่ local ถ้า API ไม่สำเร็จ
+        final localUser = await TokenService.getUserInfo();
+        if (localUser != null) {
+          profileData = Map<String, dynamic>.from(localUser);
+        }
+      }
+
+      if (mounted) {
+        if (profileData != null && profileData["id"] != null) {
+          // ✅ บันทึกข้อมูลที่ได้จาก API ลงใน TokenService เพื่อ normalize
+          await TokenService.saveUserInfo(profileData);
+
+          // ✅ สร้าง copy ของข้อมูลจาก TokenService
+          userInfo = await TokenService.getUserInfo();
           _isLoggedIn = true;
+
+          // 🔥 โหลด local data (phone & class) และ merge เข้าไป
+          await _loadAndMergeLocalData();
+
+          debugPrint('✅ Profile loaded in ProfilePage');
+          debugPrint('📦 Raw Profile Data: $userInfo');
+          debugPrint(
+            '👤 Name: ${userInfo!['first_name']} ${userInfo!['last_name']}',
+          );
+          debugPrint('📧 Email: ${userInfo!['email']}');
+          debugPrint('📱 Phone: ${userInfo!['phone']}');
+          debugPrint('🏫 Class: ${userInfo!['class']}');
         } else {
           userInfo = null;
           _isLoggedIn = false;
         }
-        _isLoading = false;
-      });
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      debugPrint('💥 Error loading profile: $e');
 
-      // Load local data if user is logged in
-      if (_isLoggedIn && userInfo != null) {
-        await _loadLocalData();
+      if (mounted) {
+        setState(() {
+          userInfo = null;
+          _isLoggedIn = false;
+          _isLoading = false;
+        });
       }
     }
   }
 
+  // 🔥 แก้ไข: ใช้ API /profile แทน getUserInfo
   void _loadUserProfile() async {
-    final user = await TokenService.getUserInfo();
     final isLoggedIn = await TokenService.isLoggedIn();
 
-    if (mounted) {
-      setState(() {
-        if (user != null && user["id"] != null && isLoggedIn) {
-          userInfo = user;
+    if (!isLoggedIn) {
+      if (mounted) {
+        setState(() {
+          userInfo = null;
+          _isLoggedIn = false;
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      final authService = StudentAuthService();
+
+      // 🎯 เรียก API /profile เพื่อดึงข้อมูลเต็มจาก server
+      Map<String, dynamic>? profileData = await authService.getProfile();
+
+      if (profileData == null) {
+        // Fallback ไปที่ local ถ้า API ไม่สำเร็จ
+        final localUser = await TokenService.getUserInfo();
+        if (localUser != null) {
+          profileData = Map<String, dynamic>.from(localUser);
+        }
+      }
+
+      if (mounted) {
+        if (profileData != null && profileData["id"] != null) {
+          // ✅ บันทึกข้อมูลที่ได้จาก API ลงใน TokenService เพื่อ normalize
+          await TokenService.saveUserInfo(profileData);
+
+          // ✅ สร้าง copy ของข้อมูลจาก TokenService
+          userInfo = await TokenService.getUserInfo();
           _isLoggedIn = true;
+
+          // 🔥 โหลด local data (phone & class) และ merge เข้าไป
+          await _loadAndMergeLocalData();
+
+          debugPrint('✅ Profile loaded in ProfilePage');
+          debugPrint(
+            '👤 Name: ${userInfo!['first_name']} ${userInfo!['last_name']}',
+          );
         } else {
           userInfo = null;
           _isLoggedIn = false;
         }
-        _isLoading = false;
-      });
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      debugPrint('💥 Error loading profile: $e');
 
-      // Load local data if user is logged in
-      if (_isLoggedIn && userInfo != null) {
-        await _loadLocalData();
+      if (mounted) {
+        setState(() {
+          userInfo = null;
+          _isLoggedIn = false;
+          _isLoading = false;
+        });
       }
     }
   }
 
-  Future<void> _loadLocalData() async {
+  // 🔥 ฟังก์ชันใหม่: โหลดและ merge local data
+  Future<void> _loadAndMergeLocalData() async {
+    if (userInfo == null) return;
+
     final prefs = await SharedPreferences.getInstance();
 
     // Load local edits if they exist
-    final localPhone = prefs.getString('local_phone_${userInfo?['id']}');
-    final localClass = prefs.getString('local_class_${userInfo?['id']}');
+    final localPhone = prefs.getString('local_phone_${userInfo!['id']}');
+    final localClass = prefs.getString('local_class_${userInfo!['id']}');
 
-    if (mounted) {
+    if (mounted && userInfo != null) {
       setState(() {
-        // Merge local data with user info
-        if (localPhone != null) {
+        // ✅ Merge local data เฉพาะเมื่อมีค่าจริงๆ
+        if (localPhone != null && localPhone.isNotEmpty) {
           userInfo!['phone'] = localPhone;
+          debugPrint('📱 Using local phone: $localPhone');
         }
-        if (localClass != null) {
+        if (localClass != null && localClass.isNotEmpty) {
           userInfo!['class'] = localClass;
+          debugPrint('🏫 Using local class: $localClass');
         }
       });
     }
@@ -151,7 +243,6 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   void _handleLogout() {
-    // Save reference to ScaffoldMessenger before any async operations
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     showDialog(
@@ -230,7 +321,6 @@ class _ProfilePageState extends State<ProfilePage>
                     _animationController.reset();
                     _animationController.forward();
 
-                    // Use the saved reference instead of looking it up from context
                     scaffoldMessenger.showSnackBar(
                       SnackBar(
                         content: Row(
@@ -285,7 +375,6 @@ class _ProfilePageState extends State<ProfilePage>
   Future<void> _handleEditProfile() async {
     final result = await Navigator.pushNamed(context, '/profile/edit');
     if (result == true) {
-      // Reload profile data if changes were made
       _checkLoginAndLoadProfile();
     }
   }
@@ -351,7 +440,6 @@ class _ProfilePageState extends State<ProfilePage>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Top Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
@@ -378,7 +466,6 @@ class _ProfilePageState extends State<ProfilePage>
               ),
             ),
 
-            // Profile Avatar & Info
             Padding(
               padding: const EdgeInsets.only(top: 8, bottom: 24),
               child: Column(
@@ -410,7 +497,6 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                   const SizedBox(height: 16),
                   if (_isLoggedIn && userInfo != null) ...[
-                    // ชื่อ-นามสกุล
                     Text(
                       '${userInfo?['first_name'] ?? ''} ${userInfo?['last_name'] ?? ''}'
                           .trim(),
@@ -422,7 +508,6 @@ class _ProfilePageState extends State<ProfilePage>
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    // รหัสนักเรียน
                     if (userInfo?['admission_no'] != null)
                       Container(
                         padding: EdgeInsets.symmetric(
@@ -636,65 +721,6 @@ class _ProfilePageState extends State<ProfilePage>
             SizedBox(height: 20),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String value,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 24),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.notoSansLao(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  value,
-                  style: GoogleFonts.notoSansLao(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF07325D),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

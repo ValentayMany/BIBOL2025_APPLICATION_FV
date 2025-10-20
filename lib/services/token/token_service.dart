@@ -44,9 +44,10 @@ class TokenService {
         'student_id':
             userInfo['admission_no'] ??
             userInfo['roll_no'], // ใช้ admission_no เป็น student_id
-        'first_name': userInfo['firstname'] ?? '',
-        'last_name': userInfo['lastname'] ?? '',
-        'phone': userInfo['mobileno'] ?? '',
+        // 🔥 รองรับทั้ง firstname/first_name และ lastname/last_name
+        'first_name': userInfo['firstname'] ?? userInfo['first_name'] ?? '',
+        'last_name': userInfo['lastname'] ?? userInfo['last_name'] ?? '',
+        'phone': userInfo['mobileno'] ?? userInfo['phone'] ?? '',
         'email': userInfo['email'] ?? '',
         'class': userInfo['class'] ?? 'N/A',
         'gender': userInfo['gender'] ?? '',

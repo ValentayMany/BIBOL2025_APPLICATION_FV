@@ -2,6 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:BIBOL/providers/offline_provider.dart';
+import 'package:BIBOL/widgets/common/offline_indicator_widget.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -26,43 +29,52 @@ class SettingsPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF07325D),
-              Color(0xFF0A4A85),
-              Color(0xFFFAFBFF),
-            ],
-            stops: [0.0, 0.3, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Section
-                _buildHeaderSection(),
-                
-                const SizedBox(height: 30),
-                
-                // App Settings Section
-                _buildAppSettingsSection(context),
-                
-                const SizedBox(height: 30),
-                
-                // About Section
-                _buildAboutSection(context),
-                
-                const SizedBox(height: 50),
-              ],
+      body: Consumer<OfflineProvider>(
+        builder: (context, offlineProvider, child) {
+          return Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF07325D),
+                  Color(0xFF0A4A85),
+                  Color(0xFFFAFBFF),
+                ],
+                stops: [0.0, 0.3, 1.0],
+              ),
             ),
-          ),
-        ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Section
+                    _buildHeaderSection(),
+
+                    const SizedBox(height: 30),
+
+                    // App Settings Section
+                    _buildAppSettingsSection(context),
+
+                    const SizedBox(height: 30),
+
+                    // Offline Settings Section
+                    _buildOfflineSettingsSection(context, offlineProvider),
+
+                    const SizedBox(height: 30),
+
+                    // About Section
+                    _buildAboutSection(context),
+
+                    const SizedBox(height: 50),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -73,10 +85,7 @@ class SettingsPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
       ),
       child: Row(
         children: [
@@ -86,11 +95,7 @@ class SettingsPage extends StatelessWidget {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const Icon(
-              Icons.settings,
-              color: Colors.white,
-              size: 30,
-            ),
+            child: const Icon(Icons.settings, color: Colors.white, size: 30),
           ),
           const SizedBox(width: 15),
           Expanded(
@@ -120,7 +125,6 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
-
 
   Widget _buildAppSettingsSection(BuildContext context) {
     return _buildSectionCard(
@@ -225,11 +229,7 @@ class SettingsPage extends StatelessWidget {
                     color: const Color(0xFF07325D).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    icon,
-                    color: const Color(0xFF07325D),
-                    size: 24,
-                  ),
+                  child: Icon(icon, color: const Color(0xFF07325D), size: 24),
                 ),
                 const SizedBox(width: 15),
                 Text(
@@ -270,10 +270,7 @@ class SettingsPage extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.grey[50],
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.grey[200]!,
-                width: 1,
-              ),
+              border: Border.all(color: Colors.grey[200]!, width: 1),
             ),
             child: Row(
               children: [
@@ -283,11 +280,7 @@ class SettingsPage extends StatelessWidget {
                     color: const Color(0xFF07325D).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(
-                    icon,
-                    color: const Color(0xFF07325D),
-                    size: 20,
-                  ),
+                  child: Icon(icon, color: const Color(0xFF07325D), size: 20),
                 ),
                 const SizedBox(width: 15),
                 Expanded(
@@ -329,34 +322,35 @@ class SettingsPage extends StatelessWidget {
   void _showComingSoon(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: Text(
-          'ກຳລັງພັດທະນາ',
-          style: GoogleFonts.notoSansLao(
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF07325D),
-          ),
-        ),
-        content: Text(
-          'ຟີເຈີນີ້ກຳລັງພັດທະນາ ກະລຸນາລໍຖ້າໃນອະນາຄົດ',
-          style: GoogleFonts.notoSansLao(
-            color: Colors.grey[600],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'ຕົກລົງ',
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: Text(
+              'ກຳລັງພັດທະນາ',
               style: GoogleFonts.notoSansLao(
+                fontWeight: FontWeight.bold,
                 color: const Color(0xFF07325D),
-                fontWeight: FontWeight.w600,
               ),
             ),
+            content: Text(
+              'ຟີເຈີນີ້ກຳລັງພັດທະນາ ກະລຸນາລໍຖ້າໃນອະນາຄົດ',
+              style: GoogleFonts.notoSansLao(color: Colors.grey[600]),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'ຕົກລົງ',
+                  style: GoogleFonts.notoSansLao(
+                    color: const Color(0xFF07325D),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -371,18 +365,86 @@ class SettingsPage extends StatelessWidget {
           color: const Color(0xFF07325D),
           borderRadius: BorderRadius.circular(15),
         ),
-        child: const Icon(
-          Icons.account_balance,
-          color: Colors.white,
-          size: 30,
-        ),
+        child: const Icon(Icons.account_balance, color: Colors.white, size: 30),
       ),
       children: [
         Text(
           'ແອັບພລິເຄຊັນສຳລັບສະຖາບັນການທະນາຄານລາວ',
-          style: GoogleFonts.notoSansLao(
-            color: Colors.grey[600],
+          style: GoogleFonts.notoSansLao(color: Colors.grey[600]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOfflineSettingsSection(
+    BuildContext context,
+    OfflineProvider offlineProvider,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'การตั้งค่าโหมดออฟไลน์',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
+        ),
+        const SizedBox(height: 16),
+
+        // Offline Mode Toggle
+        OfflineModeToggle(
+          isOfflineModeEnabled: offlineProvider.isOfflineModeEnabled,
+          onChanged: (value) async {
+            await offlineProvider.setOfflineMode(value);
+          },
+        ),
+
+        const SizedBox(height: 16),
+
+        // Cache Status
+        CacheStatusWidget(
+          cacheStats: offlineProvider.cacheStats,
+          onSync:
+              offlineProvider.isOnline
+                  ? () async {
+                    try {
+                      await offlineProvider.forceSync();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'ซิงค์ข้อมูลเรียบร้อยแล้ว',
+                            style: GoogleFonts.poppins(color: Colors.white),
+                          ),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'เกิดข้อผิดพลาดในการซิงค์',
+                            style: GoogleFonts.poppins(color: Colors.white),
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                  : null,
+          onClearCache: () async {
+            await offlineProvider.clearCache();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'ล้างแคชเรียบร้อยแล้ว',
+                  style: GoogleFonts.poppins(color: Colors.white),
+                ),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          },
         ),
       ],
     );
