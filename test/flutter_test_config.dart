@@ -1,29 +1,12 @@
-// test/flutter_test_config.dart
-// This file is automatically loaded by the Flutter test harness before tests.
-// Use it to set up platform channel mocks (path_provider, etc.) used across tests.
-
-import 'dart:io';
-import 'package:flutter/services.dart';
+import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-void _setupMockPathProvider() {
-  const channel = MethodChannel('plugins.flutter.io/path_provider');
-
-  channel.setMockMethodCallHandler((MethodCall methodCall) async {
-    switch (methodCall.method) {
-      case 'getApplicationDocumentsDirectory':
-      case 'getApplicationSupportDirectory':
-      case 'getTemporaryDirectory':
-        // Return a writable temp directory path for tests
-        return Directory.systemTemp.path;
-      default:
-        return null;
-    }
-  });
-}
-
-/// Called by the test harness
-void initializeTestEnvironment() {
+Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   TestWidgetsFlutterBinding.ensureInitialized();
-  _setupMockPathProvider();
+
+  // Disable Google Fonts HTTP fetching globally
+  GoogleFonts.config.allowRuntimeFetching = false;
+
+  await testMain();
 }

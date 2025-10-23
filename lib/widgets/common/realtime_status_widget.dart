@@ -253,7 +253,7 @@ class RealtimeLoadingOverlay extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          customMessage ?? 'กำลังอัปเดตข้อมูล...',
+                          customMessage ?? 'ກຳລັງອັບເດດ...',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,

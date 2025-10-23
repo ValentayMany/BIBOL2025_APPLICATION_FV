@@ -212,14 +212,14 @@ class _NewsDetailPageState extends State<NewsDetailPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          actions: [
-            IconButton(
-              onPressed: () {
-                // Share functionality
-              },
-              icon: Icon(Icons.share, color: Colors.white),
-            ),
-          ],
+          // actions: [
+          //   IconButton(
+          //     onPressed: () {
+          //       // Share functionality
+          //     },
+          //     icon: Icon(Icons.share, color: Colors.white),
+          //   ),
+          // ],
         ),
 
         // Content

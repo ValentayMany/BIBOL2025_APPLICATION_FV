@@ -54,6 +54,38 @@ class _ProfilePageState extends State<ProfilePage>
     }
   }
 
+  void _showComingSoon() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text(
+          'ກຳລັງພັດທະນາ',
+          style: GoogleFonts.notoSansLao(
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF07325D),
+          ),
+        ),
+        content: Text(
+          'ຟີເຈີນີ້ກຳລັງພັດທະນາ ກະລຸນາລໍຖ້າໃນອະນາຄົດ',
+          style: GoogleFonts.notoSansLao(color: Colors.grey[600]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ຕົກລົງ',
+              style: GoogleFonts.notoSansLao(
+                color: const Color(0xFF07325D),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 🔥 แก้ไข: ใช้ API /profile แทน getUserInfo
   void _checkLoginAndLoadProfile() async {
     setState(() => _isLoading = true);
@@ -248,120 +280,110 @@ class _ProfilePageState extends State<ProfilePage>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.logout, color: Colors.red.shade600, size: 24),
             ),
-            title: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.logout,
-                    color: Colors.red.shade600,
-                    size: 24,
-                  ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'ອອກຈາກລະບົບ',
+                style: GoogleFonts.notoSansLao(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade800,
+                  fontSize: 18,
                 ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'ອອກຈາກລະບົບ',
-                    style: GoogleFonts.notoSansLao(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade800,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-            content: Text(
-              'ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການອອກຈາກລະບົບ?',
+          ],
+        ),
+        content: Text(
+          'ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການອອກຈາກລະບົບ?',
+          style: GoogleFonts.notoSansLao(
+            color: Colors.grey.shade600,
+            fontSize: 16,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ຍົກເລີກ',
               style: GoogleFonts.notoSansLao(
                 color: Colors.grey.shade600,
-                fontSize: 16,
-                height: 1.4,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'ຍົກເລີກ',
-                  style: GoogleFonts.notoSansLao(
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-
-                  if (mounted) {
-                    setState(() => _isLoading = true);
-                  }
-
-                  await TokenService.clearAll();
-                  await Future.delayed(const Duration(milliseconds: 100));
-
-                  if (mounted) {
-                    setState(() {
-                      _isLoggedIn = false;
-                      userInfo = null;
-                      _isLoading = false;
-                    });
-
-                    _animationController.reset();
-                    _animationController.forward();
-
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            Icon(
-                              Icons.check_circle_outline,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'ອອກຈາກລະບົບສຳເລັດແລ້ວ',
-                                style: GoogleFonts.notoSansLao(),
-                              ),
-                            ),
-                          ],
-                        ),
-                        backgroundColor: Colors.green.shade600,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        margin: EdgeInsets.all(16),
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade600,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  'ອອກຈາກລະບົບ',
-                  style: GoogleFonts.notoSansLao(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
           ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+
+              if (mounted) {
+                setState(() => _isLoading = true);
+              }
+
+              await TokenService.clearAll();
+              await Future.delayed(const Duration(milliseconds: 100));
+
+              if (mounted) {
+                setState(() {
+                  _isLoggedIn = false;
+                  userInfo = null;
+                  _isLoading = false;
+                });
+
+                _animationController.reset();
+                _animationController.forward();
+
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle_outline, color: Colors.white),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'ອອກຈາກລະບົບສຳເລັດແລ້ວ',
+                            style: GoogleFonts.notoSansLao(),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.green.shade600,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: EdgeInsets.all(16),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade600,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'ອອກຈາກລະບົບ',
+              style: GoogleFonts.notoSansLao(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -708,7 +730,8 @@ class _ProfilePageState extends State<ProfilePage>
               iconColor: Colors.yellow.shade700,
               title: 'ເບີ່ງຄະແນນ',
               subtitle: 'ກວດສອບຄະແນນຂອງທ່ານ',
-              onTap: _handleEditProfile,
+              onTap:
+                  _showComingSoon, // ← เปลี่ยนจาก _handleEditProfile เป็น _showComingSoon
             ),
             SizedBox(height: 12),
             _buildActionCard(

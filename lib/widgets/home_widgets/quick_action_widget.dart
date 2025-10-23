@@ -72,6 +72,38 @@ class _QuickActionWidgetState extends State<QuickActionWidget> {
     }
   }
 
+  void _showComingSoon() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text(
+          'ກຳລັງພັດທະນາ',
+          style: GoogleFonts.notoSansLao(
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF07325D),
+          ),
+        ),
+        content: Text(
+          'ຟີເຈີນີ້ກຳລັງພັດທະນາ ກະລຸນາລໍຖ້າໃນອະນາຄົດ',
+          style: GoogleFonts.notoSansLao(color: Colors.grey[600]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ຕົກລົງ',
+              style: GoogleFonts.notoSansLao(
+                color: const Color(0xFF07325D),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Responsive helper methods
   bool get _isExtraSmallScreen => widget.screenWidth < 320;
   bool get _isSmallScreen => widget.screenWidth < 375;
@@ -158,19 +190,19 @@ class _QuickActionWidgetState extends State<QuickActionWidget> {
   Widget _buildLoadingState() {
     return _isExtraSmallScreen || _isSmallScreen
         ? Column(
-          children: [
-            _buildLoadingCard(),
-            const SizedBox(height: 14),
-            _buildLoadingCard(),
-          ],
-        )
+            children: [
+              _buildLoadingCard(),
+              const SizedBox(height: 14),
+              _buildLoadingCard(),
+            ],
+          )
         : Row(
-          children: [
-            Expanded(child: _buildLoadingCard()),
-            const SizedBox(width: 14),
-            Expanded(child: _buildLoadingCard()),
-          ],
-        );
+            children: [
+              Expanded(child: _buildLoadingCard()),
+              const SizedBox(width: 14),
+              Expanded(child: _buildLoadingCard()),
+            ],
+          );
   }
 
   Widget _buildLoadingCard() {
@@ -246,95 +278,113 @@ class _QuickActionWidgetState extends State<QuickActionWidget> {
 
     return _isExtraSmallScreen || _isSmallScreen
         ? Column(
-          children: [
-            TweenAnimationBuilder<double>(
-              duration: Duration(milliseconds: 400),
-              tween: Tween(begin: 0.0, end: 1.0),
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: 0.8 + (0.2 * value),
-                  child: Opacity(
-                    opacity: value,
-                    child: _buildQuickActionCard(
-                      icon: Icons.phone_rounded,
-                      title: 'ຕິດຕໍ່ເຮົາ',
-                      subtitle: phoneSubtitle,
-                      gradientColors: [Color(0xFF10B981), Color(0xFF059669)],
-                      onTap: () => _handleContactTap(primaryContact),
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 14),
-            TweenAnimationBuilder<double>(
-              duration: Duration(milliseconds: 450),
-              tween: Tween(begin: 0.0, end: 1.0),
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: 0.8 + (0.2 * value),
-                  child: Opacity(
-                    opacity: value,
-                    child: _buildQuickActionCard(
-                      icon: Icons.school_rounded,
-                      title: 'ສະໝັກຮຽນ',
-                      subtitle: 'ລົງທະບຽນຮຽນ',
-                      gradientColors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                      onTap: () {},
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        )
+            children: [
+              Expanded(
+                child: TweenAnimationBuilder<double>(
+                  duration: Duration(milliseconds: 400),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 0.8 + (0.2 * value),
+                      child: Opacity(
+                        opacity: value,
+                        child: _buildQuickActionCard(
+                          icon: Icons.phone_rounded,
+                          title: 'ຕິດຕໍ່ເຮົາ',
+                          subtitle: phoneSubtitle,
+                          gradientColors: [
+                            Color(0xFF10B981),
+                            Color(0xFF059669),
+                          ],
+                          onTap: () => _handleContactTap(primaryContact),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 14),
+              Expanded(
+                child: TweenAnimationBuilder<double>(
+                  duration: Duration(milliseconds: 450),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 0.8 + (0.2 * value),
+                      child: Opacity(
+                        opacity: value,
+                        child: _buildQuickActionCard(
+                          icon: Icons.school_rounded,
+                          title: 'ສະໝັກຮຽນ',
+                          subtitle: 'ລົງທະບຽນຮຽນ',
+                          gradientColors: [
+                            Color(0xFFF59E0B),
+                            Color(0xFFD97706),
+                          ],
+                          onTap:
+                              _showComingSoon, // ✅ เปลี่ยนจาก () {} เป็น _showComingSoon
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          )
         : Row(
-          children: [
-            Expanded(
-              child: TweenAnimationBuilder<double>(
-                duration: Duration(milliseconds: 400),
-                tween: Tween(begin: 0.0, end: 1.0),
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: 0.8 + (0.2 * value),
-                    child: Opacity(
-                      opacity: value,
-                      child: _buildQuickActionCard(
-                        icon: Icons.phone_rounded,
-                        title: 'ຕິດຕໍ່ເຮົາ',
-                        subtitle: phoneSubtitle,
-                        gradientColors: [Color(0xFF10B981), Color(0xFF059669)],
-                        onTap: () => _handleContactTap(primaryContact),
+            children: [
+              Expanded(
+                child: TweenAnimationBuilder<double>(
+                  duration: Duration(milliseconds: 400),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 0.8 + (0.2 * value),
+                      child: Opacity(
+                        opacity: value,
+                        child: _buildQuickActionCard(
+                          icon: Icons.phone_rounded,
+                          title: 'ຕິດຕໍ່ເຮົາ',
+                          subtitle: phoneSubtitle,
+                          gradientColors: [
+                            Color(0xFF10B981),
+                            Color(0xFF059669),
+                          ],
+                          onTap: () => _handleContactTap(primaryContact),
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: TweenAnimationBuilder<double>(
-                duration: Duration(milliseconds: 450),
-                tween: Tween(begin: 0.0, end: 1.0),
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: 0.8 + (0.2 * value),
-                    child: Opacity(
-                      opacity: value,
-                      child: _buildQuickActionCard(
-                        icon: Icons.school_rounded,
-                        title: 'ສະໝັກຮຽນ',
-                        subtitle: 'ລົງທະບຽນຮຽນ',
-                        gradientColors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                        onTap: () {},
+              const SizedBox(width: 14),
+              Expanded(
+                child: TweenAnimationBuilder<double>(
+                  duration: Duration(milliseconds: 450),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 0.8 + (0.2 * value),
+                      child: Opacity(
+                        opacity: value,
+                        child: _buildQuickActionCard(
+                          icon: Icons.school_rounded,
+                          title: 'ສະໝັກຮຽນ',
+                          subtitle: 'ລົງທະບຽນຮຽນ',
+                          gradientColors: [
+                            Color(0xFFF59E0B),
+                            Color(0xFFD97706),
+                          ],
+                          onTap:
+                              _showComingSoon, // ✅ เปลี่ยนจาก () {} เป็น _showComingSoon
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
-        );
+            ],
+          );
   }
 
   void _handleContactTap(ContactModel? contact) {
@@ -537,12 +587,11 @@ class _QuickActionWidgetState extends State<QuickActionWidget> {
                       ),
                       child: Icon(
                         icon,
-                        size:
-                            _isExtraSmallScreen
-                                ? 22.0
-                                : _isSmallScreen
-                                ? 24.0
-                                : 28.0,
+                        size: _isExtraSmallScreen
+                            ? 22.0
+                            : _isSmallScreen
+                            ? 24.0
+                            : 28.0,
                         color: Colors.white,
                       ),
                     ),

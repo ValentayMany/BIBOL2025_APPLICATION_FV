@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:BIBOL/services/offline/offline_service.dart';
 
 /// 📱 Offline Indicator Widget
-/// 
+///
 /// Beautiful offline mode indicator for BIBOL App
 class OfflineIndicatorWidget extends StatefulWidget {
   final bool showWhenOnline;
@@ -39,22 +39,14 @@ class _OfflineIndicatorWidgetState extends State<OfflineIndicatorWidget>
       duration: widget.animationDuration,
       vsync: this,
     );
-    
-    _slideAnimation = Tween<double>(
-      begin: -1.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeIn,
-    ));
+
+    _slideAnimation = Tween<double>(begin: -1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
   }
 
   @override
@@ -69,8 +61,9 @@ class _OfflineIndicatorWidgetState extends State<OfflineIndicatorWidget>
       stream: OfflineService.instance.connectivityStream,
       builder: (context, snapshot) {
         final isOnline = snapshot.data ?? true;
-        final shouldShow = (isOnline && widget.showWhenOnline) ||
-                          (!isOnline && widget.showWhenOffline);
+        final shouldShow =
+            (isOnline && widget.showWhenOnline) ||
+            (!isOnline && widget.showWhenOffline);
 
         if (shouldShow && !_animationController.isCompleted) {
           _animationController.forward();
@@ -87,11 +80,15 @@ class _OfflineIndicatorWidgetState extends State<OfflineIndicatorWidget>
                 opacity: _fadeAnimation.value,
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: isOnline 
-                        ? (widget.onlineColor ?? Colors.green)
-                        : (widget.offlineColor ?? Colors.orange),
+                    color:
+                        isOnline
+                            ? (widget.onlineColor ?? Colors.green)
+                            : (widget.offlineColor ?? Colors.orange),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
@@ -110,7 +107,9 @@ class _OfflineIndicatorWidgetState extends State<OfflineIndicatorWidget>
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        isOnline ? 'เชื่อมต่ออินเทอร์เน็ตแล้ว' : 'ไม่มีสัญญาณอินเทอร์เน็ต',
+                        isOnline
+                            ? 'ເຊື່ອມຕໍ່ອິນເຕີເນັດ'
+                            : 'ບໍ່ມີສັຍຍານອິນເຕີເນັດ',
                         style: GoogleFonts.poppins(
                           color: Colors.white,
                           fontSize: 12,
@@ -158,14 +157,10 @@ class _FloatingOfflineBannerState extends State<FloatingOfflineBanner>
       duration: widget.animationDuration,
       vsync: this,
     );
-    
-    _heightAnimation = Tween<double>(
-      begin: 0.0,
-      end: 40.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
+
+    _heightAnimation = Tween<double>(begin: 0.0, end: 40.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
   }
 
   @override
@@ -180,7 +175,7 @@ class _FloatingOfflineBannerState extends State<FloatingOfflineBanner>
       stream: OfflineService.instance.connectivityStream,
       builder: (context, snapshot) {
         final isOnline = snapshot.data ?? true;
-        
+
         if (!isOnline && !_animationController.isCompleted) {
           _animationController.forward();
         } else if (isOnline && _animationController.isCompleted) {
@@ -205,27 +200,28 @@ class _FloatingOfflineBannerState extends State<FloatingOfflineBanner>
                       ),
                     ],
                   ),
-                  child: _heightAnimation.value > 0
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.wifi_off,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'โหมดออฟไลน์',
-                              style: GoogleFonts.poppins(
+                  child:
+                      _heightAnimation.value > 0
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.wifi_off,
                                 color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                                size: 16,
                               ),
-                            ),
-                          ],
-                        )
-                      : null,
+                              const SizedBox(width: 8),
+                              Text(
+                                'ໂໝດອອຟໄລນ',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          )
+                          : null,
                 );
               },
             ),
@@ -266,7 +262,7 @@ class OfflineStatusCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              isOnline ? 'เชื่อมต่ออินเทอร์เน็ตแล้ว' : 'โหมดออฟไลน์',
+              isOnline ? 'ເຊື່ອມຕໍ່ອິນເຕີເນັດ' : 'ປິດໂມດອອຟໄລນ',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -275,13 +271,10 @@ class OfflineStatusCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              isOnline 
-                  ? 'คุณสามารถเข้าถึงข้อมูลล่าสุดได้'
-                  : 'กำลังแสดงข้อมูลที่เก็บไว้ในเครื่อง',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              isOnline
+                  ? 'ທ່ານສາມາດເຂົາເຖິງຂໍໍ້ມູນທີ່ອອນລາຍ'
+                  : 'ກຳລັງແສດງຂໍໍ້ມູນທີ່ເກັບໄວ້ໃນເຄື່ອງ',
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -292,7 +285,7 @@ class OfflineStatusCard extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh),
-                    label: const Text('ลองใหม่'),
+                    label: const Text('ລອງໃໝ່'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
@@ -302,7 +295,7 @@ class OfflineStatusCard extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onViewCachedData,
                     icon: const Icon(Icons.storage),
-                    label: const Text('ดูข้อมูลที่เก็บไว้'),
+                    label: const Text('ເບິ່ງຂໍໍ້ມູນ'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.blue,
                       side: const BorderSide(color: Colors.blue),
@@ -336,25 +329,21 @@ class OfflineModeToggle extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(
-              Icons.storage,
-              color: Colors.blue,
-              size: 24,
-            ),
+            Icon(Icons.storage, color: Colors.blue, size: 24),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'โหมดออฟไลน์',
+                    'ໂຫມດອອຟໄລນ',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   Text(
-                    'เก็บข้อมูลไว้ในเครื่องเพื่อใช้งานเมื่อไม่มีเน็ต',
+                    'ເກັບຂໍໍ້ມູນໄວ້ໃນເຄື່ອງເພື່ອໃຊ້ງານເມື່ອບໍ່ມີອິນເຕີເນັດ',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -402,7 +391,7 @@ class CacheStatusWidget extends StatelessWidget {
                 const Icon(Icons.storage, color: Colors.blue),
                 const SizedBox(width: 8),
                 Text(
-                  'สถานะแคช',
+                  'ສະຖານນະແຄສ',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -411,13 +400,28 @@ class CacheStatusWidget extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            _buildStatusRow('สถานะเน็ต', (cacheStats['isOnline'] ?? false) ? 'ออนไลน์' : 'ออฟไลน์'),
-            _buildStatusRow('ข่าวสาร', (cacheStats['newsCached'] ?? false) ? 'มี' : 'ไม่มี'),
-            _buildStatusRow('คอร์สเรียน', (cacheStats['coursesCached'] ?? false) ? 'มี' : 'ไม่มี'),
-            _buildStatusRow('ข้อมูลติดต่อ', (cacheStats['contactsCached'] ?? false) ? 'มี' : 'ไม่มี'),
-            _buildStatusRow('ขนาดแคช', '${(cacheStats['cacheSize'] ?? 0) ~/ 1024} KB'),
+            _buildStatusRow(
+              'ສະຖານະເນັດ',
+              (cacheStats['isOnline'] ?? false) ? 'ອອນລາຍ' : 'ອອຟໄລນ',
+            ),
+            _buildStatusRow(
+              'ຂໍໍ້ມູນຂ່າວ',
+              (cacheStats['newsCached'] ?? false) ? 'ມີ' : 'ບໍ່ມີ',
+            ),
+            _buildStatusRow(
+              'ຄອສເຮຽນ',
+              (cacheStats['coursesCached'] ?? false) ? 'ມີ' : 'ບໍ່ມີ',
+            ),
+            _buildStatusRow(
+              'ຂໍໍ້ມູນຕິດຕໍ່',
+              (cacheStats['contactsCached'] ?? false) ? 'ມີ' : 'ບໍ່ມີ',
+            ),
+            _buildStatusRow(
+              'ຂະບວນດັດແຄສ',
+              '${(cacheStats['cacheSize'] ?? 0) ~/ 1024} KB',
+            ),
             if (cacheStats['lastSync'] != null)
-              _buildStatusRow('ซิงค์ล่าสุด', cacheStats['lastSync']),
+              _buildStatusRow('ຊິງລ່າສຸດ', cacheStats['lastSync']),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -426,7 +430,7 @@ class CacheStatusWidget extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: onSync,
                     icon: const Icon(Icons.sync),
-                    label: const Text('ซิงค์'),
+                    label: const Text('ຊີງ'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
@@ -436,7 +440,7 @@ class CacheStatusWidget extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: onClearCache,
                     icon: const Icon(Icons.clear_all),
-                    label: const Text('ล้างแคช'),
+                    label: const Text('ລ້າງແຄສ'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
@@ -468,10 +472,7 @@ class CacheStatusWidget extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
             ),
           ),
         ],

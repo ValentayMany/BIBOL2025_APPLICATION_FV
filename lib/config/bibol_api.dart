@@ -15,13 +15,11 @@ class ApiConfig {
   // Private constructor
   ApiConfig._();
 
-  // Common configurations - now using EnvironmentConfig
+  // ✅ ใช้ค่าจาก EnvironmentConfig (ไม่ต้อง hardcode)
   static String get newsWebsite => EnvironmentConfig.webBaseUrl;
-  static String get baseApiV1 => '${EnvironmentConfig.webBaseUrl}/api/v1';
-
-  // Media URLs Configuration
-  static String get imageBaseUrl => '$newsWebsite/uploads/images/';
-  static String get mediaBaseUrl => '$newsWebsite/media/';
+  static String get baseApiV1 => EnvironmentConfig.baseApiV1;
+  static String get imageBaseUrl => EnvironmentConfig.imageBaseUrl;
+  static String get mediaBaseUrl => EnvironmentConfig.mediaBaseUrl;
 
   static var baseUrl;
 
@@ -72,9 +70,9 @@ class NewsApiConfig {
   // Private constructor
   NewsApiConfig._();
 
-  // News API Base URL
-  static const String baseNewsApi = 'https://web2025.bibol.edu.la/api/v1';
-  static const int defaultTopicId = 7;
+  // ✅ ใช้ค่าจาก EnvironmentConfig (bibol.edu.la/api/v1)
+  static String get baseNewsApi => EnvironmentConfig.baseApiV1;
+  static int get defaultTopicId => EnvironmentConfig.defaultNewsTopicId;
 
   // Base URL getter
   static String get baseUrl => baseNewsApi;
@@ -84,12 +82,11 @@ class NewsApiConfig {
     int page = 1,
     int count = 10,
     String lang = 'ar',
-    String? search, // เพิ่ม parameter search
+    String? search,
   }) {
     String url =
         '$baseNewsApi/topics/$defaultTopicId/page/$page/count/$count/$lang';
 
-    // เพิ่ม search query ถ้ามี
     if (search != null && search.isNotEmpty) {
       url += '?search=$search';
     }
@@ -103,8 +100,8 @@ class NewsApiConfig {
   }
 
   // Search & Info URLs
-  static const String newsSearchUrl = '$baseNewsApi/search';
-  static const String websiteInfoUrl = '$baseNewsApi/website/info';
+  static String get newsSearchUrl => '$baseNewsApi/search';
+  static String get websiteInfoUrl => '$baseNewsApi/website/info';
 
   // Validation methods
   static bool isValidTopicId(String? id) {
@@ -138,10 +135,11 @@ class NewsApiConfig {
   // Debug method
   static void printConfig() {
     debugPrint("=== 📰 News API Configuration ===");
+    debugPrint("Base News API: $baseNewsApi");
+    debugPrint("Default Topic ID: $defaultTopicId");
     debugPrint("Default News URL: ${getNewsUrl()}");
     debugPrint("Search URL: $newsSearchUrl");
     debugPrint("Website Info URL: $websiteInfoUrl");
-    debugPrint("News by ID (example): ${getNewsByIdUrl('123')}");
     debugPrint("=================================");
   }
 }
@@ -153,9 +151,10 @@ class CourseApiConfig {
   // Private constructor
   CourseApiConfig._();
 
-  // Base API configuration
-  static const String baseUrl = 'https://web2025.bibol.edu.la/api/v1';
-  static const String coursesUrl = '$baseUrl/banners/2';
+  // ✅ ใช้ค่าจาก EnvironmentConfig (bibol.edu.la/api/v1)
+  static String get baseUrl => EnvironmentConfig.baseApiV1;
+  static int get bannerId => EnvironmentConfig.defaultCourseBannerId;
+  static String get coursesUrl => '$baseUrl/banners/$bannerId';
 
   static String getCoursesUrl() => coursesUrl;
 
@@ -175,6 +174,7 @@ class CourseApiConfig {
   static void printConfig() {
     debugPrint("=== 📘 Course API Configuration ===");
     debugPrint("Base URL: $baseUrl");
+    debugPrint("Banner ID: $bannerId");
     debugPrint("Courses URL: $coursesUrl");
     debugPrint("====================================");
   }
@@ -187,7 +187,8 @@ class GalleryApiConfig {
   // Private constructor
   GalleryApiConfig._();
 
-  static const String baseUrl = 'https://web2025.bibol.edu.la/api/v1';
+  // ✅ ใช้ค่าจาก EnvironmentConfig (bibol.edu.la/api/v1)
+  static String get baseUrl => EnvironmentConfig.baseApiV1;
 
   // Gallery endpoints
   static String getUserTopics(String userId, int page, int count) {
@@ -214,9 +215,9 @@ class GalleryApiConfig {
 class StudentsApiConfig {
   StudentsApiConfig._();
 
+  // ✅ ใช้ค่าจาก EnvironmentConfig (ngrok ใน Dev)
   static String get baseUrl => EnvironmentConfig.apiBaseUrl;
 
-  // ✅ เปลี่ยนเป็น /students ตาม Node.js routes
   static String getStudentsUrl() => '$baseUrl/students/all';
   static String getStudentLoginUrl() => '$baseUrl/students/login';
   static String getStudentByIdUrl(int id) => '$baseUrl/students/$id';
@@ -224,8 +225,6 @@ class StudentsApiConfig {
   static String updateStudentProfileUrl() => '$baseUrl/students/profile';
   static String getStudentLogoutUrl() => '$baseUrl/students/logout';
   static String getStudentVerifyUrl() => '$baseUrl/students/verify';
-
-  // 🔄 Token Refresh - NEW!
   static String refreshTokenUrl() => '$baseUrl/students/refresh-token';
 
   static void printConfig() {
@@ -245,7 +244,7 @@ class WebsiteApiConfig {
   // Private constructor
   WebsiteApiConfig._();
 
-  // Base API configuration
+  // ✅ ใช้ค่าจาก EnvironmentConfig ผ่าน ApiConfig
   static String get baseUrl => ApiConfig.baseApiV1;
 
   // Website endpoints
@@ -269,6 +268,8 @@ class AllConfigsDebugHelper {
 
   static void printAllConfigs() {
     debugPrint("🚀 ===== ALL API CONFIGURATIONS =====");
+    EnvironmentConfig.printConfig();
+    debugPrint("");
     ApiConfig.printConfig();
     NewsApiConfig.printConfig();
     CourseApiConfig.printConfig();

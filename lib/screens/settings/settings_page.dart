@@ -384,7 +384,7 @@ class SettingsPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'การตั้งค่าโหมดออฟไลน์',
+          'ຕັ້ງຄ່າໂຫມດອອຟໄລນ',
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -414,7 +414,7 @@ class SettingsPage extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            'ซิงค์ข้อมูลเรียบร้อยแล้ว',
+                            'ຊິງຂໍ້ມູນແລ້ວ',
                             style: GoogleFonts.poppins(color: Colors.white),
                           ),
                           backgroundColor: Colors.green,
@@ -424,7 +424,7 @@ class SettingsPage extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            'เกิดข้อผิดพลาดในการซิงค์',
+                            'ເກີດຂໍ້ຜິດພາດ: $e',
                             style: GoogleFonts.poppins(color: Colors.white),
                           ),
                           backgroundColor: Colors.red,
@@ -438,7 +438,7 @@ class SettingsPage extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'ล้างแคชเรียบร้อยแล้ว',
+                  'ລ້າງແຄສແລ້ວ',
                   style: GoogleFonts.poppins(color: Colors.white),
                 ),
                 backgroundColor: Colors.orange,

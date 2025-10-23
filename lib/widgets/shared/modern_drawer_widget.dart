@@ -99,14 +99,13 @@ class ModernDrawerWidget extends StatelessWidget {
   }
 
   Widget _buildDrawerHeader(BuildContext context) {
-    final avatarSize =
-        _isExtraSmallScreen
-            ? 55.0
-            : _isShortScreen
-            ? 65.0
-            : _isTablet
-            ? 95.0
-            : 80.0;
+    final avatarSize = _isExtraSmallScreen
+        ? 55.0
+        : _isShortScreen
+        ? 65.0
+        : _isTablet
+        ? 95.0
+        : 80.0;
 
     return Container(
       width: double.infinity,
@@ -375,12 +374,6 @@ class ModernDrawerWidget extends StatelessWidget {
               },
             ),
             _buildDrawerItem(
-              icon: Icons.contact_mail_rounded,
-              title: 'ຕິດຕໍ່',
-              isSelected: false,
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
               icon: Icons.info_outline_rounded,
               title: 'ກ່ຽວກັບແອັບ',
               isSelected: false,
@@ -416,18 +409,16 @@ class ModernDrawerWidget extends StatelessWidget {
     required VoidCallback onTap,
     bool isSelected = false,
   }) {
-    final itemHeight =
-        _isExtraSmallScreen
-            ? 50.0
-            : _isSmallScreen
-            ? 54.0
-            : 58.0;
-    final iconSize =
-        _isExtraSmallScreen
-            ? 20.0
-            : _isSmallScreen
-            ? 22.0
-            : 24.0;
+    final itemHeight = _isExtraSmallScreen
+        ? 50.0
+        : _isSmallScreen
+        ? 54.0
+        : 58.0;
+    final iconSize = _isExtraSmallScreen
+        ? 20.0
+        : _isSmallScreen
+        ? 22.0
+        : 24.0;
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: _isExtraSmallScreen ? 4 : 5),
@@ -447,45 +438,41 @@ class ModernDrawerWidget extends StatelessWidget {
               vertical: _smallPadding,
             ),
             decoration: BoxDecoration(
-              gradient:
-                  isSelected
-                      ? LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [
-                          Colors.white.withOpacity(0.28),
-                          Colors.white.withOpacity(0.12),
-                        ],
-                      )
-                      : null,
+              gradient: isSelected
+                  ? LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Colors.white.withOpacity(0.28),
+                        Colors.white.withOpacity(0.12),
+                      ],
+                    )
+                  : null,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color:
-                    isSelected
-                        ? Colors.white.withOpacity(0.45)
-                        : Colors.transparent,
+                color: isSelected
+                    ? Colors.white.withOpacity(0.45)
+                    : Colors.transparent,
                 width: isSelected ? 1.5 : 0,
               ),
-              boxShadow:
-                  isSelected
-                      ? [
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                      : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
             child: Row(
               children: [
                 Container(
                   padding: EdgeInsets.all(_isExtraSmallScreen ? 8 : 10),
                   decoration: BoxDecoration(
-                    color:
-                        isSelected
-                            ? Colors.white.withOpacity(0.25)
-                            : Colors.white.withOpacity(0.12),
+                    color: isSelected
+                        ? Colors.white.withOpacity(0.25)
+                        : Colors.white.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: Colors.white, size: iconSize),
@@ -497,8 +484,9 @@ class ModernDrawerWidget extends StatelessWidget {
                     style: GoogleFonts.notoSansLao(
                       color: Colors.white,
                       fontSize: _bodyFontSize,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                       letterSpacing: 0.2,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -526,12 +514,11 @@ class ModernDrawerWidget extends StatelessWidget {
   }
 
   Widget _buildDrawerFooter(BuildContext context) {
-    final buttonHeight =
-        _isExtraSmallScreen
-            ? 48.0
-            : _isSmallScreen
-            ? 52.0
-            : 56.0;
+    final buttonHeight = _isExtraSmallScreen
+        ? 48.0
+        : _isSmallScreen
+        ? 52.0
+        : 56.0;
 
     return Container(
       padding: EdgeInsets.all(_basePadding * 1.3),
@@ -589,13 +576,12 @@ class ModernDrawerWidget extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap:
-                    isLoggedIn
-                        ? onLogoutPressed
-                        : () {
-                          Navigator.pop(context);
-                          onLoginPressed?.call();
-                        },
+                onTap: isLoggedIn
+                    ? onLogoutPressed
+                    : () {
+                        Navigator.pop(context);
+                        onLoginPressed?.call();
+                      },
                 borderRadius: BorderRadius.circular(30),
                 splashColor: Colors.white.withOpacity(0.15),
                 highlightColor: Colors.white.withOpacity(0.08),
@@ -667,65 +653,62 @@ class ModernDrawerWidget extends StatelessWidget {
   void _showAboutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Row(
-              children: [
-                Icon(Icons.account_balance, color: Color(0xFF07325D)),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'ກ່ຽວກັບແອັບ',
-                    style: GoogleFonts.notoSansLao(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'ສະຖາບັນການທະນາຄານ',
-                  style: GoogleFonts.notoSansLao(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'ລະບົບການສຶກສາອອນລາຍ',
-                  style: GoogleFonts.notoSansLao(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'Version 1.0.0',
-                  style: GoogleFonts.notoSansLao(
-                    fontSize: 12,
-                    color: Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'ປິດ',
-                  style: GoogleFonts.notoSansLao(
-                    color: Color(0xFF07325D),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.account_balance, color: Color(0xFF07325D)),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'ກ່ຽວກັບແອັບ',
+                style: GoogleFonts.notoSansLao(fontWeight: FontWeight.bold),
               ),
-            ],
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'ສະຖາບັນການທະນາຄານ',
+              style: GoogleFonts.notoSansLao(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'ລະບົບການສຶກສາອອນລາຍ',
+              style: GoogleFonts.notoSansLao(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Version 1.0.0',
+              style: GoogleFonts.notoSansLao(
+                fontSize: 12,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ປິດ',
+              style: GoogleFonts.notoSansLao(
+                color: Color(0xFF07325D),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
+        ],
+      ),
     );
   }
 }

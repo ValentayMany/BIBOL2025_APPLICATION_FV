@@ -3,13 +3,17 @@
 import 'package:BIBOL/widgets/common/custom_bottom_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../google_fonts_test_helper.dart';
 
 void main() {
+  // Initialize Google Fonts for testing
+  GoogleFontsTestHelper.initialize();
+
   group('CustomBottomNav Tests', () {
     // Helper function to wrap widget with MaterialApp
     Widget makeTestableWidget(Widget child) {
-      return MaterialApp(
-        home: Scaffold(body: Container(), bottomNavigationBar: child),
+      return GoogleFontsTestHelper.createTestWidget(
+        Scaffold(body: Container(), bottomNavigationBar: child),
       );
     }
 

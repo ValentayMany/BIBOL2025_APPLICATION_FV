@@ -293,7 +293,7 @@ class _NewsPullToRefreshWidgetState extends State<NewsPullToRefreshWidget>
                 const Icon(Icons.check_circle, color: Colors.white),
                 const SizedBox(width: 8),
                 Text(
-                  widget.customText ?? 'อัปเดตข่าวสารเรียบร้อยแล้ว',
+                  widget.customText ?? 'ອັດເດດຂ່າວສານສຳເລັດແລ້ວ',
                   style: GoogleFonts.poppins(color: Colors.white),
                 ),
               ],
@@ -317,7 +317,7 @@ class _NewsPullToRefreshWidgetState extends State<NewsPullToRefreshWidget>
                 const Icon(Icons.error, color: Colors.white),
                 const SizedBox(width: 8),
                 Text(
-                  'เกิดข้อผิดพลาดในการอัปเดต',
+                  'ເກີດຂໍ້ຜິດພາດໃນການອັບເດດ',
                   style: GoogleFonts.poppins(color: Colors.white),
                 ),
               ],
@@ -413,7 +413,7 @@ class _ContactsPullToRefreshWidgetState
                 const Icon(Icons.check_circle, color: Colors.white),
                 const SizedBox(width: 8),
                 Text(
-                  'อัปเดตข้อมูลติดต่อเรียบร้อยแล้ว',
+                  'ອັບເດດຂໍໍ້ມູນຕິດຕໍ່ແລ້ວ',
                   style: GoogleFonts.poppins(color: Colors.white),
                 ),
               ],
@@ -437,7 +437,7 @@ class _ContactsPullToRefreshWidgetState
                 const Icon(Icons.error, color: Colors.white),
                 const SizedBox(width: 8),
                 Text(
-                  'เกิดข้อผิดพลาดในการอัปเดตข้อมูลติดต่อ',
+                  'ເກີດຂໍ້ຜິດພາດໃນການອັບເດດຂໍໍ້ມູນຕິດຕໍ່',
                   style: GoogleFonts.poppins(color: Colors.white),
                 ),
               ],
@@ -532,7 +532,7 @@ class _CoursesPullToRefreshWidgetState extends State<CoursesPullToRefreshWidget>
                 const Icon(Icons.check_circle, color: Colors.white),
                 const SizedBox(width: 8),
                 Text(
-                  'อัปเดตคอร์สเรียนเรียบร้อยแล้ว',
+                  'ອັບເດດຫລັກສູດສຳເລັດ',
                   style: GoogleFonts.poppins(color: Colors.white),
                 ),
               ],
@@ -556,7 +556,7 @@ class _CoursesPullToRefreshWidgetState extends State<CoursesPullToRefreshWidget>
                 const Icon(Icons.error, color: Colors.white),
                 const SizedBox(width: 8),
                 Text(
-                  'เกิดข้อผิดพลาดในการอัปเดตคอร์สเรียน',
+                  'ເກີດຂໍ້ຜິດພາດໃນການອັບເດດຫລັກສູດ',
                   style: GoogleFonts.poppins(color: Colors.white),
                 ),
               ],

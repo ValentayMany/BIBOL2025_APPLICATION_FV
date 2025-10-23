@@ -1,6 +1,7 @@
 // widgets/home_widgets/news_card_widget.dart - Premium Design
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:html_unescape/html_unescape.dart';
 import 'package:BIBOL/models/topic/topic_model.dart';
 
 class NewsCardWidget extends StatelessWidget {
@@ -52,20 +53,14 @@ class NewsCardWidget extends StatelessWidget {
   String _stripHtmlTags(String htmlString) {
     if (htmlString.isEmpty) return '';
 
+    // ลบ HTML tags ก่อน
     String stripped = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
 
-    stripped = stripped
-        .replaceAll('&nbsp;', ' ')
-        .replaceAll('&amp;', '&')
-        .replaceAll('&lt;', '<')
-        .replaceAll('&gt;', '>')
-        .replaceAll('&quot;', '"')
-        .replaceAll('&#x27;', "'")
-        .replaceAll('&#x2F;', '/')
-        .replaceAll('&hellip;', '...')
-        .replaceAll('&mdash;', '—')
-        .replaceAll('&ndash;', '–');
+    // ใช้ html_unescape เพื่อ decode HTML entities
+    final unescape = HtmlUnescape();
+    stripped = unescape.convert(stripped);
 
+    // ทำความสะอาด whitespace
     stripped = stripped.replaceAll(RegExp(r'\s+'), ' ').trim();
 
     return stripped;
@@ -77,16 +72,15 @@ class NewsCardWidget extends StatelessWidget {
   }
 
   Widget _buildFeaturedNewsCard() {
-    final cardHeight =
-        _isExtraSmallScreen
-            ? 160.0
-            : _isSmallScreen
-            ? 180.0
-            : _isMediumScreen
-            ? 200.0
-            : _isTablet
-            ? 280.0
-            : 250.0;
+    final cardHeight = _isExtraSmallScreen
+        ? 160.0
+        : _isSmallScreen
+        ? 180.0
+        : _isMediumScreen
+        ? 200.0
+        : _isTablet
+        ? 280.0
+        : 250.0;
 
     return Container(
       height: cardHeight,
@@ -114,10 +108,9 @@ class NewsCardWidget extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
           onTap: onTap,
-          child:
-              _isExtraSmallScreen || _isSmallScreen
-                  ? _buildVerticalLayout(cardHeight)
-                  : _buildHorizontalLayout(cardHeight),
+          child: _isExtraSmallScreen || _isSmallScreen
+              ? _buildVerticalLayout(cardHeight)
+              : _buildHorizontalLayout(cardHeight),
         ),
       ),
     );
@@ -284,12 +277,11 @@ class NewsCardWidget extends StatelessWidget {
         Stack(
           children: [
             Container(
-              width:
-                  _isMediumScreen
-                      ? 140.0
-                      : _isTablet
-                      ? 180.0
-                      : 160.0,
+              width: _isMediumScreen
+                  ? 140.0
+                  : _isTablet
+                  ? 180.0
+                  : 160.0,
               height: cardHeight,
               child: ClipRRect(
                 borderRadius: const BorderRadius.only(
@@ -457,12 +449,11 @@ class NewsCardWidget extends StatelessWidget {
   }
 
   Widget _buildCompactNewsCard() {
-    final cardHeight =
-        _isExtraSmallScreen
-            ? 180.0
-            : _isSmallScreen
-            ? 200.0
-            : 220.0;
+    final cardHeight = _isExtraSmallScreen
+        ? 180.0
+        : _isSmallScreen
+        ? 200.0
+        : 220.0;
 
     return Container(
       height: cardHeight,

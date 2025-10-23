@@ -18,7 +18,7 @@ class CourseDetailAppBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 320,
+      expandedHeight: 310,
       floating: false,
       pinned: true,
       backgroundColor: Color(0xFF07325D),
@@ -28,7 +28,7 @@ class CourseDetailAppBarWidget extends StatelessWidget {
           Navigator.pop(context);
         },
         icon: Container(
-          padding: EdgeInsets.all(8),
+          padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: [Colors.white, Colors.grey[100]!]),
             borderRadius: BorderRadius.circular(15),
@@ -43,26 +43,26 @@ class CourseDetailAppBarWidget extends StatelessWidget {
           child: Icon(Icons.arrow_back_ios, color: Color(0xFF07325D), size: 20),
         ),
       ),
-      actions: [
-        IconButton(
-          onPressed: () {},
-          icon: Container(
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.white, Colors.grey[100]!],
-              ),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Icon(
-              Icons.share_outlined,
-              color: Color(0xFF07325D),
-              size: 20,
-            ),
-          ),
-        ),
-        SizedBox(width: 16),
-      ],
+      // actions: [
+      //   IconButton(
+      //     onPressed: () {},
+      //     icon: Container(
+      //       padding: EdgeInsets.all(8),
+      //       decoration: BoxDecoration(
+      //         gradient: LinearGradient(
+      //           colors: [Colors.white, Colors.grey[100]!],
+      //         ),
+      //         borderRadius: BorderRadius.circular(15),
+      //       ),
+      //       // child: Icon(
+      //       //   Icons.share_outlined,
+      //       //   color: Color(0xFF07325D),
+      //       //   size: 20,
+      //       // ),
+      //     ),
+      //   ),
+      //   SizedBox(width: 16),
+      // ],
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: BoxDecoration(

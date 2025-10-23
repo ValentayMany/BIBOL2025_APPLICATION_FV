@@ -5,8 +5,11 @@ import 'package:BIBOL/widgets/home_widgets/course_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../google_fonts_test_helper.dart';
 
 void main() {
+  // Initialize Google Fonts for testing
+  GoogleFontsTestHelper.initialize();
   group('CourseCardWidget Tests', () {
     // Helper function to create a test course
     CourseModel createTestCourse({
@@ -26,7 +29,7 @@ void main() {
 
     // Helper function to wrap widget with MaterialApp
     Widget makeTestableWidget(Widget child) {
-      return MaterialApp(home: Scaffold(body: child));
+      return GoogleFontsTestHelper.createTestWidget(child);
     }
 
     testWidgets('should display course title correctly', (tester) async {

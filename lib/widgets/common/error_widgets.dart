@@ -233,7 +233,7 @@ class ErrorWidgets {
         action:
             onRetry != null && error.shouldRetry
                 ? SnackBarAction(
-                  label: 'ลองใหม่',
+                  label: 'ລອງໃໝ່',
                   textColor: Colors.white,
                   onPressed: onRetry,
                 )
@@ -277,7 +277,7 @@ class ErrorWidgets {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('ลองใหม่'),
+              label: const Text('ລອງໃໝ່'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _getErrorColor(error.type),
                 foregroundColor: Colors.white,
@@ -302,7 +302,7 @@ class ErrorWidgets {
           const Icon(Icons.wifi_off, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
           Text(
-            'ไม่มีสัญญาณอินเทอร์เน็ต',
+            'ບໍ່ມີສັນຢານອິນເຕີເນັດ',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -312,7 +312,7 @@ class ErrorWidgets {
           ),
           const SizedBox(height: 8),
           Text(
-            'กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตของคุณ',
+            'ກະລຸນາກວດສອບອິນເຕີເນັດຂອງທ່ານ',
             style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
@@ -324,7 +324,7 @@ class ErrorWidgets {
                 ElevatedButton.icon(
                   onPressed: onRetry,
                   icon: const Icon(Icons.refresh),
-                  label: const Text('ลองใหม่'),
+                  label: const Text('ລອງໃໝ່'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
@@ -334,7 +334,7 @@ class ErrorWidgets {
                 OutlinedButton.icon(
                   onPressed: onCheckSettings,
                   icon: const Icon(Icons.settings),
-                  label: const Text('ตั้งค่า'),
+                  label: const Text('ຕັ້ງຄ່າ'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.blue,
                     side: const BorderSide(color: Colors.blue),
@@ -370,19 +370,19 @@ class ErrorWidgets {
   static String _getErrorTitle(String errorType) {
     switch (errorType) {
       case ErrorHandlerService.networkError:
-        return 'ปัญหาการเชื่อมต่อ';
+        return 'ປັນຫາການເຊື່ອມຕໍ່';
       case ErrorHandlerService.timeoutError:
-        return 'หมดเวลา';
+        return 'ໝົດເວລາ';
       case ErrorHandlerService.apiError:
-        return 'ข้อผิดพลาด API';
+        return 'ຂໍໍ້ຜິດພາດ API';
       case ErrorHandlerService.parsingError:
-        return 'ข้อผิดพลาดข้อมูล';
+        return 'ຂໍໍ້ຜິດພາດຂໍໍ້ມູນ';
       case ErrorHandlerService.authError:
-        return 'ข้อผิดพลาดการเข้าสู่ระบบ';
+        return 'ຂໍໍ້ຜິດພາດການເຂົ້າສູ່ລະບົບ';
       case ErrorHandlerService.serverError:
-        return 'ปัญหาของเซิร์ฟเวอร์';
+        return 'ປັນຫາຂອງເຊິີຟເວີ';
       default:
-        return 'เกิดข้อผิดพลาด';
+        return 'ເກີດຂໍ້ຜິດພາດ';
     }
   }
 
