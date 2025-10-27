@@ -1,5 +1,7 @@
 // lib/main.dart
 
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:BIBOL/config/environment.dart';
 import 'package:BIBOL/routes/app_navigator.dart';
 import 'package:BIBOL/routes/app_routes.dart';
@@ -38,11 +40,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => SimpleRealtimeProvider.instance),
-          ChangeNotifierProvider(create: (_) => OfflineProvider.instance),
-        ],
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SimpleRealtimeProvider.instance),
+        ChangeNotifierProvider(create: (_) => OfflineProvider.instance),
+      ],
       child: MaterialApp(
         title: 'Banking Institute App',
         theme: AppTheme.theme,
