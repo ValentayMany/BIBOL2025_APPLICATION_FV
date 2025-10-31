@@ -5,7 +5,7 @@
 }
 
 android {
-    namespace = "com.example.auth_flutter_api"
+    namespace = "la.edu.bibol"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.auth_flutter_api"
+        applicationId = "la.edu.bibol"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -35,4 +35,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    implementation("com.google.android.material:material:1.11.0")
 }

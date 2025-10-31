@@ -17,7 +17,7 @@ class EnvironmentConfig {
   static String get apiBaseUrl {
     switch (current) {
       case Environment.development:
-        return 'https://scalpless-sarai-fractural.ngrok-free.dev/api'; // Students API (ngrok)
+        return 'http://10.246.55.171:8000/api'; // Students API
       case Environment.staging:
         return 'https://staging-api.bibol.edu.la/api';
       case Environment.production:

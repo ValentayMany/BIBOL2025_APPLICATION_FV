@@ -10,7 +10,8 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
     
-    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+    <!-- ✅ เปลี่ยนบรรทัดนี้ -->
+    <style name="NormalTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
 </resources>

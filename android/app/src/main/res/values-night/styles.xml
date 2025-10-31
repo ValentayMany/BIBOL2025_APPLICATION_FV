@@ -6,7 +6,8 @@
         <item name="android:windowSplashScreenBackground">@android:color/transparent</item>
     </style>
     
-    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+    <!-- ✅ เปลี่ยนบรรทัดนี้ -->
+    <style name="NormalTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
 </resources>

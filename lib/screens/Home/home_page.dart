@@ -118,12 +118,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
+        );
 
     _fadeController.forward();
     _slideController.forward();
@@ -157,7 +155,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'ດຶງຂໍ້ມູນບໍ່ສຳເລັດ';
+          _errorMessage = 'ບໍ່ມີຂໍ້ມູນຫຼັກສູດ';
           _isCoursesLoading = false;
         });
       }
@@ -170,11 +168,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (mounted) {
         setState(() {
           if (response.success && response.data.isNotEmpty) {
-            _latestNews =
-                response.data
-                    .expand((newsModel) => newsModel.topics)
-                    .take(4)
-                    .toList();
+            _latestNews = response.data
+                .expand((newsModel) => newsModel.topics)
+                .take(4)
+                .toList();
           }
           _isNewsLoading = false;
         });
@@ -239,99 +236,90 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: const Color(0xFF07325D),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            title: Text(
-              'ອອກຈາກລະບົບ',
-              style: GoogleFonts.notoSansLao(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            content: Text(
-              'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF07325D),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'ອອກຈາກລະບົບ',
+          style: GoogleFonts.notoSansLao(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        content: Text(
+          'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
+          style: GoogleFonts.notoSansLao(color: Colors.white70, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'ຍົກເລີກ',
               style: GoogleFonts.notoSansLao(
                 color: Colors.white70,
-                fontSize: 14,
+                fontSize: 12,
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'ຍົກເລີກ',
-                  style: GoogleFonts.notoSansLao(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await TokenService.clearAll();
-
-                  if (mounted) {
-                    // อัปเดตสถานะก่อน
-                    await _checkLoginStatus();
-
-                    // รอให้ state อัปเดต
-                    await Future.delayed(const Duration(milliseconds: 100));
-
-                    // บังคับ rebuild
-                    setState(() {});
-
-                    // Reset animations
-                    _fadeController.reset();
-                    _slideController.reset();
-                    _fadeController.forward();
-                    _slideController.forward();
-
-                    // Use the saved reference instead of looking it up from context
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            const Icon(
-                              Icons.check_circle,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 10),
-                            Flexible(
-                              child: Text(
-                                'ອອກຈາກລະບົບສຳເລັດ',
-                                style: GoogleFonts.notoSansLao(fontSize: 12),
-                              ),
-                            ),
-                          ],
-                        ),
-                        backgroundColor: Colors.green,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        margin: EdgeInsets.all(_basePadding),
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: Text(
-                  'ອອກຈາກລະບົບ',
-                  style: GoogleFonts.notoSansLao(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
           ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await TokenService.clearAll();
+
+              if (mounted) {
+                // อัปเดตสถานะก่อน
+                await _checkLoginStatus();
+
+                // รอให้ state อัปเดต
+                await Future.delayed(const Duration(milliseconds: 100));
+
+                // บังคับ rebuild
+                setState(() {});
+
+                // Reset animations
+                _fadeController.reset();
+                _slideController.reset();
+                _fadeController.forward();
+                _slideController.forward();
+
+                // Use the saved reference instead of looking it up from context
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            'ອອກຈາກລະບົບສຳເລັດ',
+                            style: GoogleFonts.notoSansLao(fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    margin: EdgeInsets.all(_basePadding),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text(
+              'ອອກຈາກລະບົບ',
+              style: GoogleFonts.notoSansLao(color: Colors.white, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -486,53 +474,52 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         currentRoute: '/home',
       ),
       extendBodyBehindAppBar: true,
-      body:
-          _isLoading
-              ? _buildLoadingScreen()
-              : SafeArea(
-                top: false,
-                child: Container(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: HeaderWidget(
-                          key: ValueKey(
-                            'header_$_isLoggedIn',
-                          ), // เพิ่ม key เพื่อบังคับ rebuild
-                          onMenuPressed:
-                              () => _scaffoldKey.currentState?.openDrawer(),
-                          onLogoutPressed: _isLoggedIn ? _handleLogout : null,
-                          onLoginPressed: !_isLoggedIn ? _handleLogin : null,
-                          isLoggedIn: _isLoggedIn,
-                          userInfo: _userInfo,
-                          screenWidth: _screenWidth,
-                        ),
+      body: _isLoading
+          ? _buildLoadingScreen()
+          : SafeArea(
+              top: false,
+              child: Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: HeaderWidget(
+                        key: ValueKey(
+                          'header_$_isLoggedIn',
+                        ), // เพิ่ม key เพื่อบังคับ rebuild
+                        onMenuPressed: () =>
+                            _scaffoldKey.currentState?.openDrawer(),
+                        onLogoutPressed: _isLoggedIn ? _handleLogout : null,
+                        onLoginPressed: !_isLoggedIn ? _handleLogin : null,
+                        isLoggedIn: _isLoggedIn,
+                        userInfo: _userInfo,
+                        screenWidth: _screenWidth,
                       ),
-                      SliverToBoxAdapter(
-                        child: Column(
-                          children: [
-                            SearchWidget(
-                              controller: _searchController,
-                              onChanged: (value) => setState(() {}),
-                              screenWidth: _screenWidth,
-                            ),
-                            ImprovedStatsCardWidget(
-                              coursesCount: _courses.length,
-                              newsCount: _latestNews.length,
-                            ),
-                            _buildCoursesSection(),
-                            _buildNewsSection(),
-                            QuickActionWidget(screenWidth: _screenWidth),
-                            const SizedBox(height: 100),
-                          ],
-                        ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Column(
+                        children: [
+                          SearchWidget(
+                            controller: _searchController,
+                            onChanged: (value) => setState(() {}),
+                            screenWidth: _screenWidth,
+                          ),
+                          ImprovedStatsCardWidget(
+                            coursesCount: _courses.length,
+                            newsCount: _latestNews.length,
+                          ),
+                          _buildCoursesSection(),
+                          _buildNewsSection(),
+                          QuickActionWidget(screenWidth: _screenWidth),
+                          const SizedBox(height: 100),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
@@ -555,56 +542,81 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           const SizedBox(height: 16),
           _isCoursesLoading
               ? Container(
-                height:
-                    _isExtraSmallScreen
-                        ? 140.0
-                        : _isSmallScreen
-                        ? 160.0
-                        : 180.0,
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF07325D),
+                  height: _isExtraSmallScreen
+                      ? 140.0
+                      : _isSmallScreen
+                      ? 160.0
+                      : 180.0,
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFF07325D),
+                      ),
                     ),
                   ),
-                ),
-              )
+                )
+              : _errorMessage != null || _courses.isEmpty
+              ? Container(
+                  height: _isExtraSmallScreen
+                      ? 140.0
+                      : _isSmallScreen
+                      ? 160.0
+                      : 180.0,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.description_outlined,
+                          size: _isExtraSmallScreen ? 40.0 : 60.0,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _errorMessage ?? 'ບໍ່ມີຂໍ້ມູນ',
+                          style: GoogleFonts.notoSansLao(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               : Container(
-                height:
-                    _isExtraSmallScreen
-                        ? 140.0
-                        : _isSmallScreen
-                        ? 160.0
-                        : 180.0,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: _basePadding),
-                  itemCount: _courses.length,
-                  itemBuilder: (context, index) {
-                    final cardWidth =
-                        _isExtraSmallScreen
-                            ? 200.0
-                            : _isSmallScreen
-                            ? 220.0
-                            : 260.0;
-                    return Container(
-                      width: cardWidth,
-                      margin: const EdgeInsets.only(right: 16),
-                      child: CourseCardWidget(
-                        course: _courses[index],
-                        screenWidth: _screenWidth,
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/course-detail',
-                            arguments: _courses[index],
-                          );
-                        },
-                      ),
-                    );
-                  },
+                  height: _isExtraSmallScreen
+                      ? 140.0
+                      : _isSmallScreen
+                      ? 160.0
+                      : 180.0,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: _basePadding),
+                    itemCount: _courses.length,
+                    itemBuilder: (context, index) {
+                      final cardWidth = _isExtraSmallScreen
+                          ? 200.0
+                          : _isSmallScreen
+                          ? 220.0
+                          : 260.0;
+                      return Container(
+                        width: cardWidth,
+                        margin: const EdgeInsets.only(right: 16),
+                        child: CourseCardWidget(
+                          course: _courses[index],
+                          screenWidth: _screenWidth,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/course-detail',
+                              arguments: _courses[index],
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
         ],
       ),
     );
@@ -625,121 +637,119 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           const SizedBox(height: 20),
           _isNewsLoading
               ? Container(
-                height: 200,
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF07325D),
+                  height: 200,
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFF07325D),
+                      ),
                     ),
                   ),
-                ),
-              )
+                )
               : _latestNews.isEmpty
               ? Container(
-                height: 200,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.article_outlined,
-                        size: _isExtraSmallScreen ? 40.0 : 60.0,
-                        color: Colors.grey[400],
+                  height: 200,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.article_outlined,
+                          size: _isExtraSmallScreen ? 40.0 : 60.0,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'ບໍ່ມີຂ່າວສານໃໝ່',
+                          style: GoogleFonts.notoSansLao(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Column(
+                  children: [
+                    if (_latestNews.isNotEmpty)
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: _basePadding),
+                        child: NewsCardWidget(
+                          news: _latestNews.first,
+                          screenWidth: _screenWidth,
+                          isFeatured: true,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NewsDetailPage(
+                                  newsId: _latestNews.first.id.toString(),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'ບໍ່ມີຂ່າວສານໃໝ່',
-                        style: GoogleFonts.notoSansLao(
-                          color: Colors.grey[600],
-                          fontSize: 14,
+                    if (_latestNews.length > 1) ...[
+                      const SizedBox(height: 20),
+                      Container(
+                        height: _isExtraSmallScreen
+                            ? 180.0
+                            : _isSmallScreen
+                            ? 200.0
+                            : 220.0,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: _basePadding,
+                          ),
+                          itemCount: _latestNews.length - 1,
+                          itemBuilder: (context, index) {
+                            final cardWidth = _isExtraSmallScreen
+                                ? 200.0
+                                : 250.0;
+                            return Container(
+                              width: cardWidth,
+                              margin: const EdgeInsets.only(right: 16),
+                              child: NewsCardWidget(
+                                news: _latestNews[index + 1],
+                                screenWidth: _screenWidth,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => NewsDetailPage(
+                                        newsId: _latestNews[index + 1].id
+                                            .toString(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
-                  ),
-                ),
-              )
-              : Column(
-                children: [
-                  if (_latestNews.isNotEmpty)
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: _basePadding),
-                      child: NewsCardWidget(
-                        news: _latestNews.first,
-                        screenWidth: _screenWidth,
-                        isFeatured: true,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => NewsDetailPage(
-                                    newsId: _latestNews.first.id.toString(),
-                                  ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  if (_latestNews.length > 1) ...[
-                    const SizedBox(height: 20),
-                    Container(
-                      height:
-                          _isExtraSmallScreen
-                              ? 180.0
-                              : _isSmallScreen
-                              ? 200.0
-                              : 220.0,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: _basePadding),
-                        itemCount: _latestNews.length - 1,
-                        itemBuilder: (context, index) {
-                          final cardWidth = _isExtraSmallScreen ? 200.0 : 250.0;
-                          return Container(
-                            width: cardWidth,
-                            margin: const EdgeInsets.only(right: 16),
-                            child: NewsCardWidget(
-                              news: _latestNews[index + 1],
-                              screenWidth: _screenWidth,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => NewsDetailPage(
-                                          newsId:
-                                              _latestNews[index + 1].id
-                                                  .toString(),
-                                        ),
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
                   ],
-                ],
-              ),
+                ),
         ],
       ),
     );
   }
 
   Widget _buildFloatingActionButton() {
-    final fabSize =
-        _isExtraSmallScreen
-            ? 48.0
-            : _isSmallScreen
-            ? 52.0
-            : 56.0;
-    final iconSize =
-        _isExtraSmallScreen
-            ? 20.0
-            : _isSmallScreen
-            ? 22.0
-            : 24.0;
+    final fabSize = _isExtraSmallScreen
+        ? 48.0
+        : _isSmallScreen
+        ? 52.0
+        : 56.0;
+    final iconSize = _isExtraSmallScreen
+        ? 20.0
+        : _isSmallScreen
+        ? 22.0
+        : 24.0;
 
     return SizedBox(
       width: fabSize,
